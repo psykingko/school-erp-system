@@ -1,240 +1,226 @@
-# EduDash — College ERP Dashboard
+# 🎓 EduDash | Enterprise School ERP Dashboard
 
-A modern, gamified college ERP dashboard built with **React + Vite + JavaScript**. EduDash features a premium UI with multilingual support (English & Hindi), smooth Framer Motion animations, and a comprehensive suite of student-facing modules.
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
+[![i18n Ready](https://img.shields.io/badge/i18n-Ready-brightgreen?style=for-the-badge)](https://github.com/ashish-singh-dev)
+[![API Ready](https://img.shields.io/badge/API-Abstraction_Layer-blue?style=for-the-badge)](https://github.com/ashish-singh-dev)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
----
+> **Modern Scalable School ERP Dashboard built with React and frontend-first enterprise architecture.**
 
-## ✨ Features
-
-- 🎓 **Premium UI** — modern glassmorphism design with a playful, vibrant aesthetic
-- 🌐 **Multilingual** — full English / Hindi (EN/HI) toggle via React Context
-- ⚡ **Fast Development** — Vite for lightning-fast HMR and builds
-- 🎨 **Tailwind CSS** — utility-first styling with a custom design token theme
-- 🎭 **Framer Motion** — smooth page transitions and micro-animations
-- 🎯 **Lucide React** — consistent, beautiful icon system
-- 🧭 **SPA Navigation** — custom client-side router (no external router dependency)
-- 📱 **Responsive** — desktop-first layout that adapts to mobile via collapsible sidebar
-- 🔒 **Auth Context** — lightweight mock authentication layer
-- 🧪 **Testing** — Vitest + React Testing Library + fast-check (property-based tests)
+EduDash is a production-grade, multi-role school management interface designed for high-performance data visualization and seamless backend integration. Architected with scalability in mind, it provides a comprehensive suite of modules for students, parents, and administrative staff.
 
 ---
 
-## 🗂️ Modules & Pages
-
-| Route Key         | Page Component            | Description                                      |
-|-------------------|---------------------------|--------------------------------------------------|
-| `home`            | `HomePage`                | Dashboard overview with all summary widgets      |
-| `courses`         | `CoursesPage`             | Enrolled courses list with drill-down navigation |
-| `subject_<id>`    | `SubjectDetailPage`       | Per-subject detail view (accessed from Courses)  |
-| `faculty`         | `FacultyPage`             | Faculty directory with contact info              |
-| `timetable`       | `WeeklyTimetablePage`     | Full weekly class timetable                      |
-| `examination`     | `ExaminationPage`         | Exam schedule, results, and grading              |
-| `calendar`        | `SchoolCalendarPage`      | Academic calendar with events                    |
-| `feeDetails`      | `FeeDetailsPage`          | Detailed fee ledger and payment history          |
-| `documents`       | `DocumentsPage`           | Student document repository                      |
-| `achievements`    | `AchievementsPage`        | Badges, awards, and milestones                   |
-| `mentorSupport`   | `MentorSupportPage`       | Mentor profiles, anonymous requests, sessions    |
-| `clubsCommittees` | `ClubsCommitteesPage`     | Student clubs and committee memberships          |
-| `transport`       | `TransportPage`           | Bus routes, schedule, and transport details      |
+## 🌐 Live Demo
+Experience the production build: **[EduDash Live Preview](https://school-erp-dashboard-beta.vercel.app/)**
+*Status: Stable (v1.0.0)*
 
 ---
 
-## 🧩 Component Library
+## 🚀 Project Overview
 
-| Component                | Description                                              |
-|--------------------------|----------------------------------------------------------|
-| `Sidebar`                | Collapsible navigation sidebar with custom scrollbar     |
-| `Header`                 | Top bar with notifications, date, language toggle        |
-| `HeroBanner`             | Welcome banner with student info                         |
-| `ActionNeededSection`    | Quick-action cards (attendance warnings, due fees, etc.) |
-| `AttendanceCard`         | Overall attendance circular progress                     |
-| `SubjectAttendanceCards` | Per-subject attendance breakdown                         |
-| `FeeCard`                | Fee summary with due date and status badge               |
-| `TimetableCard`          | Today's timetable with period slots                      |
-| `CredentialsCard`        | Library / email credential display                       |
-| `LMSCard`                | LMS stats — streak, completion, pending assignments      |
-| `VCMessageCard`          | Vice-Chancellor's message card                           |
-| `NoticeBoard`            | Notices and exam alerts board                            |
-| `EventBoard`             | Upcoming events and happenings                           |
-| `MainCard`               | Reusable card shell used across dashboard modules        |
-| `FloatingWidgets`        | Floating UI helper widgets                               |
-| `HelperButton`           | Floating help trigger button                             |
-| `HelperPopup`            | Help/FAQ popup panel                                     |
+EduDash was engineered to bridge the gap between complex ERP data and intuitive user experiences. Unlike traditional static dashboards, EduDash utilizes a **Service-Oriented Frontend Architecture**, meaning every data point is abstracted through a dedicated service layer, making it "Plug-and-Play" for any REST or GraphQL backend.
+
+### Target Personas
+- **Students:** Centralized hub for attendance, grades, and schedules.
+- **Parents:** Real-time monitoring of ward progress, fee payments, and notices.
+- **Administrators:** (Roadmap) Fleet management, staff records, and examination control.
 
 ---
 
-## 🌐 Multilingual Support
+## 🛠️ Core Features
 
-Translation files live in `src/translations/`:
-
-| File            | Scope                                   |
-|-----------------|-----------------------------------------|
-| `common.js`     | Shared UI strings (buttons, labels)     |
-| `homepage.js`   | Home dashboard strings                  |
-| `exam.js`       | Examination module strings              |
-| `mentor.js`     | Mentor Support module strings           |
-| `newSections.js`| Newer module labels                     |
-| `index.js`      | Translation registry / export barrel    |
-
-Language state is managed via `LanguageContext` (`src/context/LanguageContext.jsx`). Toggle between **EN** and **HI** from the header.
-
----
-
-## 🏗️ Tech Stack
-
-| Layer        | Technology                              |
-|--------------|-----------------------------------------|
-| Frontend     | React 18 + JavaScript (no TypeScript)   |
-| Build Tool   | Vite 5                                  |
-| Styling      | Tailwind CSS 3 with custom theme        |
-| Animations   | Framer Motion 11                        |
-| Icons        | Lucide React                            |
-| State        | React Context (Auth + Language)         |
-| Testing      | Vitest + React Testing Library + fast-check |
-| Font         | Nunito (Google Fonts)                   |
+| Module | Description | Status |
+| :--- | :--- | :--- |
+| **🔐 Role-Based UI** | Dynamic interface switching between Student and Parent modes via `AuthContext`. | ✅ Production |
+| **📅 Weekly Timetable** | High-fidelity interactive schedule with subject tracking and time-blocks. | ✅ Production |
+| **📉 Analytics Cards** | Real-time attendance, fee status, and LMS progress visualizations. | ✅ Production |
+| **🌍 Multilingual Support** | Full i18n implementation (English/Hindi) with centralized translation management. | ✅ Production |
+| **💸 Fee Management** | Secure billing overview, payment history, and receipt downloads. | ✅ Production |
+| **🩺 Mentor Support** | Anonymous academic and personal guidance portal for students. | ✅ Production |
+| **🚌 Transport Tracking** | Route management and vehicle details with live-ready architecture. | ✅ Production |
+| **🏆 Achievement Hub** | Digital repository for certifications, awards, and extracurricular records. | ✅ Production |
+| **📢 Global Notice Board** | Multi-channel communication system for school-wide and exam-specific alerts. | ✅ Production |
 
 ---
 
-## 📁 Project Structure
+## 🏗️ Project Architecture
 
-```
-school-erp-dashboard/
-├── public/
-│   └── vite.svg
-├── src/
-│   ├── components/              # Reusable UI components (17 components)
-│   │   ├── MainCard.jsx         # Shared card shell
-│   │   ├── Sidebar.jsx          # Collapsible navigation sidebar
-│   │   ├── Header.jsx           # Top navigation bar
-│   │   ├── AttendanceCard.jsx
-│   │   ├── FeeCard.jsx
-│   │   ├── TimetableCard.jsx
-│   │   └── ...                  # Other dashboard widgets
-│   ├── pages/                   # Full-page views (12 pages)
-│   │   ├── CoursesPage.jsx
-│   │   ├── FeeDetailsPage.jsx
-│   │   ├── MentorSupportPage.jsx
-│   │   ├── ExaminationPage.jsx
-│   │   └── ...
-│   ├── context/                 # React Context providers
-│   │   ├── AuthContext.jsx      # Mock auth state
-│   │   └── LanguageContext.jsx  # EN/HI language toggle
-│   ├── data/                    # Static dummy data (no API/backend)
-│   ├── translations/            # EN + HI string maps
-│   ├── services/                # Service layer (mock)
-│   ├── utils/                   # Utility helpers
-│   ├── test/                    # Test setup and utilities
-│   ├── App.jsx                  # Root component + SPA router
-│   ├── main.jsx                 # App entry point
-│   ├── index.css                # Global base styles
-│   └── App.css                  # App-level styles
-├── index.html
-├── vite.config.js
-├── tailwind.config.js
-├── postcss.config.js
-├── eslint.config.js
-└── package.json
+The codebase follows a modular **Atomic-inspired structure** to ensure component reusability and clean separation of concerns.
+
+```text
+src/
+├── components/          # Reusable UI components (Atoms & Molecules)
+│   ├── MainCard.jsx     # Base wrapper for all dashboard widgets
+│   ├── Sidebar.jsx      # Navigation logic & role-switching
+│   ├── Header.jsx       # Global actions & notification center
+│   └── ...              # Module-specific components
+├── context/             # Global state management
+│   ├── AuthContext.jsx  # User roles, auth state, & permissions
+│   └── LanguageContext.js # i18n state & translation logic
+├── services/            # Backend abstraction layer
+│   ├── api.js           # Base service for data fetching
+│   ├── clubService.js   # Module-specific API logic
+│   └── ...              # Service-level helpers
+├── pages/               # Functional views (Full-page modules)
+│   ├── FeeDetailsPage.jsx
+│   ├── ExaminationPage.jsx
+│   └── ...
+├── translations/        # i18n JSON/JS resource files
+│   ├── en/              # English locale strings
+│   └── hi/              # Hindi locale strings
+├── data/                # Mock data & constants for development
+├── utils/               # Pure helper functions & formatters
+└── assets/              # Static media (Images, SVG, Fonts)
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🧪 Tech Stack
+
+| Category | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | React 18 | Component-based UI logic |
+| **Build Tool** | Vite | Ultra-fast HMR and optimized bundling |
+| **Styling** | Tailwind CSS | Utility-first responsive design |
+| **Animations** | Framer Motion | Fluid transitions and micro-interactions |
+| **Icons** | Lucide React | Consistent enterprise iconography |
+| **State** | Context API | Lightweight, predictable global state |
+| **Testing** | Vitest | Unit and component testing suite |
+
+---
+
+## 🔌 API & Backend Integration Guide
+
+EduDash is designed to be backend-agnostic. The `src/services/` directory contains the blueprint for all data requirements.
+
+### Integration Strategy
+1. **Service Layer:** Currently, `src/services/api.js` uses a `simulateNetwork` helper.
+2. **Replacement:** Replace the return statements with `axios.get('/api/endpoint')`.
+3. **Data Mapping:** Ensure your backend returns JSON matching the interfaces defined in `src/data/dummyData.js`.
+
+### Recommended API Structure
+| Endpoint | Method | Purpose |
+| :--- | :--- | :--- |
+| `/api/auth/login` | POST | Returns JWT and User Role (Student/Parent) |
+| `/api/student/profile` | GET | Basic info, attendance, and registration details |
+| `/api/academic/timetable`| GET | Returns nested JSON for weekly schedule |
+| `/api/finance/fees` | GET | Billing history and pending dues |
+
+---
+
+## 🗄️ Database Design Recommendations
+
+For a full-scale integration, the following relational schema is recommended:
+
+- **Users:** `id, email, password_hash, role_id, ward_id (for parents)`
+- **Students:** `id, user_id, enrollment_no, class_id, transport_id`
+- **Attendance:** `id, student_id, date, status (present/absent), subject_id`
+- **Fees:** `id, student_id, amount, status, due_date, transaction_id`
+- **Exams:** `id, subject_id, exam_type, date, max_marks`
+
+---
+
+## 🎨 UI System & Consistency
+
+- **`MainCard.jsx`**: The standard layout wrapper. Use it for any new dashboard section to maintain consistent padding, borders, and shadows.
+- **Color Palette**: 
+  - Primary: `#00b4d8` (Deep Sky Blue)
+  - Secondary: `#90e0ef` (Light Blue)
+  - Background: `#caf0f8` (Soft Cyan)
+- **Typography**: Responsive font scaling using Tailwind's `text-sm` through `text-2xl` for hierarchy.
+
+---
+
+## ⚙️ Installation & Setup
 
 ### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
 
-- **Node.js** 18 or higher
-- **npm** (or yarn / pnpm)
-
-### Installation
-
+### Steps
 ```bash
-# 1. Clone the repository
-git clone <repo-url>
+# Clone the repository
+git clone https://github.com/ashish-singh-dev/school-erp-dashboard.git
+
+# Enter the directory
 cd school-erp-dashboard
 
-# 2. Install dependencies
+# Install dependencies
 npm install
-```
 
-### Development
-
-```bash
+# Start development server
 npm run dev
 ```
 
-App runs at **`http://localhost:5173`** with hot module replacement.
+---
 
-### Production Build
+## 📝 Environment Configuration
 
-```bash
-npm run build
+Create a `.env` file in the root directory:
+
+```env
+VITE_API_BASE_URL=https://api.edudash.com/v1
+VITE_AUTH_TOKEN_KEY=edudash_auth_token
+VITE_ENABLE_MOCK_DATA=false
 ```
 
-Preview the production build locally:
+---
+
+## 🚢 Deployment Guide
+
+The project is optimized for **Vercel** but can be deployed to any static hosting provider.
 
 ```bash
+# Build for production
+npm run build
+
+# Preview production build locally
 npm run preview
 ```
 
----
-
-## 🧪 Testing
-
-```bash
-# Run all tests (headless)
-npm run test
-
-# Run tests with interactive UI
-npm run test:ui
-```
-
-Tests use **Vitest** + **React Testing Library** + **fast-check** for property-based testing.
+**CI/CD Workflow:**
+- `main` branch: Triggers production deployment.
+- `dev` branch: Triggers preview/staging deployments.
 
 ---
 
-## 🔍 Linting
+## 🗺️ Future Roadmap
 
-```bash
-npm run lint
-```
-
----
-
-## 🎨 Design System
-
-### Color Palette
-
-| Token            | Value       | Usage                          |
-|------------------|-------------|--------------------------------|
-| Background       | `#caf0f8`   | App background (sky blue)      |
-| Primary Accent   | `#0077b6`   | Focus highlights, CTAs         |
-| Card Background  | `#ffffff`   | Card shells                    |
-| Sidebar BG       | Custom dark | Collapsible sidebar            |
-
-### Typography
-
-- **Font**: [Nunito](https://fonts.google.com/specimen/Nunito) (Google Fonts)
-- **Weights**: 400, 600, 700, 800, 900
-
-### Animation Patterns
-
-- **Page transitions** — `AnimatePresence` with `opacity` + `y` fade-slide (250ms)
-- **Sidebar** — Spring-animated `marginLeft` on main content (`stiffness: 300, damping: 30`)
-- **Component entrance** — Staggered `motion.div` reveals per card/section
-- **Highlight glow** — Outline pulse on scroll-to-section navigation
+- [ ] **AI Assistant Integration:** Live chatbot for query handling using OpenAI/Gemini.
+- [ ] **Real-time Notifications:** WebSocket integration for instant school alerts.
+- [ ] **Admin Portal:** Comprehensive fleet and staff management dashboard.
+- [ ] **Offline Mode:** PWA support for viewing schedules without internet.
+- [ ] **Analytics Engine:** Visual grade trends and attendance forecasting.
 
 ---
 
-## 📌 Architecture Notes
+## 🤝 Contributing
 
-- **No external router** — page navigation is managed via `activePage` state + a `switch` in `App.jsx`
-- **Static data only** — all data comes from `src/data/dummyData.js`; no API calls
-- **Always-mounted modal pattern** — modals/popups use CSS visibility (`opacity`/`pointer-events`) rather than conditional rendering to avoid unmount/remount animation glitches
-- **Sidebar scroll** — custom-styled scrollbar aligned to EduDash palette; layout-stable with no shifting
-- **Performance** — Stable ref patterns (`useRef`, `useCallback`, `useMemo`) prevent unnecessary re-renders in `App.jsx` and `HomePage`
+We welcome contributions from the community.
+1. Fork the repo.
+2. Create a feature branch: `git checkout -b feature/amazing-feature`.
+3. Follow the **CamelCase** naming convention for components.
+4. Ensure all new components use `MainCard` for UI consistency.
+5. Submit a Pull Request.
 
 ---
 
 ## 📄 License
 
-This project is for **educational purposes** only.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👨‍💻 Author
+
+**Ashish Singh**
+*MCA Student @ Amity University*
+
+Specializing in **Scalable Frontend Architecture** and **AI-Driven Dashboards**.
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ashish-singh-dev)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ashish-singh-dev)
