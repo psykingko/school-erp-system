@@ -1,95 +1,65 @@
-# 🎓 EduDash | Enterprise School ERP Dashboard
+# EduDash | Modular School ERP Dashboard
 
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
-[![i18n Ready](https://img.shields.io/badge/i18n-Ready-brightgreen?style=for-the-badge)](https://github.com/ashish-singh-dev)
-[![API Ready](https://img.shields.io/badge/API-Abstraction_Layer-blue?style=for-the-badge)](https://github.com/ashish-singh-dev)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
-> **Modern Scalable School ERP Dashboard built with React and frontend-first enterprise architecture.**
+> **Scalable frontend architecture for educational resource planning, featuring a backend-ready modular interface.**
 
-EduDash is a production-grade, multi-role school management interface designed for high-performance data visualization and seamless backend integration. Architected with scalability in mind, it provides a comprehensive suite of modules for students, parents, and administrative staff.
-
----
-
-## 🌐 Live Demo
-Experience the production build: **[EduDash Live Preview](https://school-erp-dashboard-beta.vercel.app/)**
-*Status: Stable (v1.0.0)*
+EduDash is a modular, multi-role ERP interface designed for maintainable data management and seamless backend integration. The system is architected for scalability, providing a unified dashboard for student, parent, and administrative modules.
 
 ---
 
-## 🚀 Project Overview
+## 🌐 Live Deployment
 
-EduDash was engineered to bridge the gap between complex ERP data and intuitive user experiences. Unlike traditional static dashboards, EduDash utilizes a **Service-Oriented Frontend Architecture**, meaning every data point is abstracted through a dedicated service layer, making it "Plug-and-Play" for any REST or GraphQL backend.
-
-### Target Personas
-- **Students:** Centralized hub for attendance, grades, and schedules.
-- **Parents:** Real-time monitoring of ward progress, fee payments, and notices.
-- **Administrators:** (Roadmap) Fleet management, staff records, and examination control.
+**Production:** [https://school-erp-dashboard-beta.vercel.app/](https://school-erp-dashboard-beta.vercel.app/)  
+**Staging/Preview:** Automatically generated per Pull Request via Vercel.
 
 ---
 
-## 🛠️ Core Features
+## ⚙️ Development Standards
 
-| Module | Description | Status |
-| :--- | :--- | :--- |
-| **🔐 Role-Based UI** | Dynamic interface switching between Student and Parent modes via `AuthContext`. | ✅ Production |
-| **📅 Weekly Timetable** | High-fidelity interactive schedule with subject tracking and time-blocks. | ✅ Production |
-| **📉 Analytics Cards** | Real-time attendance, fee status, and LMS progress visualizations. | ✅ Production |
-| **🌍 Multilingual Support** | Full i18n implementation (English/Hindi) with centralized translation management. | ✅ Production |
-| **💸 Fee Management** | Secure billing overview, payment history, and receipt downloads. | ✅ Production |
-| **🩺 Mentor Support** | Anonymous academic and personal guidance portal for students. | ✅ Production |
-| **🚌 Transport Tracking** | Route management and vehicle details with live-ready architecture. | ✅ Production |
-| **🏆 Achievement Hub** | Digital repository for certifications, awards, and extracurricular records. | ✅ Production |
-| **📢 Global Notice Board** | Multi-channel communication system for school-wide and exam-specific alerts. | ✅ Production |
+To maintain code quality and architectural integrity, all contributors must adhere to the following standards:
+
+- **Service Layer Abstraction**: No direct data fetching or dummy-data imports within page components. All data must flow through the `src/services/` layer.
+- **Role-Aware Architecture**: Components must be built to handle role-based permissions (Student/Parent) via the `AuthContext`.
+- **UI Consistency**: Every new dashboard module or widget must wrap its content in the `MainCard` component to ensure consistent spacing, layout, and shadow depth.
+- **i18n Implementation**: All UI strings must be localized using the `LanguageContext`. Hardcoded text in components is prohibited.
+- **Modular Styling**: Use Tailwind CSS utility classes exclusively. Avoid ad-hoc CSS unless strictly necessary for complex animations.
 
 ---
 
 ## 🏗️ Project Architecture
 
-The codebase follows a modular **Atomic-inspired structure** to ensure component reusability and clean separation of concerns.
+The repository follows a modular structure to ensure clear separation of concerns:
 
 ```text
 src/
-├── components/          # Reusable UI components (Atoms & Molecules)
-│   ├── MainCard.jsx     # Base wrapper for all dashboard widgets
-│   ├── Sidebar.jsx      # Navigation logic & role-switching
-│   ├── Header.jsx       # Global actions & notification center
-│   └── ...              # Module-specific components
-├── context/             # Global state management
-│   ├── AuthContext.jsx  # User roles, auth state, & permissions
-│   └── LanguageContext.js # i18n state & translation logic
-├── services/            # Backend abstraction layer
-│   ├── api.js           # Base service for data fetching
-│   ├── clubService.js   # Module-specific API logic
-│   └── ...              # Service-level helpers
-├── pages/               # Functional views (Full-page modules)
-│   ├── FeeDetailsPage.jsx
-│   ├── ExaminationPage.jsx
-│   └── ...
-├── translations/        # i18n JSON/JS resource files
-│   ├── en/              # English locale strings
-│   └── hi/              # Hindi locale strings
-├── data/                # Mock data & constants for development
-├── utils/               # Pure helper functions & formatters
-└── assets/              # Static media (Images, SVG, Fonts)
+├── components/          # Reusable UI components (MainCard, Sidebar, etc.)
+├── context/             # Global state (Auth, Language/i18n)
+├── services/            # Backend abstraction layer (API calls)
+├── pages/               # Functional views and module layouts
+├── translations/        # Localization resource files (EN/HI)
+├── data/                # Mock data for local development
+├── utils/               # Pure helper functions and formatters
+└── assets/              # Static media and global styles
 ```
 
 ---
 
-## 🧪 Tech Stack
+## 🛠️ Core Modules
 
-| Category | Technology | Purpose |
+| Module | Description | Status |
 | :--- | :--- | :--- |
-| **Frontend** | React 18 | Component-based UI logic |
-| **Build Tool** | Vite | Ultra-fast HMR and optimized bundling |
-| **Styling** | Tailwind CSS | Utility-first responsive design |
-| **Animations** | Framer Motion | Fluid transitions and micro-interactions |
-| **Icons** | Lucide React | Consistent enterprise iconography |
-| **State** | Context API | Lightweight, predictable global state |
-| **Testing** | Vitest | Unit and component testing suite |
+| **Role-Based UI** | Dynamic interface switching based on user permissions. | Ready |
+| **Weekly Timetable** | Interactive schedule tracking with subject time-blocks. | Ready |
+| **Academic Analytics** | Attendance tracking and LMS progress visualization. | Ready |
+| **Multilingual Support** | Full i18n implementation (English/Hindi). | Ready |
+| **Finance Module** | Billing overview and payment history tracking. | Ready |
+| **Mentor Support** | Anonymous support portal for student guidance. | Ready |
+| **Transport System** | Route management and vehicle detail tracking. | Ready |
 
 ---
 
@@ -98,56 +68,56 @@ src/
 EduDash is designed to be backend-agnostic. The `src/services/` directory contains the blueprint for all data requirements.
 
 ### Integration Strategy
-1. **Service Layer:** Currently, `src/services/api.js` uses a `simulateNetwork` helper.
-2. **Replacement:** Replace the return statements with `axios.get('/api/endpoint')`.
-3. **Data Mapping:** Ensure your backend returns JSON matching the interfaces defined in `src/data/dummyData.js`.
+1. **Service Layer Implementation**: Replace the simulation logic in `src/services/api.js` with real HTTP clients (e.g., Axios).
+2. **Authentication Flow**: The system expects a JWT-based authentication flow. 
+   - **Login**: POST to `/auth/login` returning an access token and user role.
+   - **Tokens**: Recommended implementation of Refresh Tokens for session persistence.
+3. **Data Schemas**: Ensure backend responses match the structure defined in `src/data/dummyData.js`.
 
-### Recommended API Structure
-| Endpoint | Method | Purpose |
+### API Architecture
+| Endpoint | Method | Expected Response |
 | :--- | :--- | :--- |
-| `/api/auth/login` | POST | Returns JWT and User Role (Student/Parent) |
-| `/api/student/profile` | GET | Basic info, attendance, and registration details |
-| `/api/academic/timetable`| GET | Returns nested JSON for weekly schedule |
-| `/api/finance/fees` | GET | Billing history and pending dues |
+| `/api/auth/login` | POST | `{ token, refreshToken, user: { role, name, id } }` |
+| `/api/student/profile`| GET | Detailed student profile and registration metadata |
+| `/api/academic/schedule`| GET | Nested JSON representing the weekly timetable |
+| `/api/finance/fees` | GET | Transaction history and pending dues array |
 
 ---
 
 ## 🗄️ Database Design Recommendations
 
-For a full-scale integration, the following relational schema is recommended:
+### Entity Relationships
+- **Users & Roles**: 1:1 relationship between User and Role. Parents should have a foreign key reference to one or more Student IDs.
+- **Attendance**: Linked to both Student ID and Subject ID with a timestamp.
+- **Examinations**: Linked to Class ID and Subject ID with nested grading records.
 
-- **Users:** `id, email, password_hash, role_id, ward_id (for parents)`
-- **Students:** `id, user_id, enrollment_no, class_id, transport_id`
-- **Attendance:** `id, student_id, date, status (present/absent), subject_id`
-- **Fees:** `id, student_id, amount, status, due_date, transaction_id`
-- **Exams:** `id, subject_id, exam_type, date, max_marks`
+### Scaling Considerations
+- **Normalization**: Ensure attendance and fee records are normalized to handle millions of entries across multiple academic years.
+- **Caching**: Implement Redis or similar for frequently accessed data like the daily timetable and global notices.
 
 ---
 
-## 🎨 UI System & Consistency
+## 🚢 Git Workflow & Branching
 
-- **`MainCard.jsx`**: The standard layout wrapper. Use it for any new dashboard section to maintain consistent padding, borders, and shadows.
-- **Color Palette**: 
-  - Primary: `#00b4d8` (Deep Sky Blue)
-  - Secondary: `#90e0ef` (Light Blue)
-  - Background: `#caf0f8` (Soft Cyan)
-- **Typography**: Responsive font scaling using Tailwind's `text-sm` through `text-2xl` for hierarchy.
+We follow a structured branching strategy to ensure stable deployments:
+
+- **`main`**: The stable production branch. Only tested and approved features are merged here.
+- **`dev`**: The active development branch. All feature branches should be merged into `dev` for integration testing.
+- **Feature Branches**: Format: `feature/module-name` or `fix/issue-name`.
+
+**Deployment Flow:**  
+1. Feature developed in `feature/*`.  
+2. PR submitted to `dev` branch.  
+3. Merged into `dev` triggers a staging deployment.  
+4. Successful staging tests lead to a PR from `dev` to `main` for production release.
 
 ---
 
 ## ⚙️ Installation & Setup
 
-### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
-
-### Steps
 ```bash
 # Clone the repository
 git clone https://github.com/ashish-singh-dev/school-erp-dashboard.git
-
-# Enter the directory
-cd school-erp-dashboard
 
 # Install dependencies
 npm install
@@ -156,65 +126,44 @@ npm install
 npm run dev
 ```
 
----
-
-## 📝 Environment Configuration
-
+### Environment Configuration
 Create a `.env` file in the root directory:
-
 ```env
 VITE_API_BASE_URL=https://api.edudash.com/v1
-VITE_AUTH_TOKEN_KEY=edudash_auth_token
-VITE_ENABLE_MOCK_DATA=false
+VITE_ENABLE_MOCK_DATA=true
 ```
 
 ---
 
-## 🚢 Deployment Guide
+## 🧪 Tech Stack
 
-The project is optimized for **Vercel** but can be deployed to any static hosting provider.
-
-```bash
-# Build for production
-npm run build
-
-# Preview production build locally
-npm run preview
-```
-
-**CI/CD Workflow:**
-- `main` branch: Triggers production deployment.
-- `dev` branch: Triggers preview/staging deployments.
-
----
-
-## 🗺️ Future Roadmap
-
-- [ ] **AI Assistant Integration:** Live chatbot for query handling using OpenAI/Gemini.
-- [ ] **Real-time Notifications:** WebSocket integration for instant school alerts.
-- [ ] **Admin Portal:** Comprehensive fleet and staff management dashboard.
-- [ ] **Offline Mode:** PWA support for viewing schedules without internet.
-- [ ] **Analytics Engine:** Visual grade trends and attendance forecasting.
+| Category | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | React 18 | Component logic |
+| **Build Tool** | Vite | Optimization & HMR |
+| **Styling** | Tailwind CSS | Responsive design |
+| **Animations** | Framer Motion | Interface transitions |
+| **State** | Context API | Global state management |
+| **Testing** | Vitest | Unit testing |
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions from the community.
-1. Fork the repo.
-2. Create a feature branch: `git checkout -b feature/amazing-feature`.
-3. Follow the **CamelCase** naming convention for components.
-4. Ensure all new components use `MainCard` for UI consistency.
-5. Submit a Pull Request.
+We maintain high standards for all code contributions.
+1. **Branching**: Always branch off `dev`.
+2. **PR Requirements**: All Pull Requests must include a description of changes and adhere to the project's naming conventions (CamelCase for components).
+3. **Review Process**: Every PR requires a review from at least one maintainer.
+4. **Consistency**: Ensure all new modules use the `MainCard` wrapper and localized strings.
 
 ---
 
-## 👨‍💻 Author
+## 👥 Maintainers
 
-**Ashish Singh**
-*MCA Student @ Amity University*
+- **Ashish Singh** — Frontend Engineering & UI Architecture
 
-Specializing in **Scalable Frontend Architecture** and **AI-Driven Dashboards**.
+---
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ashishs190100/)
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/psykingko)
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
