@@ -24,6 +24,7 @@ import {
   getStageFromClassId,
 } from "../data/academicStages.js";
 import { extractLevel, isFoundationClass } from "../utils/classIdentity";
+import { CLASS_TEACHER_PRIORITY } from "../mockDB/seed/teacherSubjectAssignments";
 
 // ─── READ QUERIES ─────────────────────────────────────────────────────────────
 
@@ -414,11 +415,11 @@ export const changeClassTeacher = async (
   options = {},
 ) => {
   const provider = getDataProvider();
-  const [classes, teachers, assignments, timetableData] = await Promise.all([
+  const [classes, teachers, assignments, timetableArray] = await Promise.all([
     provider.getClasses(),
     provider.getTeachers(),
     provider.getTeacherSubjectAssignments(),
-    provider.getTimetable(),
+    provider.getTimetables(),
   ]);
 
   const cls = classes.find((c) => c.id === classId);
@@ -428,7 +429,7 @@ export const changeClassTeacher = async (
   if (!teacher)
     return { success: false, error: `Teacher "${newTeacherId}" not found.` };
 
-  // Validation: must already teach in this class (or own it for foundation)
+  // Validation: must already teach in this class
   const validation = validateClassTeacherAssignment(
     teacher,
     classId,
@@ -438,57 +439,87 @@ export const changeClassTeacher = async (
     return { success: false, error: validation.error };
   }
 
-  // STEP 1: Update class ownership
+  // STEP 1: Update class ownership record
   await provider.updateClass(classId, { classTeacherId: newTeacherId });
 
-  // STEP 2: Deterministic P1 timetable swap (if requested)
-  const shouldSwapP1 = options.swapP1 !== false;
-  let swapCount = 0;
+  // STEP 2: Update P1 across all weekdays to reflect the new class teacher.
+  //
+  // Industrial rationale:
+  //   P1 is definitionally the class teacher's period — it is always derived
+  //   from who the CT is, not from what happened to be stored in a slot.
+  //   We write P1 directly rather than trying to "swap" with an existing slot,
+  //   which is fragile (requires other slots to exist) and produces wrong results
+  //   when the timetable has only P1 data (the normal fresh state).
+  //
+  // Algorithm:
+  //   1. Find the new CT's primary subject for this class using CLASS_TEACHER_PRIORITY
+  //   2. Write that subject into P1 for every weekday (create or overwrite)
+  //   3. Ensure timetable document exists for this class first
 
-  if (shouldSwapP1) {
-    const classSchedule = timetableData[classId];
-    if (classSchedule) {
-      const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-      const PERIODS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"];
+  if (options.swapP1 === false) {
+    // Caller explicitly opted out of the timetable update
+    return { success: true, timetableUpdated: false };
+  }
 
-      for (const day of DAYS) {
-        const daySchedule = classSchedule[day];
-        if (!daySchedule) continue;
+  // Resolve the new CT's primary subject for this class using priority ordering
+  const ctAssignments = assignments.filter(
+    (a) => a.teacherId === newTeacherId && a.classId === classId,
+  );
 
-        const p1Slot = daySchedule["P1"];
-        if (!p1Slot) continue;
-
-        // Already new CT in P1 — nothing to do
-        if (p1Slot.teacherId === newTeacherId) continue;
-
-        // Find any period where new CT teaches in this class
-        let swapPeriod = null;
-        for (const period of PERIODS) {
-          if (period === "P1") continue;
-          const slot = daySchedule[period];
-          if (slot && slot.teacherId === newTeacherId) {
-            swapPeriod = period;
-            break;
-          }
-        }
-
-        if (!swapPeriod) continue;
-
-        // Perform swap
-        const p1Data = { ...daySchedule["P1"] };
-        const swapData = { ...daySchedule[swapPeriod] };
-
-        await provider.setTimetableSlot(classId, day, "P1", swapData);
-        await provider.setTimetableSlot(classId, day, swapPeriod, p1Data);
-        swapCount++;
+  let primarySubjectId = null;
+  if (ctAssignments.length > 0) {
+    // Walk CLASS_TEACHER_PRIORITY to find the highest-priority subject this CT teaches
+    for (const prioritySubjectId of CLASS_TEACHER_PRIORITY) {
+      const match = ctAssignments.find((a) => a.subjectId === prioritySubjectId);
+      if (match) {
+        primarySubjectId = match.subjectId;
+        break;
       }
+    }
+    // Fallback: take their first assignment if no priority match
+    if (!primarySubjectId) {
+      primarySubjectId = ctAssignments[0].subjectId;
     }
   }
 
+  // Ensure a timetable document exists for this class before writing slots
+  const existingTimetable = timetableArray.find((t) => t.classId === classId);
+  if (!existingTimetable) {
+    const newTT = {
+      id: `tt-${classId}`,
+      schemaVersion: 1,
+      classId,
+      academicYear: "2026-2027",
+      status: "draft",
+      weeklySchedule: {
+        monday: [], tuesday: [], wednesday: [],
+        thursday: [], friday: [],
+      },
+      publishedAt: null,
+      publishedBy: null,
+      updatedAt: new Date().toISOString(),
+      updatedBy: "system",
+    };
+    await provider.setTimetables([...timetableArray, newTT]);
+  }
+
+  // Write P1 for all 5 weekdays (creates or overwrites — idempotent)
+  const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+  const p1Slot = {
+    periodNumber: "P1",
+    subjectId: primarySubjectId || "sub-homeroom",
+    teacherId: newTeacherId,
+    isLocked: true,
+  };
+
+  await Promise.all(
+    WEEKDAYS.map((day) => provider.setTimetableSlot(classId, day, "P1", p1Slot)),
+  );
+
   return {
     success: true,
-    timetableSwapped: swapCount > 0,
-    swapCount,
+    timetableUpdated: true,
+    primarySubjectId,
   };
 };
 
@@ -932,11 +963,19 @@ export const createTeacherSubjectAssignment = async (data) => {
  */
 export const deleteTeacherSubjectAssignment = async (assignmentId) => {
   const provider = getDataProvider();
-  const [assignments, exams, timetable] = await Promise.all([
+  const [assignments, exams, timetableArray] = await Promise.all([
     provider.getTeacherSubjectAssignments(),
     provider.getExams(),
-    provider.getTimetable(),
+    provider.getTimetables(),
   ]);
+
+  // Convert v2 array format to legacy { classId: weeklySchedule } map
+  const timetable = {};
+  (timetableArray || []).forEach((tt) => {
+    if (tt.classId && tt.weeklySchedule) {
+      timetable[tt.classId] = tt.weeklySchedule;
+    }
+  });
 
   const assignment = assignments.find((a) => a.id === assignmentId);
   if (!assignment) {

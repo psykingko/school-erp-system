@@ -21,16 +21,44 @@ export const SUBJECT_DEFAULT_ROOMS = {
 
 /**
  * Ensures the timetables collection is initialized dynamically.
+ * Also migrates legacy periodNumber strings (e.g. "P1") to integers (e.g. 1).
  */
 export const initializeTimetables = async () => {
   const provider = getDataProvider();
-  const existing = await provider.getTimetables();
+  let existing = await provider.getTimetables();
   if (!existing || existing.length === 0) {
     const classes = await provider.getClasses();
     const assignments = await provider.getTeacherSubjectAssignments();
     const teachers = await provider.getTeachers();
     const timetables = buildCanonicalTimetables(classes, assignments, teachers);
     await provider.setTimetables(timetables);
+  } else {
+    // Migration: normalize periodNumber integers (1-8) → string codes ("P1"–"P8")
+    // This fixes data that was incorrectly migrated to integers in a prior version.
+    const periodCodeMap = { 1: "P1", 2: "P2", 3: "P3", 4: "P4", 5: "P5", 6: "P6", 7: "P7", 8: "P8" };
+    let needsSave = false;
+    const migrated = existing.map((tt) => {
+      const newSchedule = {};
+      let changed = false;
+      Object.entries(tt.weeklySchedule || {}).forEach(([day, slots]) => {
+        if (!Array.isArray(slots)) return;
+        newSchedule[day] = slots.map((slot) => {
+          if (typeof slot.periodNumber === "number" && periodCodeMap[slot.periodNumber]) {
+            changed = true;
+            return { ...slot, periodNumber: periodCodeMap[slot.periodNumber] };
+          }
+          return slot;
+        });
+      });
+      if (changed) {
+        needsSave = true;
+        return { ...tt, weeklySchedule: newSchedule };
+      }
+      return tt;
+    });
+    if (needsSave) {
+      await provider.setTimetables(migrated);
+    }
   }
   return { success: true, message: "Timetables initialized" };
 };

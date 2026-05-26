@@ -35,9 +35,16 @@ export const getItem = (key, defaultValue = null) => {
   try {
     const item = localStorage.getItem(key);
     if (item === null) return defaultValue;
-    const parsed = JSON.parse(item);
-    memoryCache.set(key, parsed);
-    return parsed !== null && typeof parsed === 'object' ? JSON.parse(JSON.stringify(parsed)) : parsed;
+    try {
+      const parsed = JSON.parse(item);
+      memoryCache.set(key, parsed);
+      return parsed !== null && typeof parsed === 'object' ? JSON.parse(JSON.stringify(parsed)) : parsed;
+    } catch {
+      // Value was stored as a raw string (e.g. schema version written without JSON.stringify).
+      // Return it as-is so version checks still work.
+      memoryCache.set(key, item);
+      return item;
+    }
   } catch (error) {
     console.error(`Storage error reading key "${key}":`, error);
     return defaultValue;
