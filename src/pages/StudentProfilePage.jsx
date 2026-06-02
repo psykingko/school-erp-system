@@ -170,11 +170,20 @@ const StudentProfilePage = ({ onNavigatePage }) => {
             <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
               <div className="relative group">
                 <div className="w-32 h-32 md:w-36 md:h-36 rounded-[2.25rem] bg-white p-1 shadow-xl border-2 border-gray-100 overflow-hidden ring-4 ring-white">
-                  <img 
-                    src={data.personal.avatarUrl} 
-                    alt={data.personal.fullName} 
-                    className="w-full h-full object-cover rounded-[2rem]"
-                  />
+                  {data.personal.avatarUrl ? (
+                    <img 
+                      src={data.personal.avatarUrl} 
+                      alt={data.personal.fullName} 
+                      className="w-full h-full object-cover rounded-[2rem]"
+                    />
+                  ) : (
+                    <div 
+                      className="w-full h-full rounded-[2rem] flex items-center justify-center text-white font-black text-4xl"
+                      style={{ background: `linear-gradient(135deg, #00b4d8, ${data.personal.avatarColor || '#03045e'})` }}
+                    >
+                      {data.personal.avatarInitials || "S"}
+                    </div>
+                  )}
                 </div>
               </div>
 

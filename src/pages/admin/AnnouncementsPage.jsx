@@ -4,7 +4,7 @@ import { Megaphone, Plus, Calendar, Bell } from "lucide-react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import OperationsStatCard from "../../components/admin/operations/OperationsStatCard";
 import AnnouncementBanner from "../../components/admin/institutional/AnnouncementBanner";
-import ActivityFeed from "../../components/admin/institutional/ActivityFeed";
+import ActivityFeed from "../../components/shared/ActivityFeed";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
 import AdminEditForm from "../../components/admin/AdminEditForm";
 import { getDataProvider } from "../../data";
@@ -68,17 +68,12 @@ const AnnouncementsPage = () => {
       audience: "ALL",
     };
 
-  // Convert notices into activity feed logs chronologically
-  const activityLogs = notices.slice(0, 5).map((n, idx) => ({
-    category:
-      n.audience === "FACULTY"
-        ? "Faculty Dispatch"
-        : n.audience === "PARENTS"
-          ? "Parent Alert"
-          : "Student Bulletin",
-    title: n.titleEn || n.title,
-    description: n.contentEn || n.content,
-    time: n.date || "Just now",
+  // Convert notices into activity feed entries
+  const activityLogs = notices.slice(0, 5).map((n) => ({
+    type: "notice",
+    description: `[${n.audience === "FACULTY" ? "Faculty" : n.audience === "PARENTS" ? "Parents" : "All"}] ${n.titleEn || n.title}`,
+    timestamp: n.date || null,
+    user: "Admin",
   }));
 
   const announcementFields = [
@@ -140,10 +135,7 @@ const AnnouncementsPage = () => {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Activity feed logs */}
-        <div className="lg:col-span-2 space-y-6">
-          <ActivityFeed logs={activityLogs} />
-        </div>
+
 
         {/* Dispatch Guidelines Info panel */}
         <AdminSectionCard>

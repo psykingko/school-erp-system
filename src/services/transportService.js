@@ -52,9 +52,13 @@ export const getTransportSummary = async (studentId) => {
   };
 };
 
-export const getVehicleDetails = async (vehicleId) => {
+export const getVehicleDetails = async (studentIdOrVehicleId) => {
   const provider = getDataProvider();
-  return await provider.getTransportVehicleById(vehicleId);
+  const assignment = await provider.getTransportAssignmentByStudent(studentIdOrVehicleId);
+  if (assignment) {
+    return await provider.getTransportVehicleById(assignment.assignedVehicleId);
+  }
+  return await provider.getTransportVehicleById(studentIdOrVehicleId);
 };
 
 export const getPersonnelInfo = async (studentId) => {
@@ -83,20 +87,23 @@ export const getPersonnelInfo = async (studentId) => {
   };
 };
 
-export const getRouteTimeline = async (routeId, studentId = null) => {
+export const getRouteTimeline = async (studentIdOrRouteId, studentId = null) => {
   const provider = getDataProvider();
-  const route = await provider.getTransportRouteById(routeId);
+  let route = null;
+  const targetStudentId = studentId || studentIdOrRouteId || "stud-001";
+  
+  const assignment = await provider.getTransportAssignmentByStudent(targetStudentId);
+  if (assignment) {
+    route = await provider.getTransportRouteById(assignment.assignedRouteId);
+  } else {
+    route = await provider.getTransportRouteById(studentIdOrRouteId);
+  }
+  
   if (!route) return [];
 
   const activeDirection = route?.activeDirection || "PICKUP_ROUTE";
   const stops = route?.stops || [];
   let timeline = [];
-
-  // Get assignment if studentId is provided for highlighting current stop
-  let assignment = null;
-  if (studentId) {
-    assignment = await provider.getTransportAssignmentByStudent(studentId);
-  }
 
   if (activeDirection === "DROP_ROUTE") {
     // School is the origin; drop stops follow in reverse order

@@ -61,9 +61,9 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
-function TypeBadge({ type }) {
+function TypeBadge({ category }) {
   const { t } = useLanguage();
-  const isElective = type === "elective";
+  const isElective = category === "optional";
   return (
     <span
       className="text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-full flex-shrink-0"
@@ -118,11 +118,11 @@ function SubjectCard({ course, onNavigatePage }) {
               </div>
             </div>
           </div>
-          <TypeBadge type={course.type} />
+          <TypeBadge category={course.category} />
         </div>
 
         <p className="text-sm text-gray-500 leading-relaxed">
-          {course.description}
+          {course.description || "Course curriculum and objectives are available on the subject details page."}
         </p>
 
         <div
@@ -131,32 +131,34 @@ function SubjectCard({ course, onNavigatePage }) {
         >
           <Clock size={17} style={{ color: TEAL }} aria-hidden="true" />
           <span className="text-xs font-semibold" style={{ color: NAVY }}>
-            {course.schedule}
+            {course.schedule || "Regular Schedule"}
           </span>
         </div>
 
-        <div>
-          <div className="flex items-center gap-1.5 mb-2">
-            <Users size={17} style={{ color: TEAL }} aria-hidden="true" />
-            <span
-              className="text-xs font-extrabold uppercase tracking-wide"
-              style={{ color: TEAL }}
-            >
-              {t("courses.teachers")}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {course.teachers.map((t_name, i) => (
-              <span
-                key={i}
-                className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                style={{ backgroundColor: NAVY + "12", color: NAVY }}
-              >
-                {t_name}
-              </span>
-            ))}
-          </div>
-        </div>
+          {course.teachers && course.teachers.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Users size={17} style={{ color: TEAL }} aria-hidden="true" />
+                <span
+                  className="text-xs font-extrabold uppercase tracking-wide"
+                  style={{ color: TEAL }}
+                >
+                  {t("courses.teachers")}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {course.teachers.map((t_name, i) => (
+                  <span
+                    key={i}
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{ backgroundColor: NAVY + "12", color: NAVY }}
+                  >
+                    {t_name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
         <div className="mt-auto pt-4">
           <button
@@ -191,8 +193,8 @@ function CoursesPage({ onNavigatePage }) {
     );
   }
 
-  const core = (courses || []).filter((c) => c.type === "core");
-  const elective = (courses || []).filter((c) => c.type === "elective");
+  const core = (courses || []).filter((c) => c.category === "academic");
+  const elective = (courses || []).filter((c) => c.category === "optional");
 
   return (
     <>

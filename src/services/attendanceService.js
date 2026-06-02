@@ -1,17 +1,13 @@
 import { getDataProvider } from "../data";
 import { schoolCalendar } from "../data/shared/calendar";
-import { emitEvent, WORKFLOW_EVENTS } from "./workflowEvents";
 
 /**
- * services/attendanceService.js
- *
  * Centralized service layer for the Institutional Daily Attendance Workflow System.
  */
 
 export const getAttendanceByStudent = async (studentId) => {
   const provider = getDataProvider();
-  const list = await provider.getAttendanceByStudent(studentId);
-  return list;
+  return await provider.getAttendanceByStudent(studentId);
 };
 
 export const getAttendanceByDate = async (studentId, date) => {
@@ -36,6 +32,12 @@ export const markAttendance = async ({
   markedBy,
   date,
 }) => {
+  // Basic Form Validation (Correction #2)
+  if (!studentId) throw new Error("Student ID is required");
+  if (!classId) throw new Error("Class ID is required");
+  if (!status) throw new Error("Attendance status is required");
+  if (!date) throw new Error("Date is required");
+
   const provider = getDataProvider();
   const record = {
     studentId,
@@ -47,20 +49,7 @@ export const markAttendance = async ({
     attendanceSession: "MORNING",
   };
 
-  const result = await provider.markAttendance(record);
-
-  // Emit event for absence notice
-  if (status === "ABSENT") {
-    emitEvent(WORKFLOW_EVENTS.ATTENDANCE_ABSENT, {
-      studentId,
-      classId,
-      date,
-      sourceModule: "attendance",
-      createdBy: markedBy,
-    });
-  }
-
-  return result;
+  return await provider.markAttendance(record);
 };
 
 export const updateClassAttendance = async (
@@ -69,6 +58,11 @@ export const updateClassAttendance = async (
   date,
   teacherId,
 ) => {
+  // Basic Form Validation
+  if (!classId) throw new Error("Class ID is required");
+  if (!date) throw new Error("Date is required");
+  if (!records || !Array.isArray(records)) throw new Error("Records array is required");
+
   const provider = getDataProvider();
   return await provider.updateClassAttendance(
     records,
@@ -94,7 +88,6 @@ export const isHolidayOrWeekend = (dateStr) => {
     return { isHoliday: true, title: "Weekend" };
   }
 
-  // Check calendar holidays (match by month and day to support year shifts seamlessly)
   const monthNames = [
     "Jan",
     "Feb",
@@ -143,7 +136,6 @@ export const getAttendanceSummary = async (studentId) => {
   const list = await provider.getAttendanceByStudent(id);
   const records = list;
 
-  // Only count PRESENT and ABSENT days; exclude future, weekends, holidays and UNMARKED
   const presentDays = records.filter((r) => r.status === "PRESENT").length;
   const absentDays = records.filter((r) => r.status === "ABSENT").length;
   const total = presentDays + absentDays;
@@ -158,19 +150,16 @@ export const getAttendanceSummary = async (studentId) => {
 };
 
 export const getAttendanceStatusByDate = async (studentId, date) => {
-  // 1. Check Holiday/Weekend status first
   const holidayCheck = isHolidayOrWeekend(date);
   if (holidayCheck.isHoliday) {
     return { status: "HOLIDAY", title: holidayCheck.title };
   }
 
-  // 2. Fetch daily attendance record
   const record = await getAttendanceByDate(studentId, date);
   if (record) {
     return { status: record.status, title: "" };
   }
 
-  // 3. Check if student is on approved leave
   try {
     const { isStudentOnApprovedLeave } = await import("./leaveService");
     const leave = await isStudentOnApprovedLeave(studentId, date);
@@ -190,7 +179,6 @@ export const getAttendanceTrend = async (studentId) => {
   const list = await provider.getAttendanceByStudent(id);
   const records = list;
 
-  // Return the last 7 marked school days sorted by date ascending for trend visualization
   return records
     .filter((r) => r.status === "PRESENT" || r.status === "ABSENT")
     .sort((a, b) => new Date(a.date) - new Date(b.date))

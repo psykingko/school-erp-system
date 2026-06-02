@@ -1,134 +1,104 @@
 /**
- * Classes Seed Data
- *
- * Defines school classes dynamically from Nursery to Class 12 (sections A, B, C, D)
- * with designated homeroom assignments and room allocations.
- *
- * Each class follows:
- * {
- *   classId,         // Normalized identifier (stable)
- *   className,       // Readable class-section name e.g. "XI-A"
- *   section,         // "A" | "B" | "C" | "D"
- *   roomNumber,      // Normalized room number e.g. "Room 301"
- *   classTeacherId,  // Homeroom class teacher
- *   streamId,        // Division stream (for 11 and 12)
- *   academicYear,    // "2026" (normalized academic timing)
- *   stage,           // Academic stage: foundation|primary|middle|secondary|senior_secondary
- *   id,              // Legacy alias (compat)
- *   name,            // Legacy alias (compat)
- *   room,            // Legacy alias (compat)
- *   stream,          // Legacy alias (compat)
- *   grade,           // Legacy alias (compat)
- *   displayName      // Legacy alias (compat)
- * }
+ * Classes Seed Data - Simplified Demo Structure
+ * 
+ * Controlled Institutional Sandbox:
+ * - Full structure: Nursery → 12, Sections A/B/C/D
+ * - Populated data: ONLY Class 10 & 11
+ * - 8 classes total: 10-A/B/C/D, 11-A/B/C/D
+ * 
+ * All classes use canonical level format ("10", "11" not "X", "XI")
  */
 
-import { getStageFromLevel } from "../../data/academicStages.js";
-import { formatClassLevel } from "../../utils/classIdentity.js";
+import { formatClassName, formatClassLevel } from "../../utils/classIdentity.js";
+
+// Streams for 11th sections
+const STREAMS_11 = {
+  A: { id: "SCIENCE_NON_MEDICAL", name: "Science Non-Medical" },
+  B: { id: "SCIENCE_MEDICAL", name: "Science Medical" },
+  C: { id: "COMMERCE", name: "Commerce" },
+  D: { id: "HUMANITIES", name: "Humanities" },
+};
+
+// Class teachers mapping (will match teacher IDs from teachersSeed)
+const CLASS_TEACHERS = {
+  "class-10a": "teach-001",
+  "class-10b": "teach-002", 
+  "class-10c": "teach-003",
+  "class-10d": "teach-004",
+  "class-11a": "teach-005",
+  "class-11b": "teach-006",
+  "class-11c": "teach-007",
+  "class-11d": "teach-013",
+};
 
 /**
- * Foundation class levels (Nursery–Class 4).
+ * Generate a class record
  */
-const FOUNDATION_LEVELS = ["Nursery", "LKG", "UKG", "1", "2", "3", "4"];
+const createClass = (level, section) => {
+  const classId = `class-${level}${section.toLowerCase()}`;
+  const className = formatClassName(level, section);
+  const stream = level === "11" ? STREAMS_11[section] : null;
+  
+  return {
+    id: classId,
+    classId: classId,
+    name: className,
+    className: className,
+    displayName: stream 
+      ? `Class ${formatClassLevel(level)}-${section} (${stream.name})`
+      : `Class ${formatClassLevel(level)}-${section}`,
+    level: level,
+    classLevel: level,
+    section: section,
+    stage: level === "10" ? "secondary" : "senior_secondary",
+    streamId: stream?.id || null,
+    streamName: stream?.name || null,
+    classTeacherId: CLASS_TEACHERS[classId] || null,
+    capacity: 40,
+    roomNumber: level === "10" ? `${level}${section}` : `11${section}`,
+    floor: level === "10" ? "Second" : "Third",
+    hasProjector: true,
+    hasSmartBoard: true,
+    academicYear: "2025-2026",
+    status: "Active",
+  };
+};
 
 /**
- * Returns seed data for all classes (Nursery to Class 12, 4 sections each).
- *
- * @param {Map<string, string>} [classTeacherMap] - Pre-built classId → teacherId map
- *   from deriveClassTeacherMap(). When provided, classTeacherId is resolved relationally.
- *   When omitted, classTeacherId is null for all classes.
+ * Static class records - ONLY populated classes
  */
-export const getClassesSeed = (classTeacherMap = null) => {
-  const classLevels = [
-    "Nursery",
-    "LKG",
-    "UKG",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-  ];
-  const sections = ["A", "B", "C", "D"];
-  const streamsMap = {
-    A: "SCIENCE_NON_MEDICAL",
-    B: "SCIENCE_MEDICAL",
-    C: "COMMERCE",
-    D: "HUMANITIES",
-  };
-  const streamsNameMap = {
-    A: "Science Non-Medical",
-    B: "Science Medical",
-    C: "Commerce",
-    D: "Humanities",
-  };
+export const classesSeed = [
+  // Class 10 - All sections (Secondary)
+  createClass("10", "A"),
+  createClass("10", "B"),
+  createClass("10", "C"),
+  createClass("10", "D"),
+  
+  // Class 11 - All sections with streams (Senior Secondary)
+  createClass("11", "A"),
+  createClass("11", "B"),
+  createClass("11", "C"),
+  createClass("11", "D"),
+];
 
-  const classes = [];
-  classLevels.forEach((level) => {
-    sections.forEach((sec) => {
-      const isSenior = level === "11" || level === "12";
-      const isFoundation = FOUNDATION_LEVELS.includes(level);
-      const classId = `class-${level.toLowerCase()}${sec.toLowerCase()}`;
-      const streamId = isSenior ? streamsMap[sec] : null;
-      const streamName = isSenior ? streamsNameMap[sec] : null;
+/**
+ * Get all available class levels (for filters/dropdowns)
+ * Returns full institutional structure even if not all populated
+ */
+export const getAllClassLevels = () => [
+  "Nursery", "LKG", "UKG",
+  "1", "2", "3", "4", "5",
+  "6", "7", "8", "9", "10",
+  "11", "12"
+];
 
-      // Resolve classTeacherId relationally from the pre-built map
-      const classTeacherId = classTeacherMap
-        ? classTeacherMap.get(classId) || null
-        : null;
+/**
+ * Get all available sections (for filters/dropdowns)
+ */
+export const getAllSections = () => ["A", "B", "C", "D"];
 
-      const roomNum = isSenior
-        ? 100 + (parseInt(level) - 10) * 10 + sec.charCodeAt(0) - 64
-        : ["Nursery", "LKG", "UKG"].includes(level)
-          ? `N-${sec}`
-          : `${level}-${sec}`;
-
-      const displayLevel = formatClassLevel(level); // "Nursery" | "LKG" | "UKG" | "1"…"10" | "XI" | "XII"
-      const className = `${displayLevel}-${sec}`;
-      const displayName = isSenior
-        ? `Class ${displayLevel}-${sec} (${streamName})`
-        : `Class ${displayLevel}-${sec}`;
-
-      const roomValue = `Room ${roomNum}`;
-
-      const fixedRoomId = isSenior
-        ? `room-${level}${sec.toLowerCase()}`
-        : ["Nursery", "LKG", "UKG"].includes(level)
-          ? `room-${level.toLowerCase()}${sec.toLowerCase()}`
-          : `room-${level}${sec.toLowerCase()}`;
-
-      classes.push({
-        classId,
-        id: classId,
-        className,
-        name: className,
-        level: level, // canonical level label without section: "Nursery"|"LKG"|"UKG"|"1"…"10"|"11"|"12"
-        section: sec,
-        grade: isSenior
-          ? parseInt(level)
-          : ["Nursery", "LKG", "UKG"].includes(level)
-            ? 0
-            : parseInt(level),
-        stage: getStageFromLevel(level),
-        streamId,
-        stream: streamId,
-        classTeacherId,
-        isFoundationClass: isFoundation,
-        roomNumber: roomValue,
-        room: roomValue,
-        fixedRoomId,
-        displayName,
-        academicYear: "2026",
-      });
-    });
-  });
-
-  return classes;
+export default {
+  classesSeed,
+  getAllClassLevels,
+  getAllSections,
 };

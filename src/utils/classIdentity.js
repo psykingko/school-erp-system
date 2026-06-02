@@ -17,6 +17,64 @@
  */
 
 // ============================================================================
+// CANONICAL INSTITUTIONAL STRUCTURE
+// ============================================================================
+
+/**
+ * Complete institutional class levels.
+ * Hardcoded institution structure - NOT derived from data.
+ * Used for filters, dropdowns, selectors across all portals.
+ * Levels: Nursery, LKG, UKG, 1-10, 11, 12
+ */
+export const CLASS_LEVELS = [
+  "Nursery",
+  "LKG",
+  "UKG",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+];
+
+/**
+ * Institutional sections.
+ * Hardcoded institution structure - NOT derived from data.
+ * Used for filters, dropdowns, selectors across all portals.
+ */
+export const SECTIONS = ["A", "B", "C", "D"];
+
+/**
+ * Stage groupings by institutional structure.
+ * Used for organized filter displays and bulk operations.
+ */
+export const STAGE_GROUPS = {
+  foundation: ["Nursery", "LKG", "UKG"],
+  primary: ["1", "2", "3", "4", "5"],
+  middle: ["6", "7", "8"],
+  secondary: ["9", "10"],
+  senior_secondary: ["11", "12"],
+};
+
+/**
+ * Human-readable stage labels.
+ */
+export const STAGE_LABELS = {
+  foundation: "Pre-Primary (Nursery–UKG)",
+  primary: "Primary (Class 1–5)",
+  middle: "Middle School (Class 6–8)",
+  secondary: "Secondary (Class 9–10)",
+  senior_secondary: "Senior Secondary (Class 11–12)",
+};
+
+// ============================================================================
 // CANONICALIZATION UTILITIES
 // ============================================================================
 
@@ -56,10 +114,6 @@ export function formatClassLevel(level) {
 
   const normalized = normalizeClassLevel(level);
 
-  // Convert numbers to Roman numerals for senior secondary display
-  if (normalized === "11") return "XI";
-  if (normalized === "12") return "XII";
-
   // Foundation and primary/middle/secondary display as-is
   return normalized;
 }
@@ -70,7 +124,7 @@ export function formatClassLevel(level) {
  *
  * @param {string} level - Canonical level (e.g., "11", "12", "Nursery", "5")
  * @param {string} section - Section letter (e.g., "A", "B", "C", "D")
- * @returns {string} Display class name (e.g., "XI-A", "XII-B", "Nursery-A", "5-C")
+ * @returns {string} Display class name (e.g., "11-A", "12-B", "Nursery-A", "5-C")
  */
 export function formatClassName(level, section) {
   const displayLevel = formatClassLevel(level);
@@ -90,7 +144,7 @@ export function formatClassName(level, section) {
 /**
  * Extracts the level from a class name or ID.
  *
- * @param {string} className - Class name or ID (e.g., "XI-A", "class-11a", "Nursery-B")
+ * @param {string} className - Class name or ID (e.g., "11-A", "class-11a", "Nursery-B")
  * @returns {string} Canonical level (e.g., "11", "Nursery", "5")
  */
 export function extractLevel(className) {
@@ -104,7 +158,7 @@ export function extractLevel(className) {
     return normalizeClassLevel(classIdMatch[1]);
   }
 
-  // Handle "XI-A" or "11-A" format
+  // Handle "11-A" or "11-A" format
   const parts = str.split(/[-\s]/);
   if (parts.length >= 1) {
     return normalizeClassLevel(parts[0]);
@@ -116,7 +170,7 @@ export function extractLevel(className) {
 /**
  * Extracts the section from a class name or ID.
  *
- * @param {string} className - Class name or ID (e.g., "XI-A", "class-11a", "Nursery-B")
+ * @param {string} className - Class name or ID (e.g., "11-A", "class-11a", "Nursery-B")
  * @returns {string} Section letter (e.g., "A", "B", "C", "D") or empty string
  */
 export function extractSection(className) {
@@ -130,7 +184,7 @@ export function extractSection(className) {
     return classIdMatch[1].toUpperCase();
   }
 
-  // Handle "XI-A" or "11-A" format
+  // Handle "11-A" or "11-A" format
   const parts = str.split(/[-\s]/);
   if (parts.length >= 2) {
     const section = parts[parts.length - 1].toUpperCase();

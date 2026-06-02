@@ -1,7 +1,111 @@
 import { getDataProvider } from "../data";
-import { teacherTimetableService } from "./timetable/teacherTimetableService";
-import { teacherScheduleService } from "./teacherScheduleService";
-import { teacherActionCenterService } from "./teacherActionCenterService";
+import { teacherTimetableService } from "./timetable";
+import {
+  teacherScheduleService,
+  getClassTeacherResponsibilities,
+} from "./teacherService";
+import { getAssignmentsByTeacher } from "./assignmentService";
+import { getUpdatesForTeacher } from "./classUpdatesService";
+
+// ── Inlined from teacherActionCenterService ─────────────────────────────────
+const actionItemsCache = new Map();
+const ACTION_CACHE_TTL = 4000;
+
+const getAttendanceAlerts = async (teacherId) => {
+  const responsibilities = await getClassTeacherResponsibilities(teacherId);
+  if (!responsibilities || responsibilities.attendanceMarked) return null;
+  return {
+    id: "action-attendance-pending",
+    type: "ATTENDANCE",
+    severity: "HIGH",
+    message: `Attendance for your Class ${responsibilities.className} is pending for today!`,
+    actionLabel: "Take Attendance",
+    link: "/teacher/attendance",
+  };
+};
+
+const getPendingLeaves = async (teacherId) => {
+  const responsibilities = await getClassTeacherResponsibilities(teacherId);
+  if (!responsibilities || responsibilities.pendingLeavesCount === 0)
+    return null;
+  return {
+    id: "action-leaves-pending",
+    type: "LEAVE",
+    severity: "HIGH",
+    message: `You have ${responsibilities.pendingLeavesCount} student leave request(s) awaiting approval.`,
+    actionLabel: "Review Leaves",
+    link: "/teacher/leave-management",
+  };
+};
+
+const getMentorRequests = async (teacherId) => {
+  const provider = getDataProvider();
+  const sessions = await provider.getMentorSessionsByTeacher(
+    teacherId || "teach-001",
+  );
+  const pending = sessions.filter((s) => s.status === "PENDING");
+  if (pending.length === 0) return null;
+  return {
+    id: "action-mentors-pending",
+    type: "MENTORSHIP",
+    severity: "MEDIUM",
+    message: `You have ${pending.length} student mentorship session request(s) awaiting review.`,
+    actionLabel: "Open Requests",
+    link: "/teacher/mentorship",
+  };
+};
+
+const getPendingGrading = async (teacherId) => {
+  const teacherAssignments = await getAssignmentsByTeacher(
+    teacherId || "teach-001",
+  );
+  const total = teacherAssignments.reduce(
+    (sum, a) =>
+      sum + Math.max(0, (a.submissionsCount || 0) - (a.gradedCount || 0)),
+    0,
+  );
+  if (total === 0) return null;
+  return {
+    id: "action-grading-pending",
+    type: "GRADING",
+    severity: "LOW",
+    message: `You have ${total} submission(s) across your classes pending evaluation.`,
+    actionLabel: "Grade Homework",
+    link: "/teacher/assignments",
+  };
+};
+
+const getTeacherActionItems = async (teacherId) => {
+  const tId = teacherId || "teach-001";
+  if (actionItemsCache.has(tId)) {
+    const entry = actionItemsCache.get(tId);
+    if (Date.now() - entry.timestamp < ACTION_CACHE_TTL) return entry.actions;
+  }
+  const [attAlert, leaveAlert, mentorAlert, gradeAlert] = await Promise.all([
+    getAttendanceAlerts(tId),
+    getPendingLeaves(tId),
+    getMentorRequests(tId),
+    getPendingGrading(tId),
+  ]);
+  const actions = [
+    attAlert,
+    leaveAlert,
+    mentorAlert,
+    gradeAlert,
+    {
+      id: "action-policy-update",
+      type: "ADMIN",
+      severity: "MEDIUM",
+      message:
+        "Quarterly report card entry guidelines have been updated by Administration.",
+      actionLabel: "View Notice",
+      link: "/teacher/dashboard",
+    },
+  ].filter(Boolean);
+  actionItemsCache.set(tId, { actions, timestamp: Date.now() });
+  return actions;
+};
+// ─────────────────────────────────────────────────────────────────────────────
 
 // In-memory lightweight cache registry
 const cache = new Map();
@@ -51,20 +155,42 @@ export const getCriticalTeacherDashboardData = async (
   const subjectsTaught = resolvedSubjects.map((s) => s.name);
   const classesAssigned = resolvedClasses.map((c) => c.name);
 
-  const rawTodaySchedule = await teacherTimetableService.getTeacherTodaySchedule(tId);
-  const todaySchedule = rawTodaySchedule.map(slot => {
-    const cls = resolvedClasses.find(c => c.id === slot.classId) || classesList.find(c => c.id === slot.classId);
-    const sub = resolvedSubjects.find(s => s.id === slot.subjectId) || subjects.find(s => s.id === slot.subjectId);
+  const rawWeeklySchedule =
+    await teacherTimetableService.getTeacherSchedule(tId);
+  const rawTodaySchedule =
+    await teacherTimetableService.getTeacherTodaySchedule(tId);
+  const resolveSlot = (slot) => {
+    const cls =
+      resolvedClasses.find((c) => c.id === slot.classId) ||
+      classesList.find((c) => c.id === slot.classId);
+    const sub =
+      resolvedSubjects.find((s) => s.id === slot.subjectId) ||
+      subjects.find((s) => s.id === slot.subjectId);
+    const pNum = String(slot.periodNumber);
+    const normalizedPeriod = pNum.startsWith("P") ? pNum : `P${pNum}`;
     return {
       ...slot,
-      period: slot.periodNumber,
+      period: normalizedPeriod,
       subject: sub ? sub.name : slot.subjectId,
       class: cls ? cls.name.replace("Class ", "") : slot.classId,
-      time: `${slot.startTime} – ${slot.endTime}`,
+      time: `${slot.startTime} - ${slot.endTime}`,
     };
-  });
-  const currentClass = todaySchedule.length > 0 ? { ...todaySchedule[0], status: "Ongoing" } : null;
-  const nextClass = todaySchedule.length > 1 ? { ...todaySchedule[1], status: "Upcoming" } : null;
+  };
+
+  const todaySchedule = rawTodaySchedule.map(resolveSlot);
+  const weeklySchedule = {};
+  for (const [day, slots] of Object.entries(rawWeeklySchedule)) {
+    weeklySchedule[day] = slots.map(resolveSlot);
+  }
+  
+  const currentClass =
+    todaySchedule.length > 0
+      ? { ...todaySchedule[0], status: "Ongoing" }
+      : null;
+  const nextClass =
+    todaySchedule.length > 1
+      ? { ...todaySchedule[1], status: "Upcoming" }
+      : null;
 
   const classTeacherData =
     await teacherScheduleService.getClassTeacherResponsibilities(tId);
@@ -93,6 +219,7 @@ export const getCriticalTeacherDashboardData = async (
   const payload = {
     teacherIdentity,
     teachingSchedule: {
+      weekly: weeklySchedule,
       today: todaySchedule,
       currentClass,
       nextClass,
@@ -134,20 +261,21 @@ export const getDeferredTeacherDashboardData = async (
   const provider = getDataProvider();
 
   // Fetch heavier collections in parallel to eliminate sequentially awaiting loops
-  const [classTeacherData, actionItems, generalNotices, examNotices] =
+  const [classTeacherData, actionItems, generalNotices, examNotices, classUpdates] =
     await Promise.all([
       teacherScheduleService.getClassTeacherResponsibilities(tId),
-      teacherActionCenterService.getTeacherActionItems(tId),
-      provider
-        .getNotices()
-        .then((notices) =>
-          notices.filter(
-            (n) => n.audience === "ALL" || n.audience === "FACULTY",
-          ),
-        ),
-      provider
-        .getNotices()
-        .then((notices) => notices.filter((n) => n.category === "examination")),
+      getTeacherActionItems(tId),
+      import("./noticeService").then((m) =>
+        m.resolveNoticesForUser({ id: tId, role: "teacher" }).then((notices) =>
+          notices.filter((n) => n.category !== "examination")
+        )
+      ),
+      import("./noticeService").then((m) =>
+        m.resolveNoticesForUser({ id: tId, role: "teacher" }).then((notices) =>
+          notices.filter((n) => n.category === "examination")
+        )
+      ),
+      getUpdatesForTeacher(tId),
     ]);
 
   const fullClassSchedule = classTeacherData
@@ -168,6 +296,7 @@ export const getDeferredTeacherDashboardData = async (
     notices: {
       general: generalNotices,
       exam: examNotices,
+      classUpdates: classUpdates,
     },
   };
 

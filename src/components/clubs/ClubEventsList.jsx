@@ -9,18 +9,22 @@ export default function ClubEventsList({ events = [], onOpenScheduleModal }) {
           <Calendar className="w-4 h-4 text-blue-500" />
           Scheduled Co-Curricular Events
         </h4>
-        <button
-          onClick={onOpenScheduleModal}
-          className="inline-flex items-center gap-1 text-[9px] font-black bg-blue-50 text-blue-600 hover:bg-blue-100 px-2.5 py-1.5 rounded-xl border border-blue-100 transition-all uppercase tracking-tighter"
-        >
-          <Plus className="w-3 h-3" />
-          Schedule Event
-        </button>
+        {onOpenScheduleModal && (
+          <button
+            onClick={onOpenScheduleModal}
+            className="inline-flex items-center gap-1 text-[9px] font-black bg-blue-50 text-blue-600 hover:bg-blue-100 px-2.5 py-1.5 rounded-xl border border-blue-100 transition-all uppercase tracking-tighter"
+          >
+            <Plus className="w-3 h-3" />
+            Schedule Event
+          </button>
+        )}
       </div>
 
       {events.length === 0 ? (
         <div className="text-center py-8 text-xs font-bold text-gray-400 italic">
-          No events scheduled for this club yet. Click "Schedule Event" to plan one!
+          {onOpenScheduleModal 
+            ? "No events scheduled for this club yet. Click \"Schedule Event\" to plan one!"
+            : "No events scheduled for this club yet."}
         </div>
       ) : (
         <div className="space-y-4">

@@ -9,7 +9,6 @@ import NoticeBoard from "../../components/NoticeBoard";
 import { teacherDashboardService } from "../../services/teacherDashboardService";
 import { useAuth } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { onEvent, WORKFLOW_EVENTS } from "../../services/workflowEvents";
 import { CheckCircle2 } from "lucide-react";
 
 // Progressive Loading Skeletons
@@ -45,7 +44,7 @@ const TeacherDashboard = () => {
   const [classInfo, setClassInfo] = useState(null);
   const [classSchedule, setClassSchedule] = useState({ today: [], weekly: [] });
   const [actionItems, setActionItems] = useState([]);
-  const [notices, setNotices] = useState({ general: [], exam: [] });
+  const [notices, setNotices] = useState({ general: [], exam: [], classUpdates: [] });
 
   // Loading States
   const [loadingSchedule, setLoadingSchedule] = useState(true);
@@ -97,7 +96,7 @@ const TeacherDashboard = () => {
         setClassInfo(data.classInfo);
         setClassSchedule(data.classSchedule || { today: [], weekly: [] });
         setActionItems(data.actionItems || []);
-        setNotices(data.notices || { general: [], exam: [] });
+        setNotices(data.notices || { general: [], exam: [], classUpdates: [] });
         setErrorDeferred("");
       } catch (e) {
         console.error("Failed to load deferred action lists:", e);
@@ -119,17 +118,6 @@ const TeacherDashboard = () => {
     }, 50);
 
     return () => clearTimeout(timer);
-  }, [fetchCriticalData, fetchDeferredData]);
-
-  useEffect(() => {
-    const unsubscribe = onEvent(WORKFLOW_EVENTS.TIMETABLE_PUBLISHED, () => {
-      fetchCriticalData(true);
-      fetchDeferredData(true);
-      setToastMessage("Timetable updated successfully");
-      setTimeout(() => setToastMessage(null), 3000);
-    });
-
-    return () => unsubscribe();
   }, [fetchCriticalData, fetchDeferredData]);
 
   // Memoize homeroom/class teacher check to avoid recalcs
@@ -188,7 +176,7 @@ const TeacherDashboard = () => {
               </div>
             ) : (
               <MemoizedMyTeachingSchedule
-                schedule={teachingSchedule.today}
+                schedule={teachingSchedule}
                 currentClass={teachingSchedule.currentClass}
                 nextClass={teachingSchedule.nextClass}
               />
@@ -221,7 +209,7 @@ const TeacherDashboard = () => {
           </div>
 
           {/* SECTION 5 — ACTION CENTER */}
-          <div className="lg:col-span-1 h-full">
+          <div className="lg:col-span-1 h-full space-y-6">
             {loadingDeferred ? (
               <ActionCenterSkeleton />
             ) : (
@@ -237,7 +225,7 @@ const TeacherDashboard = () => {
           <NoticeBoard
             notices={notices.general || []}
             examNotices={notices.exam || []}
-            classUpdates={[]}
+            classUpdates={notices.classUpdates || []}
             index={0}
           />
         )}

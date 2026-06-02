@@ -23,9 +23,7 @@ export const useService = (serviceFn, args = [], deps = []) => {
   // Serialize args to create the secondary cache key
   const argsKey = useMemo(() => JSON.stringify(args), [args]);
 
-  const hasCachedData = fnCache.has(argsKey) && 
-                        fnCache.get(argsKey) !== null && 
-                        fnCache.get(argsKey) !== undefined;
+  const hasCachedData = fnCache.has(argsKey);
 
   // Single trigger state to prompt React re-renders when async data resolves
   const [, setTrigger] = useState(0);
@@ -34,14 +32,14 @@ export const useService = (serviceFn, args = [], deps = []) => {
   // Dynamically resolve values directly from the cache during render phase.
   // This guarantees there is never a stale state or mismatch, with zero rendering aborts.
   const data = hasCachedData ? fnCache.get(argsKey) : null;
-  const loading = !hasCachedData;
+  const loading = !hasCachedData && !error;
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchData = async () => {
       // If already cached, do not perform a redundant network call
-      if (fnCache.has(argsKey) && fnCache.get(argsKey) !== null && fnCache.get(argsKey) !== undefined) {
+      if (fnCache.has(argsKey)) {
         return;
       }
 

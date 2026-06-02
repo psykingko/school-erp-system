@@ -215,14 +215,15 @@ const AssignmentsPage = () => {
           {filteredAssignments.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 w-full animate-fadeIn">
               {filteredAssignments.map(asgn => (
-                <AssignmentCard 
-                  key={asgn.id} 
-                  assignment={asgn} 
-                  onStatusUpdate={() => {
-                    refetchProgress();
-                    refetchAssignments();
-                  }}
-                />
+                <div key={asgn.id}>
+                  <AssignmentCard 
+                    assignment={asgn} 
+                    onStatusUpdate={() => {
+                      refetchProgress();
+                      refetchAssignments();
+                    }}
+                  />
+                </div>
               ))}
             </div>
           ) : assignments && assignments.length === 0 ? (

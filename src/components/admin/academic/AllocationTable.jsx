@@ -30,7 +30,7 @@ const AllocationTable = ({
       renderRow={(alloc) => (
         <tr key={alloc.id || `${alloc.classId}-${alloc.subjectId}`} className="hover:bg-[#caf0f8]/10 transition-colors text-xs text-gray-700 font-bold border-b border-[#caf0f8]/40">
           <td className="py-4 px-3 text-[#03045e] font-black first:pl-2">
-            {alloc.className || "Class XI-A"}
+            {alloc.className || "Class 11-A"}
           </td>
           <td className="py-4 px-3">
             <span className="px-2 py-0.5 rounded bg-[#caf0f8] text-[#03045e] text-[10px] font-black uppercase">

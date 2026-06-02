@@ -8,7 +8,7 @@ import { CreditCard, Wallet, AlertCircle } from "lucide-react";
  * Reusable panel presenting financial collections, outstanding ledger margins, and relative paid index metrics.
  */
 const FeeSummaryCard = ({ 
-  classNameName = "Class XI", 
+  classNameName = "Class 11", 
   totalExpected = 0, 
   totalCollected = 0, 
   defaultersCount = 0 

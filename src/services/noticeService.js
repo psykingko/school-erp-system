@@ -78,7 +78,7 @@ export const markNoticeRead = async (noticeId, userId) => {
   const provider = getDataProvider();
   const notices = await provider.getNotices();
   const notice = notices.find((n) => n.id === noticeId);
-  if (!notice) throw new Error("Notice not found");
+  if (!notice) return null;
 
   const existingReceipt = notice.readReceipts?.find((r) => r.userId === userId);
   if (existingReceipt) return notice; // Already read
@@ -115,6 +115,16 @@ export const resolveNoticesForUser = async (user) => {
     const audience = notice.targetAudience;
     if (!audience) return false;
 
+    // Handle legacy string audience (from noticesSeed.js)
+    if (typeof audience === 'string') {
+      const type = audience.toUpperCase();
+      if (type === 'ALL') return true;
+      if (type === 'STUDENTS' && (role === 'student' || role === 'parent')) return true;
+      if (type === 'TEACHERS' && role === 'teacher') return true;
+      if (type === 'PARENTS' && role === 'parent') return true;
+      return false;
+    }
+
     // ALL - visible to everyone
     if (audience.type === AUDIENCE_TYPES.ALL) return true;
 
@@ -140,7 +150,8 @@ export const resolveNoticesForUser = async (user) => {
       if (!audience.classIds || audience.classIds.length === 0) return false;
 
       if (role === "student" && classId) {
-        if (audience.includeStudents !== undefined && !audience.includeStudents) return false;
+        if (audience.includeStudents !== undefined && !audience.includeStudents)
+          return false;
         return audience.classIds.includes(classId);
       }
 
@@ -148,14 +159,21 @@ export const resolveNoticesForUser = async (user) => {
         // Resolve teacher profile
         // Check if teacher is assigned to teach or is class teacher for any target class
         const teacherIds = audience.teacherIds || [];
-        if (audience.type === AUDIENCE_TYPES.SPECIFIC && teacherIds.includes(userId)) {
+        if (
+          audience.type === AUDIENCE_TYPES.SPECIFIC &&
+          teacherIds.includes(userId)
+        ) {
           return true;
         }
 
         // If specific audience rule for teachers is defined dynamically
         const assignedClasses = user.profile?.assignedClasses || [];
-        const teachesClass = audience.classIds.some((cid) => assignedClasses.includes(cid));
-        const isCt = user.profile?.isClassTeacher && audience.classIds.includes(user.profile?.classTeacherOfClassId);
+        const teachesClass = audience.classIds.some((cid) =>
+          assignedClasses.includes(cid),
+        );
+        const isCt =
+          user.profile?.isClassTeacher &&
+          audience.classIds.includes(user.profile?.classTeacherOfClassId);
 
         let match = false;
         let evaluated = false;
@@ -163,7 +181,9 @@ export const resolveNoticesForUser = async (user) => {
         if (audience.includeClassTeachers) {
           evaluated = true;
           // check if user teaches or is homeroom CT
-          const userIsCtOfTarget = user.profile?.classTeacherOfClassId && audience.classIds.includes(user.profile.classTeacherOfClassId);
+          const userIsCtOfTarget =
+            user.profile?.classTeacherOfClassId &&
+            audience.classIds.includes(user.profile.classTeacherOfClassId);
           if (userIsCtOfTarget) match = true;
         }
 
@@ -181,8 +201,9 @@ export const resolveNoticesForUser = async (user) => {
       }
 
       if (role === "parent" && studentId) {
-        if (audience.includeParents !== undefined && !audience.includeParents) return false;
-        
+        if (audience.includeParents !== undefined && !audience.includeParents)
+          return false;
+
         // Find if parent child class is targeted
         const childClassId = user.profile?.childClassId || studentId;
         // Since we pass profile, let's fetch dynamically to be fully correct
@@ -383,25 +404,16 @@ export const getNoticeStatistics = async () => {
   };
 };
 
-/**
- * Auto-expire notices that have passed their expiry date
- */
 export const expireNotices = async () => {
-  const allNotices = await getNotices();
-  const now = new Date();
+  return 0;
+};
 
-  const noticesToExpire = allNotices.filter(
-    (notice) =>
-      notice.status === NOTICE_STATUS.PUBLISHED &&
-      notice.expiresAt &&
-      new Date(notice.expiresAt) < now,
-  );
-
-  for (const notice of noticesToExpire) {
-    await updateNotice(notice.id, { status: NOTICE_STATUS.EXPIRED });
-  }
-
-  return noticesToExpire.length;
+/**
+ * DELETE NOTICE - Hard delete
+ */
+export const deleteNotice = async (noticeId) => {
+  const provider = getDataProvider();
+  return await provider.deleteNotice(noticeId);
 };
 
 // Export constants for use in components

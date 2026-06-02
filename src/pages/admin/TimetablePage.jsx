@@ -41,6 +41,7 @@ const PERIOD_LABELS = {
   P6: "Period 6  (12:40–13:30)",
   P7: "Period 7  (13:30–14:20)",
   P8: "Period 8  (14:20–15:10)",
+  P9: "Period 9  (15:10–16:00)",
 };
 
 // ── Edit Slot Modal ──────────────────────────────────────────────────────────
@@ -427,18 +428,20 @@ const TimetablePage = () => {
 
     // Helper to resolve names
     const resolveNames = (s) => {
-      const sub = subjects.find((x) => x.id === s.subjectId);
-      const teach = teachers.find((x) => x.id === s.teacherId);
+      const sub = subjects.find((x) => x.id === s.subjectId || x.subjectId === s.subjectId);
+      const teach = teachers.find((x) => x.id === s.teacherId || x.teacherId === s.teacherId);
 
-      let resolvedSubject = s.subject || (sub ? sub.name : "");
+      let resolvedSubject = sub ? (sub.subjectName || sub.name) : s.subject;
       if (s.subjectId === "sub-homeroom") {
         resolvedSubject = "Homeroom / Class Teacher Period";
       }
 
+      let resolvedTeacher = teach ? (teach.metadata?.name || teach.teacherName || teach.name) : s.teacher;
+
       return {
         ...s,
         subject: resolvedSubject,
-        teacher: s.teacher || (teach ? teach.metadata?.name || teach.name : ""),
+        teacher: resolvedTeacher || s.teacher || "",
       };
     };
 
@@ -518,32 +521,69 @@ const TimetablePage = () => {
     refreshSchedule();
   };
 
+  const selectedClass = classes.find((c) => c.id === selectedClassId);
+
   const classOptions = useMemo(() => {
     const seen = new Set();
-    return dbTsAssignments
+    const options = [];
+
+    // 1. Try to get from TS assignments
+    dbTsAssignments
       .filter((a) => a.classId === selectedClassId)
-      .filter((a) => {
-        if (seen.has(a.subjectId)) return false;
-        seen.add(a.subjectId);
-        return true;
-      })
-      .map((a) => {
-        const sub = subjects.find((s) => s.id === a.subjectId);
-        const teach = teachers.find((t) => t.id === a.teacherId);
-        return sub && teach
-          ? {
+      .forEach((a) => {
+        if (!seen.has(a.subjectId)) {
+          seen.add(a.subjectId);
+          const sub = subjects.find((s) => s.id === a.subjectId || s.subjectId === a.subjectId);
+          const teach = teachers.find((t) => t.id === a.teacherId);
+          if (sub && teach) {
+            options.push({
               subjectId: a.subjectId,
-              subjectName: sub.name,
+              subjectName: sub.subjectName || sub.name,
               teacherId: a.teacherId,
-              teacherName: teach.metadata?.name || teach.name,
-            }
-          : null;
-      })
-      .filter(Boolean);
-  }, [selectedClassId, dbTsAssignments, subjects, teachers]);
+              teacherName: teach.metadata?.name || teach.teacherName || teach.name,
+            });
+          }
+        }
+      });
+
+    // 2. If empty, extract from current schedule
+    if (options.length === 0 && currentSchedule.length > 0) {
+      currentSchedule.forEach((slot) => {
+        if (slot.subjectId && slot.subjectId !== "break" && !seen.has(slot.subjectId)) {
+          seen.add(slot.subjectId);
+          const sub = subjects.find((s) => s.id === slot.subjectId || s.subjectId === slot.subjectId);
+          const teach = teachers.find((t) => t.id === slot.teacherId || t.teacherId === slot.teacherId);
+          
+          options.push({
+            subjectId: slot.subjectId,
+            subjectName: sub ? (sub.subjectName || sub.name) : slot.subject,
+            teacherId: slot.teacherId,
+            teacherName: teach ? (teach.metadata?.name || teach.teacherName || teach.name) : slot.teacher,
+          });
+        }
+      });
+    }
+
+    // 3. If STILL empty, use subjects applicable to this class level
+    if (options.length === 0 && selectedClass) {
+      const classLevel = selectedClass.grade || selectedClass.level || selectedClass.classLevel;
+      subjects.forEach(sub => {
+        if (sub.applicableClasses?.includes(classLevel) && !seen.has(sub.subjectId || sub.id)) {
+          seen.add(sub.subjectId || sub.id);
+          options.push({
+            subjectId: sub.subjectId || sub.id,
+            subjectName: sub.subjectName || sub.name,
+            teacherId: "teach-001",
+            teacherName: "Assigned Teacher",
+          });
+        }
+      });
+    }
+
+    return options;
+  }, [selectedClassId, dbTsAssignments, subjects, teachers, currentSchedule, selectedClass]);
 
   const classNamesMap = Object.fromEntries(classes.map((c) => [c.id, c.name]));
-  const selectedClass = classes.find((c) => c.id === selectedClassId);
 
   const handlePublish = async () => {
     setIsPublishing(true);

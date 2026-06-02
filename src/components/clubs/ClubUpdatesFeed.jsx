@@ -36,52 +36,54 @@ export default function ClubUpdatesFeed({ updates = [], onPostUpdate }) {
         </h4>
       </div>
 
-      {/* Post a New Update Form */}
-      <form onSubmit={handlePostSubmit} className="space-y-3 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
-        <div className="flex items-center gap-1.5 mb-1">
-          <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-          <span className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">Post Co-Curricular Update</span>
-        </div>
-
-        {errorMsg && (
-          <div className="p-2 bg-rose-50 border border-rose-100 rounded-xl text-[9px] font-black text-rose-700">
-            {errorMsg}
+      {/* Post a New Update Form (Only visible to teachers) */}
+      {onPostUpdate && (
+        <form onSubmit={handlePostSubmit} className="space-y-3 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+            <span className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">Post Co-Curricular Update</span>
           </div>
-        )}
 
-        <div className="space-y-1">
-          <input
-            type="text"
-            required
-            placeholder="Announcements title..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xs font-bold text-gray-700 bg-white border border-gray-100 p-2 rounded-lg focus:outline-none focus:border-blue-300 transition-colors"
-          />
-        </div>
+          {errorMsg && (
+            <div className="p-2 bg-rose-50 border border-rose-100 rounded-xl text-[9px] font-black text-rose-700">
+              {errorMsg}
+            </div>
+          )}
 
-        <div className="space-y-2">
-          <textarea
-            required
-            placeholder="Type meeting reminders, instructions, or competition preparation notices here..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={2}
-            className="w-full text-xs font-bold text-gray-700 bg-white border border-gray-100 p-2 rounded-lg focus:outline-none focus:border-blue-300 transition-colors resize-none"
-          />
-        </div>
+          <div className="space-y-1">
+            <input
+              type="text"
+              required
+              placeholder="Announcements title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full text-xs font-bold text-gray-700 bg-white border border-gray-100 p-2 rounded-lg focus:outline-none focus:border-blue-300 transition-colors"
+            />
+          </div>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex items-center gap-1 text-[9px] font-black bg-[#03045e] hover:bg-[#0077b6] text-white disabled:opacity-50 px-3.5 py-1.5 rounded-lg shadow-sm transition-all uppercase tracking-widest"
-          >
-            <Send className="w-2.5 h-2.5" />
-            {submitting ? "Publishing..." : "Publish"}
-          </button>
-        </div>
-      </form>
+          <div className="space-y-2">
+            <textarea
+              required
+              placeholder="Type meeting reminders, instructions, or competition preparation notices here..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={2}
+              className="w-full text-xs font-bold text-gray-700 bg-white border border-gray-100 p-2 rounded-lg focus:outline-none focus:border-blue-300 transition-colors resize-none"
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center gap-1 text-[9px] font-black bg-[#03045e] hover:bg-[#0077b6] text-white disabled:opacity-50 px-3.5 py-1.5 rounded-lg shadow-sm transition-all uppercase tracking-widest"
+            >
+              <Send className="w-2.5 h-2.5" />
+              {submitting ? "Publishing..." : "Publish"}
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Feed List */}
       <div className="space-y-4">

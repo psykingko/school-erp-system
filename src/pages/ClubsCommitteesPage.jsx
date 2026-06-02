@@ -15,7 +15,8 @@ import {
   ExternalLink,
   PlusCircle,
   MinusCircle,
-  AlertCircle
+  AlertCircle,
+  Megaphone
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { clubsService } from "../services/clubsService";
@@ -23,6 +24,7 @@ import { useStudent } from "../context/StudentContext";
 import MainCard from "../components/MainCard";
 import HelperButton from "../components/HelperButton";
 import HelperPopup from "../components/HelperPopup";
+import ClubDetailPanel from "../components/clubs/ClubDetailPanel";
 
 const logoMap = {
   cpu: Cpu,
@@ -44,6 +46,7 @@ export default function ClubsCommitteesPage() {
   const [coordinators, setCoordinators] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedClub, setSelectedClub] = useState(null);
   
   const { activeStudentId } = useStudent();
   const studentId = activeStudentId || 'stud-001';
@@ -61,17 +64,40 @@ export default function ClubsCommitteesPage() {
       for (const cid of joinedIds) {
         const evs = await clubsService.getClubEvents(cid);
         allEvents.push(...evs);
+        
+        const updates = await clubsService.getClubUpdates(cid);
+        
+        const clubObj = clubs.find(c => c.id === cid);
+        if (clubObj) {
+          clubObj.activitiesCount = evs.length;
+          clubObj.advisoriesCount = updates.length;
+        }
       }
       setActivities(allEvents);
 
       // 3. Populate fallback faculty coordinators list for all clubs
-      const resolvedCoordinators = clubs.map(c => ({
-        id: `fac-${c.id}`,
-        name: c.coordinator || 'Faculty Coordinator',
-        department: c.category || 'Co-Curricular',
-        email: `${c.coordinator?.toLowerCase().replace(/\s/g, '.')}@edudash.edu`,
-        timings: 'Mon, Wed: 3:30 PM - 5:00 PM'
-      }));
+      const validClubsWithCoords = clubs.filter(
+        c => c.coordinator && 
+             !c.coordinator.toLowerCase().includes('faculty member') && 
+             !c.coordinator.toLowerCase().includes('faculty coordinator')
+      );
+      
+      const uniqueNames = new Set();
+      const resolvedCoordinators = [];
+      
+      validClubsWithCoords.forEach(c => {
+        if (!uniqueNames.has(c.coordinator)) {
+          uniqueNames.add(c.coordinator);
+          resolvedCoordinators.push({
+            id: `fac-${c.id}`,
+            name: c.coordinator,
+            department: c.category || 'Co-Curricular',
+            email: `${c.coordinator.toLowerCase().replace(/\s/g, '.').replace(/[^a-z.]/g, '')}@edudash.edu`,
+            timings: 'Mon, Wed: 3:30 PM - 5:00 PM'
+          });
+        }
+      });
+      
       setCoordinators(resolvedCoordinators);
     } catch (err) {
       console.error("Failed to load student club dataset:", err);
@@ -141,8 +167,18 @@ export default function ClubsCommitteesPage() {
 
       <div className="grid grid-cols-12 gap-6 items-start">
         <div className="col-span-12 lg:col-span-8 space-y-8">
-          {/* My Memberships */}
-          <section>
+          {selectedClub ? (
+            <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+              <ClubDetailPanel 
+                club={selectedClub} 
+                onBack={() => setSelectedClub(null)} 
+                isReadOnly={true}
+              />
+            </div>
+          ) : (
+            <>
+              {/* My Memberships */}
+              <section>
             <div className="flex items-center justify-between mb-4 px-1">
               <h2 className="text-lg font-black text-[#03045e] flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-[#caf0f8] flex items-center justify-center text-[#0077b6]">
@@ -170,13 +206,19 @@ export default function ClubsCommitteesPage() {
                           <Icon size={22} />
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-black px-2.5 py-1 rounded-lg bg-[#00b4d8]/10 text-[#00b4d8] uppercase tracking-wider">
+                          <button
+                            onClick={() => setSelectedClub(club)}
+                            className="text-[9px] font-black px-2.5 py-1.5 rounded-lg bg-[#03045e] text-white uppercase tracking-wider hover:bg-[#0077b6] shadow-sm transition-colors"
+                          >
+                            View Details
+                          </button>
+                          <span className="text-[9px] font-black px-2.5 py-1.5 rounded-lg bg-[#00b4d8]/10 text-[#00b4d8] uppercase tracking-wider hidden sm:inline-block">
                             {club.category}
                           </span>
                           <button
                             onClick={() => handleLeaveClub(club.id)}
                             title="Leave Club"
-                            className="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            className="p-1.5 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                           >
                             <MinusCircle size={16} />
                           </button>
@@ -185,9 +227,26 @@ export default function ClubsCommitteesPage() {
                       <div className="flex-1">
                         <h3 className="text-lg font-black text-[#03045e] mb-0.5">{club.name}</h3>
                         <p className="text-[10px] font-black text-[#00b4d8] mb-3 uppercase tracking-[0.1em]">{club.role || 'Member'}</p>
-                        <p className="text-xs text-gray-500 line-clamp-2 mb-5 leading-relaxed font-medium">
+                        <p className="text-xs text-gray-500 line-clamp-2 mb-4 leading-relaxed font-medium">
                           {club.description}
                         </p>
+                        
+                        <div className="flex items-center gap-5 mb-4">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar size={15} color="#8C9EB5" strokeWidth={2.5} />
+                            <span className="text-[11px] font-black text-[#8C9EB5] uppercase tracking-wider pt-[2px]">Activities</span>
+                            <span className="flex items-center justify-center min-w-[22px] h-[22px] rounded-full bg-slate-50 text-[10px] font-black text-[#8C9EB5] border border-slate-100 ml-1">
+                              {club.activitiesCount || 0}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Megaphone size={15} color="#8C9EB5" strokeWidth={2.5} />
+                            <span className="text-[11px] font-black text-[#8C9EB5] uppercase tracking-wider pt-[2px]">Advisories</span>
+                            <span className="flex items-center justify-center min-w-[22px] h-[22px] rounded-full bg-slate-50 text-[10px] font-black text-[#8C9EB5] border border-slate-100 ml-1">
+                              {club.advisoriesCount || 0}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-50 mt-auto">
@@ -260,6 +319,8 @@ export default function ClubsCommitteesPage() {
               )}
             </div>
           </section>
+            </>
+          )}
         </div>
 
         {/* Sidebar Activities and Coordinators */}

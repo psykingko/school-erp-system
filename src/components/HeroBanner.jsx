@@ -21,7 +21,7 @@ const titleVariants = {
   },
 };
 
-function HeroBanner({ student }) {
+function HeroBanner({ student, academic }) {
   const { t } = useLanguage();
   return (
     <motion.div
@@ -60,11 +60,24 @@ function HeroBanner({ student }) {
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight">
             {t("hero.welcome")}, {student?.fullName || "Student"}
           </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span className="text-xs md:text-sm font-extrabold text-white/90 bg-white/10 px-2.5 py-1 rounded-lg backdrop-blur-md">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="text-xs md:text-sm font-extrabold text-white/90 bg-white/15 px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5">
+              <span className="opacity-70 font-semibold text-[10px] uppercase tracking-widest">ID</span>
               {student?.admissionNumber}
             </span>
-            <span className="text-xs md:text-sm font-bold text-white/70">
+            {academic && (
+              <>
+                <span className="text-xs md:text-sm font-extrabold text-white/90 bg-white/15 px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5">
+                  <span className="opacity-70 font-semibold text-[10px] uppercase tracking-widest">Class</span>
+                  {academic?.class} {academic?.section}
+                </span>
+                <span className="text-xs md:text-sm font-extrabold text-white/90 bg-white/15 px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5">
+                  <span className="opacity-70 font-semibold text-[10px] uppercase tracking-widest">CT</span>
+                  {academic?.classTeacher}
+                </span>
+              </>
+            )}
+            <span className="text-xs md:text-sm font-bold text-white/70 ml-1">
               {student?.email}
             </span>
           </div>

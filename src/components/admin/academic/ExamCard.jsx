@@ -15,7 +15,7 @@ const ExamCard = ({
   time, 
   maxMarks = 100, 
   room,
-  className = "Class XI-A" 
+  className = "Class 11-A" 
 }) => {
   return (
     <MainCard className="p-5 hover:shadow-md transition-shadow bg-white border border-[#caf0f8]/50 shadow-sm relative overflow-hidden flex flex-col justify-between">

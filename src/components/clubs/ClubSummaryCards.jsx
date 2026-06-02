@@ -27,7 +27,7 @@ export default function ClubSummaryCards({ clubs = [], totalMembers = 0, upcomin
     },
     {
       title: "Allowed Classes",
-      value: "XI (All Sections)",
+      value: "11 (All Sections)",
       icon: Award,
       color: "bg-purple-50 text-purple-600 border-purple-100",
       description: "Institutional eligibility scope"

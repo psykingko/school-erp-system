@@ -65,8 +65,8 @@ const AttendanceOverviewPage = () => {
       "LKG",
       "UKG",
       ...Array.from({ length: 12 }, (_, i) => String(i + 1)),
-      "XI",
-      "XII",
+      "11",
+      "12",
     ];
     const seen = new Set(classes.map((c) => c.level).filter(Boolean));
     return ORDER.filter((l) => seen.has(l));
@@ -304,19 +304,19 @@ const AttendanceOverviewPage = () => {
               {[
                 {
                   name: "Rahul Kumar",
-                  class: "XI-B",
+                  class: "11-B",
                   parent: "Rajesh Kumar",
                   phone: "+91 98765 43210",
                 },
                 {
                   name: "Ashish Sharma",
-                  class: "XI-A",
+                  class: "11-A",
                   parent: "Ravi Sharma",
                   phone: "+91 99999 88888",
                 },
                 {
                   name: "Nikita Dey",
-                  class: "XI-C",
+                  class: "11-C",
                   parent: "Anoop Dey",
                   phone: "+91 98765 43215",
                 },

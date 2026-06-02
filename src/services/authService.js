@@ -5,11 +5,7 @@
 
 import { getDataProvider } from "../data";
 import { ROLES } from "../auth/roles";
-import {
-  extractLevel,
-  extractSection,
-  formatClassLevel,
-} from "../utils/classIdentity";
+import { formatClassLevel } from "../utils/classIdentity";
 
 /**
  * Authenticates a user with username and password.
@@ -53,15 +49,15 @@ export const authenticate = async ({ role, username, password }) => {
 
   if (authUser.role === ROLES.STUDENT) {
     const students = await provider.getStudents();
-    entity = students.find((s) => s.id === authUser.linkedEntityId);
+    entity = students.find((s) => s.id === authUser.linkedEntityId || s.studentId === authUser.linkedEntityId);
     fullName = entity?.name || "Student";
   } else if (authUser.role === ROLES.TEACHER) {
     const teachers = await provider.getTeachers();
-    entity = teachers.find((t) => t.id === authUser.linkedEntityId);
-    fullName = entity?.name || "Teacher";
+    entity = teachers.find((t) => t.id === authUser.linkedEntityId || t.teacherId === authUser.linkedEntityId);
+    fullName = entity?.teacherName || entity?.name || "Teacher";
   } else if (authUser.role === ROLES.PARENT) {
     const parents = await provider.getParents();
-    entity = parents.find((p) => p.id === authUser.linkedEntityId);
+    entity = parents.find((p) => p.id === authUser.linkedEntityId || p.parentId === authUser.linkedEntityId);
     fullName = entity?.name || "Parent";
   } else if (authUser.role === ROLES.ADMIN) {
     fullName = "System Administrator";
@@ -117,7 +113,6 @@ export const getDemoAccounts = async () => {
   const studentsList = await provider.getStudents();
   const teachersList = await provider.getTeachers();
   const parentsList = await provider.getParents();
-  const classesList = await provider.getClasses();
 
   // Group by role
   const demoAccounts = {
@@ -133,54 +128,59 @@ export const getDemoAccounts = async () => {
     const extraMeta = {};
 
     if (user.role === ROLES.STUDENT) {
-      const student = studentsList.find((s) => s.id === user.linkedEntityId);
+      const student = studentsList.find(
+        (s) =>
+          s.studentId === user.linkedEntityId || s.id === user.linkedEntityId,
+      );
       displayName = student ? student.name : user.username;
       if (student) {
-        description = `Adm No. ${student.admissionNo}`;
-        if (student.classId) {
-          const displayLevel = formatClassLevel(extractLevel(student.classId));
-          const section = extractSection(student.classId);
-          description += ` · Class ${displayLevel}-${section}`;
-          extraMeta.classLevel = extractLevel(student.classId).toLowerCase();
-          extraMeta.section = section.toUpperCase();
+        description = `Adm No. ${student.studentId}`;
+        // Use flattened classLevel and section directly
+        if (student.classLevel) {
+          const displayLevel = formatClassLevel(student.classLevel);
+          description += ` · Class ${displayLevel}-${student.section}`;
+          extraMeta.classLevel = student.classLevel.toLowerCase();
+          extraMeta.section = student.section?.toUpperCase();
         }
       }
     } else if (user.role === ROLES.TEACHER) {
-      const teacher = teachersList.find((t) => t.id === user.linkedEntityId);
-      displayName = teacher
-        ? teacher.metadata?.name || teacher.name || user.username
-        : user.username;
-      const designation =
-        teacher?.metadata?.designation || teacher?.designation || "";
-      const ctClass = classesList.find(
-        (c) => c.classTeacherId === user.linkedEntityId,
+      const teacher = teachersList.find(
+        (t) =>
+          t.teacherId === user.linkedEntityId || t.id === user.linkedEntityId,
       );
-      extraMeta.isClassTeacher = !!ctClass;
-      extraMeta.classTeacherOfClassId = ctClass?.id || null;
-      extraMeta.assignedClassIds =
-        teacher?.assignedClassIds || teacher?.assignedClasses || [];
+      displayName = teacher
+        ? teacher.teacherName || teacher.name || user.username
+        : user.username;
+      const designation = teacher?.designation || "";
+      // Use flattened isClassTeacher field directly
+      extraMeta.isClassTeacher = teacher?.isClassTeacher || false;
+      extraMeta.classTeacherOfClassId = teacher?.className || null;
+      extraMeta.assignedClassIds = teacher?.className
+        ? [teacher.className]
+        : [];
       description = extraMeta.isClassTeacher
         ? `Class Teacher · ${designation}`
         : designation || "Subject Teacher";
     } else if (user.role === ROLES.PARENT) {
-      const parent = parentsList.find((p) => p.id === user.linkedEntityId);
+      const parent = parentsList.find(
+        (p) =>
+          p.parentId === user.linkedEntityId || p.id === user.linkedEntityId,
+      );
       displayName = parent ? parent.name : user.username;
 
+      // Find children by parentId (using childIds or matching parentId)
       const children = studentsList.filter(
-        (s) => s.parentIds && s.parentIds.includes(user.linkedEntityId),
+        (s) =>
+          s.parentId === user.linkedEntityId || s.parentId === parent?.parentId,
       );
       if (children.length > 0) {
         const childInfo = children
-          .map((c) => `${c.name} (${c.admissionNo})`)
+          .map((c) => `${c.name} (${c.studentId})`)
           .join(" & ");
         description = `Parent of ${childInfo}`;
-        if (children[0].classId) {
-          extraMeta.childClassLevel = extractLevel(
-            children[0].classId,
-          ).toLowerCase();
-          extraMeta.childSection = extractSection(
-            children[0].classId,
-          ).toUpperCase();
+        if (children[0].classLevel) {
+          extraMeta.childClassLevel = children[0].classLevel.toLowerCase();
+          extraMeta.childSection = children[0].section?.toUpperCase();
         }
       }
     } else if (user.role === ROLES.ADMIN) {

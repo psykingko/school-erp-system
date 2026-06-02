@@ -27,6 +27,7 @@ import MainCard from "../../components/MainCard";
 import { getDataProvider } from "../../data";
 import { getStageFromLevel } from "../../data/academicStages";
 import { getStudentSubjects } from "../../data/subjectArchitecture";
+import { normalizeClassLevel } from "../../utils/classIdentity";
 import OngoingOperationsDashboard from "../../components/admin/academic/examinations/OngoingOperationsDashboard";
 import EvaluationDashboard from "../../components/admin/academic/examinations/evaluation/EvaluationDashboard";
 import PublicationDashboard from "../../components/admin/academic/examinations/publication/PublicationDashboard";
@@ -270,7 +271,7 @@ const ExaminationsPage = () => {
     });
   };
 
-  // Group classes by their level label (e.g. "Nursery", "1", "XI") — NOT by cls.name
+  // Group classes by their level label (e.g. "Nursery", "1", "11") — NOT by cls.name
   // cls.name includes the section suffix ("Nursery-A") and would create one row per section.
   // cls.level is the canonical field added to the seed for exactly this purpose.
   const classesByLevel = useMemo(() => {
@@ -280,7 +281,7 @@ const ExaminationsPage = () => {
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(cls);
     });
-    // Preserve school order: Nursery, LKG, UKG, 1-10, XI, XII
+    // Preserve school order: Nursery, LKG, UKG, 1-10, 11, 12
     const ORDER = [
       "Nursery",
       "LKG",
@@ -295,8 +296,8 @@ const ExaminationsPage = () => {
       "8",
       "9",
       "10",
-      "XI",
-      "XII",
+      "11",
+      "12",
     ];
     return Object.fromEntries(
       ORDER.filter((k) => grouped[k]).map((k) => [k, grouped[k]]),
@@ -453,7 +454,7 @@ const ExaminationsPage = () => {
 
       // Invalidate student dashboard cache so new notices appear immediately
       const { clearDeferredCache } =
-        await import("../../services/studentDashboardService");
+        await import("../../services/studentService");
       // Clear cache for all students in target classes
       const provider = getDataProvider();
       const allStudents = await provider.getStudents();
@@ -964,9 +965,7 @@ const ExaminationsPage = () => {
   // (same source as compliance validator — avoids streamApplicability seed bug)
   const classSubjects = useMemo(() => {
     if (!selectedClassId || !activeClass) return [];
-    let level = activeClass.level || "";
-    if (level === "XI") level = "11";
-    if (level === "XII") level = "12";
+    let level = normalizeClassLevel(activeClass.level || "");
     const canonical = getStudentSubjects(level, activeClass.streamId || null);
     if (canonical.length > 0) {
       return canonical

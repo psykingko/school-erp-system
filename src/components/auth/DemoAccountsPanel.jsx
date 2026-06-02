@@ -3,6 +3,7 @@ import { getDemoAccounts } from "../../services/authService";
 import CredentialCard from "./CredentialCard";
 import { ROLES } from "../../auth/roles";
 import { Users, GraduationCap, User, ShieldCheck } from "lucide-react";
+import { extractLevel, extractSection, formatClassLevel } from "../../utils/classIdentity";
 
 const ROLE_CONFIG = {
   [ROLES.STUDENT]: {
@@ -48,23 +49,6 @@ const CLASS_LEVELS = [
   "11",
   "12",
 ];
-const CLASS_LEVEL_LABELS = {
-  nursery: "Nursery",
-  lkg: "LKG",
-  ukg: "UKG",
-  1: "Class 1",
-  2: "Class 2",
-  3: "Class 3",
-  4: "Class 4",
-  5: "Class 5",
-  6: "Class 6",
-  7: "Class 7",
-  8: "Class 8",
-  9: "Class 9",
-  10: "Class 10",
-  11: "Class XI",
-  12: "Class XII",
-};
 const SECTIONS = ["A", "B", "C", "D"];
 
 const selectCls =
@@ -130,8 +114,7 @@ const DemoAccountsPanel = ({ selectedRole, onSelectAccount }) => {
               const target = `class-${teacherFilter.level}${teacherFilter.section.toLowerCase()}`;
               return ctId === target;
             }
-            const m = ctId.match(/^class-(nursery|lkg|ukg|\d+)([a-d])$/i);
-            return !!m && m[1].toLowerCase() === teacherFilter.level;
+            return extractLevel(ctId).toLowerCase() === teacherFilter.level;
           }
           // For Subject Teachers / All: match any class they teach
           const ids = a.assignedClassIds || [];
@@ -140,8 +123,7 @@ const DemoAccountsPanel = ({ selectedRole, onSelectAccount }) => {
             return ids.includes(target);
           }
           return ids.some((id) => {
-            const m = id.match(/^class-(nursery|lkg|ukg|\d+)([a-d])$/i);
-            return m && m[1].toLowerCase() === teacherFilter.level;
+            return extractLevel(id).toLowerCase() === teacherFilter.level;
           });
         })();
         return typeOk && classOk;
@@ -195,7 +177,7 @@ const DemoAccountsPanel = ({ selectedRole, onSelectAccount }) => {
                     <option value="">All Classes</option>
                     {CLASS_LEVELS.map((l) => (
                       <option key={l} value={l}>
-                        {CLASS_LEVEL_LABELS[l]}
+                        {["nursery", "lkg", "ukg"].includes(l) ? l.toUpperCase() : `Class ${formatClassLevel(l)}`}
                       </option>
                     ))}
                   </select>
@@ -233,7 +215,7 @@ const DemoAccountsPanel = ({ selectedRole, onSelectAccount }) => {
                     <option value="">All Classes</option>
                     {CLASS_LEVELS.map((l) => (
                       <option key={l} value={l}>
-                        {CLASS_LEVEL_LABELS[l]}
+                        {["nursery", "lkg", "ukg"].includes(l) ? l.toUpperCase() : `Class ${formatClassLevel(l)}`}
                       </option>
                     ))}
                   </select>
@@ -292,7 +274,7 @@ const DemoAccountsPanel = ({ selectedRole, onSelectAccount }) => {
                       <option value="">All Classes</option>
                       {CLASS_LEVELS.map((l) => (
                         <option key={l} value={l}>
-                          {CLASS_LEVEL_LABELS[l]}
+                          {["nursery", "lkg", "ukg"].includes(l) ? l.toUpperCase() : `Class ${formatClassLevel(l)}`}
                         </option>
                       ))}
                     </select>

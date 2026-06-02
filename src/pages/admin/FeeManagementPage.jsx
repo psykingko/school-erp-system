@@ -22,12 +22,23 @@ import AdminSectionCard from "../../components/admin/AdminSectionCard";
 import AdminDataTable from "../../components/admin/AdminDataTable";
 import AdminEditForm from "../../components/admin/AdminEditForm";
 import StatusBadge from "../../components/admin/operations/StatusBadge";
+import ConfirmationModal from "../../components/shared/ConfirmationModal";
+import ToastNotification from "../../components/shared/ToastNotification";
+import LoadingSkeleton from "../../components/shared/LoadingSkeleton";
+import ChartWrapper from "../../components/shared/ChartWrapper";
 import { getDataProvider } from "../../data";
+import { formatClassLevel } from "../../utils/classIdentity";
+import {
+  addFee,
+  deleteFee,
+  getFeeDependencies,
+} from "../../services/financeService";
 
 const LEVEL_DISPLAY = (level) => {
   if (!level) return "";
-  if (["Nursery", "LKG", "UKG"].includes(level)) return level;
-  return `Class ${level}`;
+  const displayLevel = formatClassLevel(level);
+  if (["Nursery", "LKG", "UKG"].includes(displayLevel)) return displayLevel;
+  return `Class ${displayLevel}`;
 };
 
 // Fee months - monthly billing cycle (April-March academic year)
@@ -118,7 +129,7 @@ const STAGE_LABEL = {
   primary: "Primary (Class 1–5)",
   middle: "Middle (Class 6–8)",
   secondary: "Secondary (Class 9–10)",
-  senior_secondary: "Senior Secondary (Class XI–XII)",
+  senior_secondary: "Senior Secondary (Class 11–12)",
 };
 
 // ─── FeeStructureTab component ────────────────────────────────────────────────
@@ -367,16 +378,33 @@ const FeeManagementPage = () => {
   const [selectedSection, setSelectedSection] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Edit states
   const [editFee, setEditFee] = useState(null);
-  const [successBanner, setSuccessBanner] = useState("");
+  const [addFeeOpen, setAddFeeOpen] = useState(false);
+
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    feeId: null,
+    feeLabel: "",
+    warning: "",
+  });
+
+  // Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const provider = getDataProvider();
       const [allFees, allStudents, allClasses, allStructures] =
@@ -392,6 +420,8 @@ const FeeManagementPage = () => {
       setFeeStructures(allStructures || []);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -422,11 +452,88 @@ const FeeManagementPage = () => {
       const updatedFees = await provider.getFees();
       setFees(updatedFees || []);
       setEditFee(null);
-      setSuccessBanner("Payment recorded successfully!");
-      setTimeout(() => setSuccessBanner(""), 3000);
+      setToast({
+        show: true,
+        message: "Payment recorded successfully",
+        type: "success",
+      });
     } catch (e) {
       console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to record payment",
+        type: "error",
+      });
     }
+  };
+
+  const handleAddFee = async (formData) => {
+    try {
+      const newFee = await addFee(formData);
+      // Optimistic update
+      setFees((prev) => [...prev, newFee]);
+      setAddFeeOpen(false);
+      setToast({
+        show: true,
+        message: "Fee record created successfully",
+        type: "success",
+      });
+    } catch (e) {
+      console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to create fee record",
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeleteClick = async (fee) => {
+    const dependencies = await getFeeDependencies(fee.id);
+    const warnings = [];
+    if (dependencies.hasPayments)
+      warnings.push("This fee has payment records.");
+
+    setDeleteConfirm({
+      isOpen: true,
+      feeId: fee.id,
+      feeLabel: `${fee.studentName} - ${fee.monthLabel}`,
+      warning: warnings.length > 0 ? warnings.join(" ") : "",
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deleteFee(deleteConfirm.feeId);
+      // Optimistic update (hard delete)
+      setFees((prev) => prev.filter((f) => f.id !== deleteConfirm.feeId));
+      setDeleteConfirm({
+        isOpen: false,
+        feeId: null,
+        feeLabel: "",
+        warning: "",
+      });
+      setToast({
+        show: true,
+        message: "Fee record deleted successfully",
+        type: "success",
+      });
+    } catch (e) {
+      console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to delete fee record",
+        type: "error",
+      });
+    }
+  };
+
+  // Form defaults (in page, NOT separate utils file)
+  const feeFormDefaults = {
+    studentId: "",
+    totalAmount: "0",
+    paidAmount: "0",
+    status: "Unpaid",
   };
 
   // Derive fee records with student/class info — show consolidated monthly invoices
@@ -484,8 +591,6 @@ const FeeManagementPage = () => {
       "LKG",
       "UKG",
       ...Array.from({ length: 12 }, (_, i) => String(i + 1)),
-      "XI",
-      "XII",
     ];
     const seen = new Set(classes.map((c) => c.level).filter(Boolean));
     return ORDER.filter((l) => seen.has(l));
@@ -553,6 +658,61 @@ const FeeManagementPage = () => {
       ? ((totalCollected / totalExpected) * 100).toFixed(1)
       : "0.0";
 
+  // Component-level analytics (no service, read-only derivation)
+  const analytics = useMemo(() => {
+    const paidFees = fees.filter((f) => f.status === "Paid");
+    const pendingFees = fees.filter((f) => f.status !== "Paid");
+    const overdueFees = fees.filter((f) => f.status === "Overdue");
+
+    // Status distribution
+    const statusCounts = fees.reduce((acc, f) => {
+      acc[f.status] = (acc[f.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Month distribution
+    const monthCounts = fees.reduce((acc, f) => {
+      acc[f.monthId] = (acc[f.monthId] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Class level distribution
+    const levelCounts = fees.reduce((acc, f) => {
+      acc[f.classLevel] = (acc[f.classLevel] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      total: fees.length,
+      paid: paidFees.length,
+      pending: pendingFees.length,
+      overdue: overdueFees.length,
+      totalExpected,
+      totalCollected,
+      totalPending,
+      collectionRate: parseFloat(collectionPercent),
+      statusCounts,
+      monthCounts,
+      levelCounts,
+    };
+  }, [fees, collectionPercent]);
+
+  // Chart data (component-level, no service)
+  const statusDistributionData = useMemo(() => {
+    return Object.entries(analytics.statusCounts).map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value,
+    }));
+  }, [analytics.statusCounts]);
+
+  const collectionData = useMemo(
+    () => [
+      { name: "Collected", value: analytics.totalCollected },
+      { name: "Pending", value: analytics.totalPending },
+    ],
+    [analytics.totalCollected, analytics.totalPending],
+  );
+
   const feeFields = [
     {
       name: "paidAmount",
@@ -561,6 +721,31 @@ const FeeManagementPage = () => {
       required: true,
     },
   ];
+
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-6 pb-12"
+      >
+        <AdminPageHeader
+          title="Fee Management"
+          description="Manage fee structure, generate demand, track collections, and issue receipts."
+          breadcrumbs={["Admin Portal", "Finance", "Fee Management"]}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <LoadingSkeleton variant="stat-card" />
+          <LoadingSkeleton variant="stat-card" />
+          <LoadingSkeleton variant="stat-card" />
+        </div>
+        <AdminSectionCard>
+          <LoadingSkeleton variant="table-row" count={5} />
+        </AdminSectionCard>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -573,13 +758,24 @@ const FeeManagementPage = () => {
         title="Fee Management"
         description="Manage fee structure, generate demand, track collections, and issue receipts."
         breadcrumbs={["Admin Portal", "Finance", "Fee Management"]}
+        actionButton={
+          <button
+            onClick={() => setAddFeeOpen(true)}
+            className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] text-white px-5 py-2.5 rounded-2xl shadow-sm text-xs font-black transition-colors"
+          >
+            <IndianRupee size={16} />
+            <span>ADD FEE RECORD</span>
+          </button>
+        }
       />
 
-      {successBanner && (
-        <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-3xl text-emerald-700 text-xs font-black shadow-sm animate-bounce">
-          {successBanner}
-        </div>
-      )}
+      {/* Toast Notification */}
+      <ToastNotification
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
 
       {/* Tab Navigation */}
       <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-1">
@@ -621,7 +817,7 @@ const FeeManagementPage = () => {
                 </span>
               </div>
               <p className="text-2xl font-black text-emerald-600">
-                ₹{totalCollected.toLocaleString()}
+                ₹{analytics.totalCollected.toLocaleString()}
               </p>
             </div>
             <div className="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
@@ -632,7 +828,7 @@ const FeeManagementPage = () => {
                 </span>
               </div>
               <p className="text-2xl font-black text-rose-600">
-                ₹{totalPending.toLocaleString()}
+                ₹{analytics.totalPending.toLocaleString()}
               </p>
             </div>
             <div className="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
@@ -643,7 +839,7 @@ const FeeManagementPage = () => {
                 </span>
               </div>
               <p className="text-2xl font-black text-[#0077b6]">
-                {collectionPercent}%
+                {analytics.collectionRate}%
               </p>
             </div>
             <div className="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
@@ -654,10 +850,12 @@ const FeeManagementPage = () => {
                 </span>
               </div>
               <p className="text-2xl font-black text-amber-600">
-                {defaultersCount}
+                {analytics.pending}
               </p>
             </div>
           </div>
+
+
 
           {/* Fee Collection Table */}
           <AdminSectionCard>
@@ -796,13 +994,13 @@ const FeeManagementPage = () => {
                     </td>
                     <td className="py-3 px-2 text-slate-500">{fee.dueDate}</td>
                     <td className="py-3 px-2 text-right font-black">
-                      {fee.totalAmount.toLocaleString()}
+                      {(fee.totalAmount || 0).toLocaleString()}
                     </td>
                     <td className="py-3 px-2 text-right text-emerald-600 font-black">
-                      {fee.paidAmount.toLocaleString()}
+                      {(fee.paidAmount || 0).toLocaleString()}
                     </td>
                     <td className="py-3 px-2 text-right text-rose-600 font-black">
-                      {fee.balance.toLocaleString()}
+                      {(fee.balance || 0).toLocaleString()}
                     </td>
                     <td className="py-3 px-2">
                       <StatusBadge status={fee.status} />
@@ -815,6 +1013,13 @@ const FeeManagementPage = () => {
                           title="Record Payment"
                         >
                           PAY
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(fee)}
+                          className="text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded-lg text-[9px] font-black"
+                          title="Delete Fee Record"
+                        >
+                          <X size={11} />
                         </button>
                         <button
                           className="text-amber-600 hover:text-amber-700 bg-amber-50 px-2 py-1 rounded-lg text-[9px] font-black"
@@ -846,6 +1051,56 @@ const FeeManagementPage = () => {
           />
         </AdminSectionCard>
       )}
+
+      {/* Add Fee Modal */}
+      <AdminEditForm
+        isOpen={addFeeOpen}
+        onClose={() => setAddFeeOpen(false)}
+        title="Add Fee Record"
+        data={feeFormDefaults}
+        fields={[
+          {
+            name: "studentId",
+            label: "Student",
+            type: "select",
+            options: students.map((s) => s.id),
+            required: true,
+          },
+          {
+            name: "totalAmount",
+            label: "Total Amount (₹)",
+            type: "text",
+            required: true,
+          },
+          { name: "paidAmount", label: "Paid Amount (₹)", type: "text" },
+          {
+            name: "status",
+            label: "Status",
+            type: "select",
+            options: ["Unpaid", "Partially Paid", "Paid"],
+          },
+        ]}
+        onSubmit={handleAddFee}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Fee Record"
+        message={`Are you sure you want to delete ${deleteConfirm.feeLabel}? This action cannot be undone.`}
+        warningText={deleteConfirm.warning}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() =>
+          setDeleteConfirm({
+            isOpen: false,
+            feeId: null,
+            feeLabel: "",
+            warning: "",
+          })
+        }
+        confirmButtonText="Delete"
+        cancelButtonText="Cancel"
+      />
 
       {activeTab === "demand" && (
         <AdminSectionCard>

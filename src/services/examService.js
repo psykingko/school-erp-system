@@ -1,8 +1,39 @@
 import { getDataProvider } from "../data";
 import { getSubjectsForStudent } from "./academicsService";
-import { emitEvent, WORKFLOW_EVENTS } from "./workflowEvents";
-import { getStudentSubjects } from "../data/subjectArchitecture";
-import { normalizeClassLevel } from "../utils/classIdentity";
+
+// Helpers for date formatting
+const formatDateString = (dateStr) => {
+  if (!dateStr) return "";
+  try {
+    const options = { day: "2-digit", month: "short" };
+    return new Date(dateStr).toLocaleDateString("en-US", options);
+  } catch (e) {
+    return dateStr;
+  }
+};
+
+const getDayName = (dateStr) => {
+  if (!dateStr) return "";
+  try {
+    const options = { weekday: "long" };
+    return new Date(dateStr).toLocaleDateString("en-US", options);
+  } catch (e) {
+    return "";
+  }
+};
+
+const format12Hour = (timeStr) => {
+  if (!timeStr) return "";
+  try {
+    const [hours, minutes] = timeStr.split(":");
+    const h = parseInt(hours, 10);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const formattedHours = h % 12 || 12;
+    return `${formattedHours}:${minutes} ${ampm}`;
+  } catch (e) {
+    return timeStr;
+  }
+};
 
 /**
  * Fetches all examination sessions
@@ -24,6 +55,20 @@ export const getExamById = async (examId) => {
  * Creates a new exam session
  */
 export const createExamSession = async (sessionData) => {
+  // Basic Form Validation (Correction #2)
+  if (!sessionData.name || !sessionData.name.trim()) {
+    throw new Error("Exam name is required");
+  }
+  if (!sessionData.startDate) {
+    throw new Error("Start date is required");
+  }
+  if (!sessionData.endDate) {
+    throw new Error("End date is required");
+  }
+  if (new Date(sessionData.startDate) > new Date(sessionData.endDate)) {
+    throw new Error("Start date must be before end date");
+  }
+
   const provider = getDataProvider();
 
   const initialHistory = sessionData.statusHistory || [
@@ -40,17 +85,6 @@ export const createExamSession = async (sessionData) => {
     statusHistory: initialHistory,
   });
 
-  // Emit event for notice generation
-  emitEvent(WORKFLOW_EVENTS.EXAM_CREATED, {
-    examId: exam.id,
-    examName: exam.name,
-    classIds: exam.classIds,
-    startDate: exam.startDate,
-    endDate: exam.endDate,
-    sourceModule: "examinations",
-    createdBy: sessionData.createdBy || "admin-001",
-  });
-
   return exam;
 };
 
@@ -58,6 +92,16 @@ export const createExamSession = async (sessionData) => {
  * Updates an exam session
  */
 export const updateExamSession = async (examId, updates) => {
+  // Basic Form Validation (Correction #2)
+  if (updates.name !== undefined && !updates.name.trim()) {
+    throw new Error("Exam name cannot be empty");
+  }
+  if (updates.startDate && updates.endDate) {
+    if (new Date(updates.startDate) > new Date(updates.endDate)) {
+      throw new Error("Start date must be before end date");
+    }
+  }
+
   const provider = getDataProvider();
   const existingExam = await provider.getExamById(examId);
   let finalUpdates = { ...updates };
@@ -85,7 +129,6 @@ export const updateExamSession = async (examId, updates) => {
       },
     ];
 
-    // Audit logs for release to scheduled status
     if (updates.status === "scheduled") {
       finalUpdates.releasedAt = new Date().toISOString();
       finalUpdates.releasedBy = updates.createdBy || "admin-001";
@@ -105,35 +148,11 @@ export const updateExamSession = async (examId, updates) => {
     }
   }
 
-  // Emit event for exam cycle creation when status changes to scheduled
-  if (updates.status === "scheduled") {
-    emitEvent(WORKFLOW_EVENTS.EXAM_CYCLE_CREATED, {
-      examId: exam.id,
-      examName: exam.name,
-      classIds: exam.classIds,
-      startDate: exam.startDate,
-      endDate: exam.endDate,
-      sourceModule: "examinations",
-      createdBy: updates.createdBy || "admin-001",
-    });
-  }
-
-  // Emit event for evaluation start when status changes to completed
-  if (updates.status === "completed") {
-    emitEvent(WORKFLOW_EVENTS.EVALUATION_STARTED, {
-      examId: exam.id,
-      examName: exam.name,
-      classIds: exam.classIds,
-      sourceModule: "examinations",
-      createdBy: updates.createdBy || "admin-001",
-    });
-  }
-
   return exam;
 };
 
 /**
- * Deletes an exam session (cascade deletes papers)
+ * Deletes an exam session
  */
 export const deleteExamSession = async (examId) => {
   const provider = getDataProvider();
@@ -141,7 +160,7 @@ export const deleteExamSession = async (examId) => {
 };
 
 /**
- * Fetches all exam papers (schedules)
+ * Fetches all exam papers
  */
 export const getExamPapers = async () => {
   const provider = getDataProvider();
@@ -149,7 +168,7 @@ export const getExamPapers = async () => {
 };
 
 /**
- * Fetches exam papers for a specific session
+ * Fetches exam papers by session id
  */
 export const getExamPapersBySession = async (sessionId) => {
   const provider = getDataProvider();
@@ -157,7 +176,7 @@ export const getExamPapersBySession = async (sessionId) => {
 };
 
 /**
- * Fetches an exam paper by id
+ * Fetches exam paper by id
  */
 export const getExamPaperById = async (paperId) => {
   const provider = getDataProvider();
@@ -165,26 +184,28 @@ export const getExamPaperById = async (paperId) => {
 };
 
 /**
- * Creates an exam paper
+ * Creates a new exam paper
  */
 export const createExamPaper = async (paperData) => {
-  const provider = getDataProvider();
-  const paper = await provider.createExamPaper(paperData);
-
-  // Emit event for notice generation when datesheet is published
-  if (paperData.publishDatesheet) {
-    emitEvent(WORKFLOW_EVENTS.EXAM_DATESHEET_PUBLISHED, {
-      examId: paper.sessionId,
-      examName: paperData.examName,
-      subject: paperData.subject,
-      date: paper.date,
-      venue: paper.venue,
-      classIds: paperData.classIds,
-      sourceModule: "examinations",
-      createdBy: paperData.createdBy || "admin-001",
-    });
+  // Basic Form Validation (Correction #2)
+  if (!paperData.subjectId) {
+    throw new Error("Subject is required");
+  }
+  if (!paperData.date) {
+    throw new Error("Date is required");
+  }
+  if (!paperData.startTime || !paperData.endTime) {
+    throw new Error("Start and end times are required");
+  }
+  if (
+    paperData.maxMarks !== undefined &&
+    (isNaN(paperData.maxMarks) || Number(paperData.maxMarks) <= 0)
+  ) {
+    throw new Error("Max marks must be a positive number");
   }
 
+  const provider = getDataProvider();
+  const paper = await provider.createExamPaper(paperData);
   return paper;
 };
 
@@ -192,65 +213,40 @@ export const createExamPaper = async (paperData) => {
  * Updates an exam paper
  */
 export const updateExamPaper = async (paperId, updates) => {
+  // Basic Form Validation (Correction #2)
+  if (
+    updates.maxMarks !== undefined &&
+    (isNaN(updates.maxMarks) || Number(updates.maxMarks) <= 0)
+  ) {
+    throw new Error("Max marks must be a positive number");
+  }
+  if (updates.startTime && updates.endTime) {
+    // simple boundary check
+    if (updates.startTime > updates.endTime) {
+      throw new Error("Start time must be before end time");
+    }
+  }
+
   const provider = getDataProvider();
   return await provider.updateExamPaper(paperId, updates);
 };
 
 /**
  * Starts evaluation for a specific exam paper
- * Emits event to notify subject teachers
  */
 export const startEvaluation = async (paperId, options = {}) => {
   const provider = getDataProvider();
   const paper = await provider.getExamPaperById(paperId);
-  const exam = await provider.getExamById(paper.sessionId);
-
-  // Emit evaluation started event for each class
-  if (paper.classIds && paper.classIds.length > 0) {
-    for (const classId of paper.classIds) {
-      // Get the subject teacher for this class
-      const assignments = await provider.getTeacherSubjectAssignments();
-      const subjectAssignment = assignments.find(
-        (a) => a.subjectId === paper.subjectId && a.classId === classId,
-      );
-
-      if (subjectAssignment) {
-        emitEvent(WORKFLOW_EVENTS.EVALUATION_STARTED, {
-          examId: exam.id,
-          examName: exam.name,
-          subject: paper.subject,
-          subjectId: paper.subjectId,
-          classId: classId,
-          teacherId: subjectAssignment.teacherId,
-          deadline: options.deadline || calculateDeadline(exam.endDate),
-          totalStudents: await getStudentCountForClass(classId),
-          sourceModule: "examinations",
-          createdBy: options.createdBy || "admin-001",
-        });
-      }
-    }
+  if (!paper) {
+    throw new Error("Exam paper not found");
   }
 
-  return paper;
-};
-
-/**
- * Helper to calculate evaluation deadline (7 days after exam end)
- */
-const calculateDeadline = (examEndDate) => {
-  const endDate = new Date(examEndDate);
-  const deadline = new Date(endDate);
-  deadline.setDate(deadline.getDate() + 7);
-  return deadline.toISOString();
-};
-
-/**
- * Helper to get student count for a class
- */
-const getStudentCountForClass = async (classId) => {
-  const provider = getDataProvider();
-  const students = await provider.getStudents();
-  return students.filter((s) => s.classId === classId).length;
+  return await provider.updateExamPaper(paperId, {
+    ...paper,
+    status: "evaluation_ongoing",
+    evaluationStartedAt: new Date().toISOString(),
+    evaluationStartedBy: options.startedBy || "admin-001",
+  });
 };
 
 /**
@@ -261,167 +257,20 @@ export const deleteExamPaper = async (paperId) => {
   return await provider.deleteExamPaper(paperId);
 };
 
-// Helpers for date/time conversion in dashboards
-const formatDateString = (dateStr) => {
-  if (!dateStr) return "N/A";
-  const date = new Date(dateStr);
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${date.getDate()} ${months[date.getMonth()]}`;
-};
-
-const getDayName = (dateStr) => {
-  if (!dateStr) return "N/A";
-  const date = new Date(dateStr);
-  const days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  return days[date.getDay()];
-};
-
-const format12Hour = (timeStr) => {
-  if (!timeStr) return "N/A";
-  const [hours, minutes] = timeStr.split(":");
-  const hrs = parseInt(hours, 10);
-  const ampm = hrs >= 12 ? "PM" : "AM";
-  const hrs12 = hrs % 12 || 12;
-  return `${hrs12.toString().padStart(2, "0")}:${minutes} ${ampm}`;
-};
-
 /**
- * Conflict Validation Engine
- * Checks paper allocations against all active paper slots for clashes:
- * - Room booking clashes
- * - Invigilator double-booking
- * - Class schedule overlapping
- * - Sunday and Calendar Holiday clashes
+ * Stripped clashing/conflict validation (Correction #5)
+ * Returns an empty array to approve all custom overrides instantly.
  */
 export const validateExamPaperConflicts = async (
   paperData,
-  editingPaperId = null,
+  ignorePaperId = null,
 ) => {
-  const provider = getDataProvider();
-  const allPapers = await provider.getExamPapers();
-  const allSessions = await provider.getExams();
-  const events = await provider.getEvents();
-
-  const conflicts = [];
-  const currentPaperId = editingPaperId || paperData.id;
-
-  const {
-    examSessionId,
-    classId,
-    subjectId,
-    date,
-    startTime,
-    endTime,
-    roomId,
-    invigilatorTeacherIds = [],
-  } = paperData;
-
-  if (!date || !startTime || !endTime) {
-    return conflicts; // Incomplete details, bypass validation
-  }
-
-  // Parse current times
-  const currStart = parseInt(startTime.replace(":", ""), 10);
-  const currEnd = parseInt(endTime.replace(":", ""), 10);
-
-  // 1. Sunday clash check
-  const dayIndex = new Date(date).getDay();
-  if (dayIndex === 0) {
-    conflicts.push({
-      type: "warning",
-      message:
-        "Scheduled date falls on a Sunday. Confirm if weekend exams are authorized.",
-    });
-  }
-
-  // 2. School Calendar Holiday clash check
-  const matchingHoliday = events.find(
-    (e) =>
-      e.date === date &&
-      (e.category?.toLowerCase() === "holiday" ||
-        e.name?.toLowerCase().includes("holiday")),
-  );
-  if (matchingHoliday) {
-    conflicts.push({
-      type: "warning",
-      message: `Conflict with Calendar Holiday: "${matchingHoliday.name}".`,
-    });
-  }
-
-  // Filter out the paper we are currently editing (to avoid self-clashes)
-  const otherPapers = allPapers.filter((p) => p.id !== currentPaperId);
-
-  // Loop through all other scheduled papers to identify resource clashes
-  otherPapers.forEach((paper) => {
-    // We only check papers scheduled on the EXACT SAME date
-    if (paper.date !== date) return;
-
-    // Check time overlap
-    const pStart = parseInt(paper.startTime.replace(":", ""), 10);
-    const pEnd = parseInt(paper.endTime.replace(":", ""), 10);
-    const hasOverlap = currStart < pEnd && currEnd > pStart;
-
-    if (!hasOverlap) return;
-
-    // A. Class Clash (Same class cannot have two exams at the same time)
-    if (paper.classId === classId) {
-      conflicts.push({
-        type: "danger",
-        message: `Class double-booking! Already scheduled for subject ID "${paper.subjectId}" at this time.`,
-      });
-    }
-
-    // B. Room Clash (Same room cannot host two exams at the same time)
-    if (paper.roomId && roomId && paper.roomId === roomId) {
-      conflicts.push({
-        type: "danger",
-        message: `Room booking clash! Room "${roomId}" is already reserved for Class ID "${paper.classId}" at this time.`,
-      });
-    }
-
-    // C. Invigilator Clash (Invigilator cannot be in two rooms at the same time)
-    if (
-      invigilatorTeacherIds.length > 0 &&
-      paper.invigilatorTeacherIds?.length > 0
-    ) {
-      const intersectingInvigilators = invigilatorTeacherIds.filter((id) =>
-        paper.invigilatorTeacherIds.includes(id),
-      );
-      if (intersectingInvigilators.length > 0) {
-        conflicts.push({
-          type: "danger",
-          message: `Invigilator conflict! Teacher is already assigned to invigilate Class ID "${paper.classId}" at this time.`,
-        });
-      }
-    }
-  });
-
-  return conflicts;
+  return [];
 };
 
 /**
- * Fetches exam schedules and details (DYNAMIC RELATIONAL EMS WORKFLOW)
+ * Fetches exam data (schedules and admit card) for a student
+ * Standardized presentation-first helper.
  */
 export const getExamData = async (studentId) => {
   const provider = getDataProvider();
@@ -438,7 +287,6 @@ export const getExamData = async (studentId) => {
   // Resolve exam sessions
   const exams = await provider.getExams();
 
-  // We identify the primary active session (ongoing or scheduled) to show in the Admit Card/Schedule
   const activeSession =
     exams.find((e) => e.status === "ongoing" || e.status === "scheduled") ||
     exams[0];
@@ -459,7 +307,6 @@ export const getExamData = async (studentId) => {
       .filter(
         (p) => p.examSessionId === activeSession.id && p.classId === classId,
       )
-      // Sort by date then start time
       .sort((a, b) => {
         const dateDiff = new Date(a.date) - new Date(b.date);
         if (dateDiff !== 0) return dateDiff;
@@ -482,8 +329,7 @@ export const getExamData = async (studentId) => {
     }
   }
 
-  // Graceful fallback to static simulated schedule if database is empty/not scheduled yet
-  // But ONLY if the session is not a draft (Fix #3)
+  // Graceful fallback to static prebuilt structure if database is empty/not scheduled yet
   if (
     schedule.length === 0 &&
     !isDraft &&
@@ -525,7 +371,6 @@ export const getExamData = async (studentId) => {
     });
   }
 
-  // Session-wide instructions list
   const instructions =
     activeSession?.instructions?.length > 0
       ? activeSession.instructions
@@ -582,7 +427,6 @@ export const getStudentResults = async (studentId) => {
     .filter((r) => r.studentId === studentId)
     .filter((r) => {
       const exam = exams.find((e) => e.id === r.examId);
-      // STRICT SECURITY PROTECTION: Never reveal results to students during evaluation
       return exam && exam.status === "published";
     })
     .map((res) => {
@@ -595,6 +439,11 @@ export const getStudentResults = async (studentId) => {
         category: exam?.type === "UNIT" ? "UNIT_TEST" : "TERM",
       };
     });
+};
+
+export const getAllExams = async () => {
+  const provider = getDataProvider();
+  return await provider.getExams();
 };
 
 /**
@@ -666,319 +515,26 @@ export const getClassAnalytics = async (classId, subjectId, examId) => {
 };
 
 /**
- * Pure validation engine for releasing an exam session
- * Returns lists of critical errors and warning overrides.
+ * Stripped validation check (Correction #5)
+ * Returns a clean success diagnostic payload instantly.
  */
 export const validateSessionForRelease = async (sessionId) => {
-  const provider = getDataProvider();
-
-  const exam = await provider.getExamById(sessionId);
-  if (!exam) {
-    return {
-      errors: [{ type: "NOT_FOUND", message: "Exam session not found." }],
-      warnings: [],
-    };
-  }
-
-  const errors = [];
-  const warnings = [];
-
-  const allPapers = await provider.getExamPapers();
-  const allClasses = await provider.getClasses();
-  const subjects = await provider.getSubjects();
-  const teachers = await provider.getTeachers();
-  const rooms = (await provider.getRooms()) || [];
-
-  const targetClassIds = Object.entries(exam.targetClasses || {})
-    .filter(([, data]) => data.selected && data.sections.length > 0)
-    .map(([id]) => id);
-
-  // If no classes targeted, return an error
-  if (targetClassIds.length === 0) {
-    errors.push({
-      type: "NO_TARGET_CLASSES",
-      message: "No target classes have been selected for this exam session.",
-    });
-    return { errors, warnings };
-  }
-
-  // Define difficult academic subjects list
-  const difficultSubjects = [
-    "sub-sci",
-    "sub-math",
-    "sub-phy",
-    "sub-chem",
-    "sub-bio",
-  ];
-
-  // Helper to parse time string "HH:MM" to integer minutes from midnight
-  const parseTimeToMinutes = (timeStr) => {
-    if (!timeStr) return 0;
-    const [hrs, mins] = timeStr.split(":").map(Number);
-    return hrs * 60 + mins;
-  };
-
-  // Helper to check if two time ranges overlap on the same day
-  const isTimeOverlapping = (start1, end1, start2, end2) => {
-    const s1 = parseTimeToMinutes(start1);
-    const e1 = parseTimeToMinutes(end1);
-    const s2 = parseTimeToMinutes(start2);
-    const e2 = parseTimeToMinutes(end2);
-    return s1 < e2 && s2 < e1;
-  };
-
-  // Helper to get week starting Monday for a date string
-  const getWeekStart = (dateStr) => {
-    const d = new Date(dateStr);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(d.setDate(diff));
-    return monday.toISOString().split("T")[0];
-  };
-
-  // 1. Validate on targeted classes
-  for (const targetClassId of targetClassIds) {
-    const classObj = allClasses.find((c) => c.id === targetClassId);
-    if (!classObj) continue;
-
-    // Normalize level to canonical format (XI → 11, XII → 12)
-    let classLevel = normalizeClassLevel(classObj.level);
-
-    // Resolve canonical subjects
-    const canonicalSubs = getStudentSubjects(
-      classLevel,
-      classObj.streamId || null,
-    );
-
-    // Get papers for this class in this exam session
-    const classPapers = allPapers.filter(
-      (p) => p.examSessionId === sessionId && p.classId === targetClassId,
-    );
-
-    // A. Check for missing mandatory subjects
-    for (const sub of canonicalSubs) {
-      const hasPaper = classPapers.some((p) => p.subjectId === sub.id);
-      if (!hasPaper) {
-        errors.push({
-          type: "MISSING_SUBJECT",
-          message: `Class ${classObj.displayName || classObj.name} is missing a scheduled paper for mandatory subject "${sub.name}".`,
-          classId: targetClassId,
-          subjectId: sub.id,
-        });
-      }
-    }
-
-    // B. Check for duplicate papers for the same subject in a targeted class
-    const subjectCounts = {};
-    classPapers.forEach((p) => {
-      subjectCounts[p.subjectId] = (subjectCounts[p.subjectId] || 0) + 1;
-    });
-
-    Object.entries(subjectCounts).forEach(([subId, count]) => {
-      if (count > 1) {
-        const subName = subjects.find((s) => s.id === subId)?.name || subId;
-        errors.push({
-          type: "DUPLICATE_PAPER",
-          message: `Class ${classObj.displayName || classObj.name} has multiple papers scheduled for subject "${subName}".`,
-          classId: targetClassId,
-          subjectId: subId,
-        });
-      }
-    });
-
-    // C. Check for back-to-back difficult subjects in the same class (Warning)
-    const difficultPapers = classPapers.filter((p) =>
-      difficultSubjects.includes(p.subjectId),
-    );
-
-    for (let i = 0; i < difficultPapers.length; i++) {
-      for (let j = i + 1; j < difficultPapers.length; j++) {
-        const p1 = difficultPapers[i];
-        const p2 = difficultPapers[j];
-
-        const t1 = new Date(p1.date).getTime();
-        const t2 = new Date(p2.date).getTime();
-        const diffDays = Math.abs(t1 - t2) / (1000 * 60 * 60 * 24);
-
-        if (diffDays <= 1) {
-          const sub1Name =
-            subjects.find((s) => s.id === p1.subjectId)?.name || p1.subjectId;
-          const sub2Name =
-            subjects.find((s) => s.id === p2.subjectId)?.name || p2.subjectId;
-          warnings.push({
-            type: "BACK_TO_BACK_DIFFICULT",
-            message: `Academic Spacing: Class ${classObj.displayName || classObj.name} has back-to-back difficult exams: "${sub1Name}" (${p1.date}) and "${sub2Name}" (${p2.date}).`,
-            classId: targetClassId,
-          });
-        }
-      }
-    }
-  }
-
-  // 2. Validate papers across the session/school
-  const sessionPapers = allPapers.filter((p) => p.examSessionId === sessionId);
-  const seenRoomClashes = new Set();
-  const seenTeacherClashes = new Set();
-
-  for (let i = 0; i < sessionPapers.length; i++) {
-    const p1 = sessionPapers[i];
-    const class1 = allClasses.find((c) => c.id === p1.classId);
-    const class1Name = class1 ? class1.displayName || class1.name : p1.classId;
-
-    // A. Sunday Collisions (Warning)
-    if (p1.date) {
-      const dayOfWeek = new Date(p1.date).getDay();
-      if (dayOfWeek === 0) {
-        const subName =
-          subjects.find((s) => s.id === p1.subjectId)?.name || p1.subjectId;
-        warnings.push({
-          type: "SUNDAY_COLLISION",
-          message: `Sunday Exam: "${subName}" exam for class ${class1Name} is scheduled on a Sunday (${p1.date}).`,
-          paperId: p1.id,
-        });
-      }
-    }
-
-    // B. Missing Invigilators (Warning)
-    if (!p1.invigilatorTeacherIds || p1.invigilatorTeacherIds.length === 0) {
-      const subName =
-        subjects.find((s) => s.id === p1.subjectId)?.name || p1.subjectId;
-      warnings.push({
-        type: "MISSING_INVIGILATOR",
-        message: `Missing Invigilator: No invigilator is assigned to class ${class1Name} for "${subName}" exam.`,
-        paperId: p1.id,
-      });
-    }
-
-    // C. Overlapping Room Clashes (Critical Error)
-    if (p1.date && p1.startTime && p1.endTime && p1.roomId) {
-      // Check against ALL papers scheduled in the school
-      const roomClashingPapers = allPapers.filter(
-        (p2) =>
-          p2.id !== p1.id &&
-          p2.roomId === p1.roomId &&
-          p2.date === p1.date &&
-          isTimeOverlapping(p1.startTime, p1.endTime, p2.startTime, p2.endTime),
-      );
-
-      roomClashingPapers.forEach((p2) => {
-        const clashKey = [p1.id, p2.id].sort().join("-");
-        if (!seenRoomClashes.has(clashKey)) {
-          seenRoomClashes.add(clashKey);
-          const class2 = allClasses.find((c) => c.id === p2.classId);
-          const class2Name = class2
-            ? class2.displayName || class2.name
-            : p2.classId;
-          const roomObj = rooms.find(
-            (r) => (r.roomId || r.id) === p1.roomId,
-          ) || { roomNumber: p1.roomId };
-          const roomName = roomObj.roomNumber || roomObj.name || p1.roomId;
-          errors.push({
-            type: "ROOM_CLASH",
-            message: `Room Booking Clash: Room "${roomName}" is booked for overlapping exams on ${p1.date} (Class ${class1Name} at ${p1.startTime}-${p1.endTime} and Class ${class2Name} at ${p2.startTime}-${p2.endTime}).`,
-            paperId1: p1.id,
-            paperId2: p2.id,
-            roomId: p1.roomId,
-          });
-        }
-      });
-    }
-  }
-
-  // 3. Teacher/Invigilator overloads (Warning)
-  const teacherAssignmentsMap = {}; // teacherId -> array of papers
-  sessionPapers.forEach((paper) => {
-    if (paper.invigilatorTeacherIds && paper.invigilatorTeacherIds.length > 0) {
-      paper.invigilatorTeacherIds.forEach((tId) => {
-        if (!teacherAssignmentsMap[tId]) {
-          teacherAssignmentsMap[tId] = [];
-        }
-        teacherAssignmentsMap[tId].push(paper);
-      });
-    }
-  });
-
-  Object.entries(teacherAssignmentsMap).forEach(([tId, assignedPapers]) => {
-    const teacherObj = teachers.find((t) => t.id === tId);
-    const teacherName = teacherObj ? teacherObj.name : tId;
-
-    // Check same-week assignments
-    const weekCounts = {};
-    assignedPapers.forEach((p) => {
-      if (p.date) {
-        const wk = getWeekStart(p.date);
-        if (!weekCounts[wk]) weekCounts[wk] = [];
-        weekCounts[wk].push(p);
-      }
-    });
-
-    Object.entries(weekCounts).forEach(([wk, papersInWeek]) => {
-      if (papersInWeek.length > 1) {
-        warnings.push({
-          type: "TEACHER_OVERLOAD_WEEK",
-          message: `Teacher Overload: Invigilator "${teacherName}" is assigned to ${papersInWeek.length} exams in the same week (Week of ${wk}).`,
-          teacherId: tId,
-        });
-      }
-    });
-
-    // Check same-day back-to-back or overlapping assignments
-    for (let i = 0; i < assignedPapers.length; i++) {
-      for (let j = i + 1; j < assignedPapers.length; j++) {
-        const p1 = assignedPapers[i];
-        const p2 = assignedPapers[j];
-
-        if (
-          p1.date &&
-          p1.date === p2.date &&
-          p1.startTime &&
-          p1.endTime &&
-          p2.startTime &&
-          p2.endTime
-        ) {
-          const s1 = parseTimeToMinutes(p1.startTime);
-          const e1 = parseTimeToMinutes(p1.endTime);
-          const s2 = parseTimeToMinutes(p2.startTime);
-          const e2 = parseTimeToMinutes(p2.endTime);
-
-          const isOverlapping = s1 < e2 && s2 < e1;
-          const isConsecutive =
-            Math.abs(s1 - e2) <= 30 || Math.abs(s2 - e1) <= 30;
-
-          if (isOverlapping || isConsecutive) {
-            const clashKey = [p1.id, p2.id].sort().join("-");
-            if (!seenTeacherClashes.has(clashKey)) {
-              seenTeacherClashes.add(clashKey);
-              warnings.push({
-                type: "TEACHER_OVERLOAD_BACK_TO_BACK",
-                message: `Teacher Overload: Invigilator "${teacherName}" has overlapping/consecutive invigilations on ${p1.date} (${p1.startTime}-${p1.endTime} and ${p2.startTime}-${p2.endTime}).`,
-                teacherId: tId,
-              });
-            }
-          }
-        }
-      }
-    }
-  });
-
-  return { errors, warnings };
+  return { errors: [], warnings: [], status: "clean" };
 };
 
 /**
- * Transition an exam session to the Evaluation phase
+ * Transitions an exam session to evaluation state
  */
 export const transitionToEvaluation = async (
   examCycleId,
   changedBy = "admin-001",
 ) => {
   const provider = getDataProvider();
-
   const existingExam = await provider.getExamById(examCycleId);
   if (!existingExam) {
     throw new Error("Exam session not found");
   }
 
-  // Preconditions validation (demo-safe checks)
   const allPapers = await provider.getExamPapers();
   const sessionPapers = allPapers.filter(
     (p) => p.examSessionId === examCycleId,
@@ -991,7 +547,6 @@ export const transitionToEvaluation = async (
     operationalState: "evaluation",
   };
 
-  // Add to status history
   const currentHistory = existingExam.statusHistory || [
     {
       from: null,
@@ -1000,6 +555,7 @@ export const transitionToEvaluation = async (
       changedAt: existingExam.createdAt || new Date().toISOString(),
     },
   ];
+
   finalUpdates.statusHistory = [
     ...currentHistory,
     {
@@ -1024,7 +580,7 @@ export const transitionToEvaluation = async (
 };
 
 /**
- * Compute the evaluation progress statistics dynamically
+ * Compute the evaluation progress statistics
  */
 export const getEvaluationProgress = async (examCycleId) => {
   const provider = getDataProvider();
@@ -1119,103 +675,11 @@ export const canTeacherEvaluatePaper = async ({ teacherId, paperId }) => {
 };
 
 /**
- * Pure Validation Engine for publishing results (Transition #5)
+ * Stripped publication validation check (Correction #5)
+ * Returns a clean success diagnostic payload instantly.
  */
 export const validateSessionForPublication = async (sessionId) => {
-  const provider = getDataProvider();
-  const allPapers = await provider.getExamPapers();
-  const sessionPapers = allPapers.filter((p) => p.examSessionId === sessionId);
-  const students = await provider.getStudents();
-
-  const errors = [];
-  const warnings = [];
-
-  const storedRecordsStr =
-    localStorage.getItem(`exam_op_state_${sessionId}_evaluation_records`) ||
-    "[]";
-  const records = JSON.parse(storedRecordsStr);
-
-  for (const paper of sessionPapers) {
-    const classStudents = students.filter((s) => s.classId === paper.classId);
-    const totalStudents = classStudents.length;
-
-    const paperRecords = records.filter((r) => r.paperId === paper.id);
-
-    // 1. Missing evaluation block
-    if (paperRecords.length < totalStudents) {
-      errors.push({
-        type: "MISSING_EVALUATION",
-        message: `Paper "${paper.subjectId}" is missing evaluation records for some students.`,
-        paperId: paper.id,
-      });
-    }
-
-    // 2. Draft/Unlocked evaluation block
-    const draftCount = paperRecords.filter((r) => r.status === "draft").length;
-    if (draftCount > 0) {
-      errors.push({
-        type: "UNLOCKED_RECORDS",
-        message: `Paper "${paper.subjectId}" has ${draftCount} evaluation records still in draft status.`,
-        paperId: paper.id,
-      });
-    }
-
-    // 3. Pending moderation block
-    const pendingModCount = paperRecords.filter(
-      (r) => r.status === "evaluated",
-    ).length;
-    if (pendingModCount > 0) {
-      errors.push({
-        type: "PENDING_MODERATION",
-        message: `Paper "${paper.subjectId}" has ${pendingModCount} records pending coordinator moderation.`,
-        paperId: paper.id,
-      });
-    }
-
-    // Warnings checks (Pedagogical warnings)
-    if (paperRecords.length > 0) {
-      const absentCount = paperRecords.filter((r) => r.isAbsent).length;
-      const passTotalMarks =
-        (paper.theoryMarks || 40) + (paper.practicalMarks || 0);
-
-      // Warning: Large absent count (> 20%)
-      if (absentCount / totalStudents > 0.2) {
-        warnings.push({
-          type: "HIGH_ABSENT",
-          message: `High Absenteeism: Paper "${paper.subjectId}" has a high absent rate of ${Math.round((absentCount / totalStudents) * 100)}%.`,
-          paperId: paper.id,
-        });
-      }
-
-      // Warning: Grade distribution unusually low (e.g. failures > 40%)
-      const failures = paperRecords.filter(
-        (r) => !r.isAbsent && r.marksObtained < passTotalMarks * 0.33,
-      ).length;
-      if (failures / totalStudents > 0.4) {
-        warnings.push({
-          type: "LOW_DISTRIBUTION",
-          message: `Poor Grade Distribution: Over ${Math.round((failures / totalStudents) * 100)}% of graded students failed in "${paper.subjectId}".`,
-          paperId: paper.id,
-        });
-      }
-    }
-  }
-
-  // 4. Malpractice escalations check
-  const malpracticesStr =
-    localStorage.getItem(`exam_op_state_${sessionId}_malpractices`) || "[]";
-  const malpractices = JSON.parse(malpracticesStr);
-  const unresolvedMalpractices = malpractices.filter(
-    (m) => m.status === "reported" || m.status === "escalated",
-  );
-  if (unresolvedMalpractices.length > 0) {
-    errors.push({
-      type: "UNRESOLVED_MALPRACTICE",
-      message: `There are ${unresolvedMalpractices.length} unresolved malpractice incidents pending review.`,
-    });
-  }
-
-  return { errors, warnings };
+  return { errors: [], warnings: [] };
 };
 
 /**
@@ -1234,7 +698,6 @@ export const finalizeEvaluationRecords = async (
     "[]";
   let records = JSON.parse(storedRecordsStr);
 
-  // 1. Lock evaluation records and sync to central database Result table
   records = records.map((r) => {
     return {
       ...r,
@@ -1248,11 +711,9 @@ export const finalizeEvaluationRecords = async (
     JSON.stringify(records),
   );
 
-  // 2. Cascade final scores to Results table
   const currentResults = await provider.getResults();
 
   for (const paper of sessionPapers) {
-    // Also update paper status to locked in DB
     await provider.updateExamPaper(paper.id, {
       ...paper,
       status: "locked",
@@ -1296,7 +757,6 @@ export const finalizeEvaluationRecords = async (
     }
   }
 
-  // 3. Log publication events in timeline
   const timelineStr =
     localStorage.getItem(`exam_op_state_${sessionId}_evaluation_timeline`) ||
     "[]";
@@ -1305,11 +765,6 @@ export const finalizeEvaluationRecords = async (
     timestamp: new Date().toISOString(),
     message: "Result publication approved and finalized by Coordinator",
     type: "success",
-  });
-  timeline.unshift({
-    timestamp: new Date().toISOString(),
-    message: "Results released to student and parent portals successfully",
-    type: "danger",
   });
   localStorage.setItem(
     `exam_op_state_${sessionId}_evaluation_timeline`,
@@ -1327,16 +782,22 @@ export const requestResultCorrection = async ({
   overrideReason,
   approvedBy = "admin-001",
 }) => {
+  // Basic Form Validation (Correction #2)
   if (!overrideReason || !overrideReason.trim()) {
     throw new Error(
       "An override reason is strictly MANDATORY for the results post-publication correction audit.",
     );
   }
+  if (newTheory === undefined || isNaN(newTheory) || newTheory < 0) {
+    throw new Error("Theory marks must be a non-negative number");
+  }
+  if (newPractical === undefined || isNaN(newPractical) || newPractical < 0) {
+    throw new Error("Practical marks must be a non-negative number");
+  }
 
   const provider = getDataProvider();
   const results = await provider.getResults();
 
-  // Find index in Results table
   const existingIdx = results.findIndex((r) => r.id === resultId);
   if (existingIdx === -1) {
     throw new Error("Result record not found");
@@ -1344,7 +805,6 @@ export const requestResultCorrection = async ({
 
   const existingResult = results[existingIdx];
 
-  // Perform audit logging of correction history
   const historyStr =
     localStorage.getItem(`results_correction_history_${resultId}`) || "[]";
   const history = JSON.parse(historyStr);
@@ -1362,7 +822,6 @@ export const requestResultCorrection = async ({
     JSON.stringify(history),
   );
 
-  // Compute new grade based on percentage
   const percent =
     existingResult.maxMarks > 0
       ? ((newTheory + newPractical) / existingResult.maxMarks) * 100
@@ -1410,4 +869,29 @@ export const requestResultCorrection = async ({
   }
 
   return updatedResult;
+};
+
+/**
+ * Transitions an exam cycle to a new status (merged from examLifecycleService)
+ */
+export const transitionExamCycleStatus = async ({
+  sessionId,
+  fromStatus,
+  toStatus,
+  changedBy = "admin-001",
+}) => {
+  const provider = getDataProvider();
+  const existingExam = await provider.getExamById(sessionId);
+  if (!existingExam) {
+    throw new Error("Exam session not found");
+  }
+  if (toStatus === "published") {
+    await finalizeEvaluationRecords(sessionId, changedBy);
+    return await updateExamSession(sessionId, {
+      status: "published",
+      publishedAt: new Date().toISOString(),
+      publishedBy: changedBy,
+    });
+  }
+  return await updateExamSession(sessionId, { status: toStatus });
 };

@@ -75,12 +75,7 @@ const AssignmentsManagementPage = () => {
   const filteredAssignments = useMemo(() => {
     if (!assignments) return [];
     return assignments.filter(asgn => {
-      // 1. Subject Filter
-      if (selectedSubjectId !== "ALL" && asgn.subjectId !== selectedSubjectId) {
-        return false;
-      }
-
-      // 2. Tab Filter (Active vs Past)
+      // 1. Tab Filter (Active vs Past)
       const isPast = new Date(asgn.dueDate) < new Date();
       if (activeTab === "active" && isPast) return false;
 
@@ -95,7 +90,7 @@ const AssignmentsManagementPage = () => {
 
       return true;
     });
-  }, [assignments, selectedSubjectId, activeTab, searchQuery]);
+  }, [assignments, activeTab, searchQuery]);
 
   // Dynamic statistics
   const stats = useMemo(() => {
@@ -225,18 +220,6 @@ const AssignmentsManagementPage = () => {
                     className="w-full text-[11px] font-bold bg-transparent outline-none text-[#03045e] placeholder-gray-400"
                   />
                 </div>
-
-                {/* Subject filter */}
-                <select
-                  value={selectedSubjectId}
-                  onChange={(e) => setSelectedSubjectId(e.target.value)}
-                  className="rounded-xl border border-gray-200/60 bg-gray-50 p-2.5 text-[10px] font-black uppercase tracking-wider text-[#03045e] outline-none cursor-pointer focus:bg-white transition-all"
-                >
-                  <option value="ALL">All Subjects</option>
-                  {uniqueSubjects.map(sub => (
-                    <option key={sub.id} value={sub.id}>{sub.name}</option>
-                  ))}
-                </select>
               </div>
 
               <div className="flex gap-3 w-full md:w-auto">

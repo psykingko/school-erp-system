@@ -1,6 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { getNotices, updateNotice } from "../../services/noticeService";
+import {
+  getNotices,
+  updateNotice,
+  createNotice,
+  deleteNotice,
+} from "../../services/noticeService";
 import {
   NOTICE_STATUS,
   NOTICE_PRIORITIES,
@@ -16,14 +21,18 @@ import {
   Send,
   Calendar,
   Eye,
-  CheckCircle,
-  AlertCircle,
-  TrendingUp,
+  Trash,
+  Edit,
 } from "lucide-react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import AdminStatCard from "../../components/admin/AdminStatCard";
 import AdminFilterBar from "../../components/admin/AdminFilterBar";
 import MainCard from "../../components/MainCard";
+import AdminEditForm from "../../components/admin/AdminEditForm";
+import ConfirmationModal from "../../components/shared/ConfirmationModal";
+import ToastNotification from "../../components/shared/ToastNotification";
+import LoadingSkeleton from "../../components/shared/LoadingSkeleton";
+import ChartWrapper from "../../components/shared/ChartWrapper";
 
 const NoticesPage = () => {
   const [notices, setNotices] = useState([]);
@@ -39,13 +48,22 @@ const NoticesPage = () => {
   const [filterModule, setFilterModule] = useState("all");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
 
-  // Statistics
-  const [stats, setStats] = useState({
-    published: 0,
-    draft: 0,
-    scheduled: 0,
-    archived: 0,
-    unreadPercentage: 0,
+  // CRUD state
+  const [addNoticeOpen, setAddNoticeOpen] = useState(false);
+  const [editNotice, setEditNotice] = useState(null);
+
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    noticeId: null,
+    noticeTitle: "",
+  });
+
+  // Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
   });
 
   useEffect(() => {
@@ -70,40 +88,11 @@ const NoticesPage = () => {
     try {
       const allNotices = await getNotices();
       setNotices(allNotices);
-      calculateStats(allNotices);
     } catch (error) {
       console.error("Failed to load notices:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateStats = (noticeList) => {
-    const published = noticeList.filter(
-      (n) => n.status === NOTICE_STATUS.PUBLISHED,
-    ).length;
-    const draft = noticeList.filter((n) => n.status === "draft").length;
-    const scheduled = noticeList.filter((n) => n.status === "scheduled").length;
-    const archived = noticeList.filter((n) => n.status === "archived").length;
-
-    // Calculate unread percentage
-    const totalReceipts = noticeList.reduce(
-      (sum, n) => sum + (n.readReceipts?.length || 0),
-      0,
-    );
-    const totalPossible = noticeList.length * 100;
-    const unreadPercentage =
-      totalPossible > 0
-        ? ((totalPossible - totalReceipts) / totalPossible) * 100
-        : 0;
-
-    setStats({
-      published,
-      draft,
-      scheduled,
-      archived,
-      unreadPercentage: Math.round(unreadPercentage),
-    });
   };
 
   const applyFilters = () => {
@@ -176,7 +165,7 @@ const NoticesPage = () => {
               readReceipts: [],
               createdAt: new Date().toISOString(),
             };
-            await updateNotice(undefined, duplicated);
+            await createNotice(duplicated);
             break;
           }
           case "cancel": {
@@ -204,9 +193,103 @@ const NoticesPage = () => {
       }
       await loadNotices();
       setSelectedNotices([]);
+      setToast({
+        show: true,
+        message: "Bulk action completed",
+        type: "success",
+      });
     } catch (error) {
       console.error(`Failed to ${action} notices:`, error);
+      setToast({
+        show: true,
+        message: `Failed to ${action} notices`,
+        type: "error",
+      });
     }
+  };
+
+  const handleAddNotice = async (formData) => {
+    try {
+      const newNotice = await createNotice(formData);
+      // Optimistic update
+      setNotices((prev) => [...prev, newNotice]);
+      setAddNoticeOpen(false);
+      setToast({
+        show: true,
+        message: "Notice created successfully",
+        type: "success",
+      });
+    } catch (e) {
+      console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to create notice",
+        type: "error",
+      });
+    }
+  };
+
+  const handleUpdateNotice = async (formData) => {
+    if (!editNotice) return;
+    try {
+      const updated = await updateNotice(editNotice.id, formData);
+      // Optimistic update
+      setNotices((prev) =>
+        prev.map((n) => (n.id === editNotice.id ? { ...n, ...updated } : n)),
+      );
+      setEditNotice(null);
+      setToast({
+        show: true,
+        message: "Notice updated successfully",
+        type: "success",
+      });
+    } catch (e) {
+      console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to update notice",
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeleteClick = (notice) => {
+    setDeleteConfirm({
+      isOpen: true,
+      noticeId: notice.id,
+      noticeTitle: notice.title,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deleteNotice(deleteConfirm.noticeId);
+      // Optimistic update (hard delete)
+      setNotices((prev) => prev.filter((n) => n.id !== deleteConfirm.noticeId));
+      setDeleteConfirm({ isOpen: false, noticeId: null, noticeTitle: "" });
+      setToast({
+        show: true,
+        message: "Notice deleted successfully",
+        type: "success",
+      });
+    } catch (e) {
+      console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to delete notice",
+        type: "error",
+      });
+    }
+  };
+
+  // Form defaults (in page, NOT separate utils file)
+  const noticeFormDefaults = {
+    title: "",
+    content: "",
+    category: NOTICE_CATEGORIES.GENERAL,
+    priority: NOTICE_PRIORITIES.NORMAL,
+    status: "draft",
+    targetAudience: { type: AUDIENCE_TYPES.ALL },
   };
 
   const getPriorityColor = (priority) => {
@@ -262,11 +345,83 @@ const NoticesPage = () => {
     return 50;
   };
 
+  // Component-level analytics (no service, read-only derivation)
+  const analytics = useMemo(() => {
+    const published = notices.filter(
+      (n) => n.status === NOTICE_STATUS.PUBLISHED,
+    ).length;
+    const draft = notices.filter((n) => n.status === "draft").length;
+    const scheduled = notices.filter((n) => n.status === "scheduled").length;
+    const archived = notices.filter((n) => n.status === "archived").length;
+
+    // Priority distribution
+    const priorityCounts = notices.reduce((acc, n) => {
+      acc[n.priority] = (acc[n.priority] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Category distribution
+    const categoryCounts = notices.reduce((acc, n) => {
+      acc[n.category] = (acc[n.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      total: notices.length,
+      published,
+      draft,
+      scheduled,
+      archived,
+      priorityCounts,
+      categoryCounts,
+    };
+  }, [notices]);
+
+  // Chart data (component-level, no service)
+  const statusDistributionData = useMemo(
+    () => [
+      { name: "Published", value: analytics.published },
+      { name: "Draft", value: analytics.draft },
+      { name: "Scheduled", value: analytics.scheduled },
+      { name: "Archived", value: analytics.archived },
+    ],
+    [
+      analytics.published,
+      analytics.draft,
+      analytics.scheduled,
+      analytics.archived,
+    ],
+  );
+
+  const priorityDistributionData = useMemo(() => {
+    return Object.entries(analytics.priorityCounts).map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value,
+    }));
+  }, [analytics.priorityCounts]);
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-6 pb-12"
+      >
+        <AdminPageHeader
+          title="Notice Management"
+          description="Manage institutional communication and broadcast notices"
+          breadcrumbs={["Admin", "Notices"]}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <LoadingSkeleton variant="stat-card" />
+          <LoadingSkeleton variant="stat-card" />
+          <LoadingSkeleton variant="stat-card" />
+        </div>
+        <MainCard>
+          <LoadingSkeleton variant="table-row" count={5} />
+        </MainCard>
+      </motion.div>
     );
   }
 
@@ -280,9 +435,7 @@ const NoticesPage = () => {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              /* TODO: Open create notice modal */
-            }}
+            onClick={() => setAddNoticeOpen(true)}
             className="px-5 py-2.5 bg-[#0077b6] text-white rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-[#03045e] transition-colors flex items-center gap-2 shadow-lg shadow-[#0077b6]/20"
           >
             <Bell size={16} />
@@ -291,10 +444,10 @@ const NoticesPage = () => {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <AdminStatCard
           title="Published"
-          value={stats.published}
+          value={analytics.published.toString()}
           icon={Bell}
           color="#10b981"
           bg="#d1fae5"
@@ -303,7 +456,7 @@ const NoticesPage = () => {
         />
         <AdminStatCard
           title="Draft"
-          value={stats.draft}
+          value={analytics.draft.toString()}
           icon={Filter}
           color="#6b7280"
           bg="#f3f4f6"
@@ -312,7 +465,7 @@ const NoticesPage = () => {
         />
         <AdminStatCard
           title="Scheduled"
-          value={stats.scheduled}
+          value={analytics.scheduled.toString()}
           icon={Calendar}
           color="#8b5cf6"
           bg="#ede9fe"
@@ -321,25 +474,16 @@ const NoticesPage = () => {
         />
         <AdminStatCard
           title="Archived"
-          value={stats.archived}
+          value={analytics.archived.toString()}
           icon={Archive}
           color="#64748b"
           bg="#f1f5f9"
           badgeText="History"
           badgeType="neutral"
         />
-        <AdminStatCard
-          title="Unread %"
-          value={`${stats.unreadPercentage}%`}
-          icon={TrendingUp}
-          color="#f59e0b"
-          bg="#fef3c7"
-          changeText="Engagement"
-          changeDirection="up"
-          badgeText="Analytics"
-          badgeType="warning"
-        />
       </div>
+
+
 
       <MainCard className="p-6">
         <AdminFilterBar
@@ -580,24 +724,20 @@ const NoticesPage = () => {
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => {
-                          /* TODO: Edit notice */
-                        }}
+                        onClick={() => setEditNotice(notice)}
                         className="p-1.5 rounded-lg bg-[#caf0f8]/20 text-[#0077b6] hover:bg-[#0077b6] hover:text-white transition-colors"
                         title="Edit"
                       >
-                        <CheckCircle size={14} />
+                        <Edit size={14} />
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => {
-                          /* TODO: Delete notice */
-                        }}
+                        onClick={() => handleDeleteClick(notice)}
                         className="p-1.5 rounded-lg bg-[#fef3c7]/20 text-[#f59e0b] hover:bg-[#f59e0b] hover:text-white transition-colors"
                         title="Delete"
                       >
-                        <AlertCircle size={14} />
+                        <Trash size={14} />
                       </motion.button>
                     </div>
                   </td>
@@ -619,6 +759,122 @@ const NoticesPage = () => {
           </motion.div>
         )}
       </MainCard>
+
+      {/* Add Notice Modal */}
+      <AdminEditForm
+        isOpen={addNoticeOpen}
+        onClose={() => setAddNoticeOpen(false)}
+        title="Create New Notice"
+        data={noticeFormDefaults}
+        fields={[
+          {
+            name: "title",
+            label: "Notice Title",
+            type: "text",
+            required: true,
+          },
+          {
+            name: "content",
+            label: "Notice Content",
+            type: "textarea",
+            required: true,
+          },
+          {
+            name: "category",
+            label: "Category",
+            type: "select",
+            options: Object.values(NOTICE_CATEGORIES),
+            required: true,
+          },
+          {
+            name: "priority",
+            label: "Priority",
+            type: "select",
+            options: Object.values(NOTICE_PRIORITIES),
+            required: true,
+          },
+          {
+            name: "status",
+            label: "Status",
+            type: "select",
+            options: ["draft", NOTICE_STATUS.PUBLISHED, "scheduled"],
+            required: true,
+          },
+        ]}
+        onSubmit={handleAddNotice}
+      />
+
+      {/* Edit Notice Modal */}
+      <AdminEditForm
+        isOpen={!!editNotice}
+        onClose={() => setEditNotice(null)}
+        title="Edit Notice"
+        data={editNotice}
+        fields={[
+          {
+            name: "title",
+            label: "Notice Title",
+            type: "text",
+            required: true,
+          },
+          {
+            name: "content",
+            label: "Notice Content",
+            type: "textarea",
+            required: true,
+          },
+          {
+            name: "category",
+            label: "Category",
+            type: "select",
+            options: Object.values(NOTICE_CATEGORIES),
+            required: true,
+          },
+          {
+            name: "priority",
+            label: "Priority",
+            type: "select",
+            options: Object.values(NOTICE_PRIORITIES),
+            required: true,
+          },
+          {
+            name: "status",
+            label: "Status",
+            type: "select",
+            options: [
+              "draft",
+              NOTICE_STATUS.PUBLISHED,
+              "scheduled",
+              "archived",
+              "cancelled",
+            ],
+            required: true,
+          },
+        ]}
+        onSubmit={handleUpdateNotice}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Notice"
+        message={`Are you sure you want to delete ${deleteConfirm.noticeTitle}? This action cannot be undone.`}
+        warningText=""
+        onConfirm={handleDeleteConfirm}
+        onCancel={() =>
+          setDeleteConfirm({ isOpen: false, noticeId: null, noticeTitle: "" })
+        }
+        confirmButtonText="Delete"
+        cancelButtonText="Cancel"
+      />
+
+      {/* Toast Notification */}
+      <ToastNotification
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   );
 };

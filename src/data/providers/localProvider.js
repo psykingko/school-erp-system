@@ -14,7 +14,6 @@
 
 import { getItem, setItem } from "../../persistence/storage";
 import { STORAGE_KEYS } from "../../persistence/storageKeys";
-import { deriveTeacherWorkload } from "../../mockDB/seed/teacherSubjectAssignments";
 
 const localProvider = {
   // === STUDENT DATA ===
@@ -44,78 +43,26 @@ const localProvider = {
   // === TEACHER DATA ===
   getTeachers: async () => {
     const teachers = getItem(STORAGE_KEYS.TEACHERS) || [];
-    const assignments = getItem(STORAGE_KEYS.TEACHER_SUBJECT_ASSIGNMENTS) || [];
-    deriveTeacherWorkload(teachers, assignments);
-
-    return teachers
-      .map((t) => {
-        if (!t) return null;
-        if (!t.metadata) return t;
-        return { ...t, ...t.metadata, metadata: t.metadata };
-      })
-      .filter(Boolean);
+    return teachers.filter(Boolean);
   },
 
   getTeacherById: async (teacherId) => {
     const teachers = getItem(STORAGE_KEYS.TEACHERS) || [];
-    const assignments = getItem(STORAGE_KEYS.TEACHER_SUBJECT_ASSIGNMENTS) || [];
-    deriveTeacherWorkload(teachers, assignments);
-
-    const t = teachers.find((t) => t.id === teacherId) || null;
-    if (!t) return null;
-    if (!t.metadata) return t;
-    return { ...t, ...t.metadata, metadata: t.metadata };
+    return (
+      teachers.find((t) => t.teacherId === teacherId || t.id === teacherId) ||
+      null
+    );
   },
 
   updateTeacher: async (teacherId, updates) => {
     const teachers = getItem(STORAGE_KEYS.TEACHERS) || [];
-    const idx = teachers.findIndex((t) => t.id === teacherId);
+    const idx = teachers.findIndex(
+      (t) => t.teacherId === teacherId || t.id === teacherId,
+    );
     if (idx === -1) throw new Error("Teacher not found");
-
-    const currentTeacher = teachers[idx];
-    const newTeacher = { ...currentTeacher };
-
-    // Separate updates into top-level keys and metadata
-    const TOP_LEVEL_KEYS = new Set([
-      "id",
-      "teacherType",
-      "specializationSubjectId",
-      "assignedLevels",
-      "assignedSections",
-    ]);
-
-    // Initialize metadata if not present
-    if (!newTeacher.metadata) {
-      newTeacher.metadata = {};
-    }
-
-    // Process updates
-    for (const key of Object.keys(updates)) {
-      if (key === "metadata") {
-        newTeacher.metadata = { ...newTeacher.metadata, ...updates.metadata };
-      } else if (TOP_LEVEL_KEYS.has(key)) {
-        newTeacher[key] = updates[key];
-        if (key === "specializationSubjectId") {
-          newTeacher.metadata.subjectId = updates[key];
-        }
-      } else {
-        newTeacher.metadata[key] = updates[key];
-      }
-    }
-
-    teachers[idx] = newTeacher;
+    teachers[idx] = { ...teachers[idx], ...updates };
     setItem(STORAGE_KEYS.TEACHERS, teachers);
-
-    // Compute projections before returning so UI has the latest
-    const assignments = getItem(STORAGE_KEYS.TEACHER_SUBJECT_ASSIGNMENTS) || [];
-    deriveTeacherWorkload([newTeacher], assignments);
-
-    // Return the transparently flattened version
-    return {
-      ...newTeacher,
-      ...newTeacher.metadata,
-      metadata: newTeacher.metadata,
-    };
+    return teachers[idx];
   },
 
   // === CLASS DATA ===
@@ -301,19 +248,18 @@ const localProvider = {
   getAssignmentsByStudent: async (studentId) => {
     const assignments = getItem(STORAGE_KEYS.ASSIGNMENTS) || [];
     const students = getItem(STORAGE_KEYS.STUDENTS) || [];
-    const student = students.find((s) => s.id === studentId);
+    const student = students.find(
+      (s) => s.studentId === studentId || s.id === studentId,
+    );
     if (!student) return [];
 
-    const streams = getItem(STORAGE_KEYS.STREAMS) || [];
-    const stream = streams.find((s) => s.id === student.streamId);
-    const streamSubjectIds = stream ? stream.subjectIds : [];
-
+    // Filter by className match (flattened data uses className like "10-A")
     const classAssignments = assignments.filter(
-      (a) => a.classId === student.classId,
+      (a) =>
+        a.className === student.className ||
+        (a.classLevel === student.classLevel && a.section === student.section),
     );
-    return classAssignments.filter((asgn) =>
-      streamSubjectIds.includes(asgn.subjectId),
-    );
+    return classAssignments;
   },
 
   getAssignmentsByTeacher: async (teacherId) => {
@@ -323,7 +269,11 @@ const localProvider = {
 
   getAssignmentById: async (assignmentId) => {
     const assignments = getItem(STORAGE_KEYS.ASSIGNMENTS) || [];
-    return assignments.find((a) => a.id === assignmentId) || null;
+    return (
+      assignments.find(
+        (a) => a.assignmentId === assignmentId || a.id === assignmentId,
+      ) || null
+    );
   },
 
   createAssignment: async (assignmentData) => {
@@ -427,7 +377,7 @@ const localProvider = {
 
   getExamById: async (examId) => {
     const exams = getItem(STORAGE_KEYS.EXAMS) || [];
-    return exams.find((e) => e.id === examId) || null;
+    return exams.find((e) => e.examId === examId || e.id === examId) || null;
   },
 
   getResults: async () => {
@@ -554,7 +504,7 @@ const localProvider = {
 
   getTransportVehicleById: async (vehicleId) => {
     const vehicles = getItem(STORAGE_KEYS.TRANSPORT_VEHICLES) || [];
-    return vehicles.find((v) => v.vehicleId === vehicleId) || null;
+    return vehicles.find((v) => v.vehicleId === vehicleId || v.id === vehicleId) || null;
   },
 
   getTransportDrivers: async () => {
@@ -606,7 +556,42 @@ const localProvider = {
   getTimetables: async () => {
     const TIMETABLE_KEY = "erp_timetables_v2";
     try {
-      return getItem(TIMETABLE_KEY) || [];
+      let data = getItem(TIMETABLE_KEY) || [];
+      let migrated = false;
+      
+      data = data.map(tt => {
+         if (!tt.weeklySchedule) return tt;
+         let needsMigration = false;
+         Object.values(tt.weeklySchedule).forEach(slots => {
+            if (slots.some(s => s.periodNumber === "P9" || s.periodNumber === 9 || s.periodType === "break" || s.subjectId === "break")) {
+               needsMigration = true;
+            }
+         });
+         
+         if (needsMigration) {
+            migrated = true;
+            const newSchedule = {};
+            Object.entries(tt.weeklySchedule).forEach(([day, slots]) => {
+               newSchedule[day] = slots.filter(s => s.periodType !== "break" && s.subjectId !== "break").map(s => {
+                  let p = s.periodNumber;
+                  if (p === 6 || p === "P6") p = typeof p === "string" ? "P5" : 5;
+                  else if (p === 7 || p === "P7") p = typeof p === "string" ? "P6" : 6;
+                  else if (p === 8 || p === "P8") p = typeof p === "string" ? "P7" : 7;
+                  else if (p === 9 || p === "P9") p = typeof p === "string" ? "P8" : 8;
+                  
+                  return { ...s, periodNumber: p };
+               });
+            });
+            return { ...tt, weeklySchedule: newSchedule };
+         }
+         return tt;
+      });
+      
+      if (migrated) {
+         setItem(TIMETABLE_KEY, data);
+      }
+      
+      return data;
     } catch {
       return [];
     }
@@ -632,8 +617,12 @@ const localProvider = {
     const timetables = await localProvider.getTimetables();
     const idx = timetables.findIndex((t) => t.classId === classId);
     if (idx === -1) return null;
-    
-    timetables[idx] = { ...timetables[idx], ...updates, updatedAt: new Date().toISOString() };
+
+    timetables[idx] = {
+      ...timetables[idx],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
     setItem(TIMETABLE_KEY, timetables);
     return timetables[idx];
   },
@@ -641,7 +630,8 @@ const localProvider = {
   getTimetableSlot: async (classId, day, period) => {
     const timetable = await localProvider.getTimetableByClass(classId);
     if (!timetable || !timetable.weeklySchedule) return null;
-    const daySchedule = timetable.weeklySchedule[day.toLowerCase()] || [];
+    const dayKey = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+    const daySchedule = timetable.weeklySchedule[dayKey] || timetable.weeklySchedule[day.toLowerCase()] || [];
     return daySchedule.find((p) => p.periodNumber === period) || null;
   },
 
@@ -649,22 +639,22 @@ const localProvider = {
     const TIMETABLE_KEY = "erp_timetables_v2";
     const timetables = await localProvider.getTimetables();
     let idx = timetables.findIndex((t) => t.classId === classId);
-    
+
     if (idx === -1) return false;
-    
-    const dayKey = day.toLowerCase();
+
+    const dayKey = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
     const daySchedule = timetables[idx].weeklySchedule[dayKey] || [];
     const periodIdx = daySchedule.findIndex((p) => p.periodNumber === period);
-    
+
     if (periodIdx !== -1) {
       daySchedule[periodIdx] = { ...daySchedule[periodIdx], ...slotData };
     } else {
       daySchedule.push({ periodNumber: period, ...slotData });
     }
-    
+
     timetables[idx].weeklySchedule[dayKey] = daySchedule;
     timetables[idx].updatedAt = new Date().toISOString();
-    
+
     setItem(TIMETABLE_KEY, timetables);
     return true;
   },
@@ -673,17 +663,17 @@ const localProvider = {
     const TIMETABLE_KEY = "erp_timetables_v2";
     const timetables = await localProvider.getTimetables();
     const idx = timetables.findIndex((t) => t.classId === classId);
-    
+
     if (idx === -1) return false;
-    
-    const dayKey = day.toLowerCase();
+
+    const dayKey = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
     let daySchedule = timetables[idx].weeklySchedule[dayKey] || [];
-    
+
     // Remove the slot entirely
     daySchedule = daySchedule.filter((p) => p.periodNumber !== period);
     timetables[idx].weeklySchedule[dayKey] = daySchedule;
     timetables[idx].updatedAt = new Date().toISOString();
-    
+
     setItem(TIMETABLE_KEY, timetables);
     return true;
   },

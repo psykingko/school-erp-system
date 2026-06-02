@@ -1,4 +1,5 @@
 import { getDataProvider } from "../data";
+import { formatClassName, extractLevel, extractSection } from "../utils/classIdentity";
 
 /**
  * services/clubsService.js
@@ -17,7 +18,17 @@ export const getTeacherClubs = async (teacherId) => {
   const tId = teacherId || "teach-001";
   const provider = getDataProvider();
   const clubs = await provider.getClubs();
-  return clubs.filter((c) => c.clubHeadTeacherId === tId);
+  
+  const assigned = clubs.filter((c) => c.clubHeadTeacherId === tId);
+  if (assigned.length > 0) return assigned;
+
+  // Fallback: Ensure every teacher sees at least 2 clubs in the prototype
+  if (clubs.length === 0) return [];
+  const hash = tId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return [
+    { ...clubs[hash % clubs.length], clubHeadTeacherId: tId },
+    { ...clubs[(hash + 1) % clubs.length], clubHeadTeacherId: tId }
+  ];
 };
 
 /**
@@ -78,7 +89,7 @@ export const getClubMembers = async (clubId) => {
         studentId: student.id,
         name: student.name,
         admissionNo: student.admissionNo,
-        class: cls ? cls.name : "XI",
+        class: cls ? cls.name : (student.classId ? formatClassName(extractLevel(student.classId), extractSection(student.classId)) : "TBD"),
         role: enrollment.role || "Member",
         joinedAt: enrollment.joinedDate || "2024-07-20",
       });

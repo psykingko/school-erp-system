@@ -23,12 +23,14 @@ export const STORAGE_KEYS = {
   ATTENDANCE_SESSIONS: "erp_attendanceSessions",
   EXAMS: "erp_exams",
   EXAM_PAPERS: "erp_exam_papers",
+  QUESTION_PAPERS: "erp_question_papers_v2",
   RESULTS: "erp_results",
   ASSIGNMENTS: "erp_assignments",
   SUBMISSIONS: "erp_submissions",
   PERIODS: "erp_periods",
   ROOMS: "erp_rooms",
   ACADEMIC_CALENDAR: "erp_academicCalendar",
+  TIMETABLES: "erp_timetables_v2",
 
   // Finance
   FEES: "erp_fees",

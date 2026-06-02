@@ -23,7 +23,52 @@ import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import OperationsStatCard from "../../components/admin/operations/OperationsStatCard";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
 import { getDataProvider } from "../../data";
-import { TEACHER_DOCUMENT_TYPES } from "../../mockDB/seed/relationships";
+
+// ─── Teacher Document Types (Static) ─────────────────────────────────────────
+const TEACHER_DOCUMENT_TYPES = [
+  {
+    id: "aadhaar",
+    label: "Aadhaar Card",
+    category: "identity",
+    isMandatory: true,
+  },
+  {
+    id: "pan_card",
+    label: "PAN Card",
+    category: "identity",
+    isMandatory: true,
+  },
+  {
+    id: "degree_certificate",
+    label: "Degree Certificate",
+    category: "academic",
+    isMandatory: true,
+  },
+  {
+    id: "b_ed_certificate",
+    label: "B.Ed Certificate",
+    category: "academic",
+    isMandatory: true,
+  },
+  {
+    id: "experience_certificate",
+    label: "Experience Certificate",
+    category: "professional",
+    isMandatory: false,
+  },
+  {
+    id: "police_verification",
+    label: "Police Verification",
+    category: "administrative",
+    isMandatory: true,
+  },
+  {
+    id: "medical_certificate",
+    label: "Medical Fitness Certificate",
+    category: "health",
+    isMandatory: true,
+  },
+];
 
 // ─── Student Document Type Master ────────────────────────────────────────────
 const STUDENT_DOCUMENT_TYPES = [
@@ -112,6 +157,8 @@ const STATUS_CONFIG = {
   pending: { label: "Pending", color: "amber", icon: Clock },
   missing: { label: "Missing", color: "rose", icon: XCircle },
   rejected: { label: "Rejected", color: "red", icon: AlertCircle },
+  expired: { label: "Expired", color: "red", icon: AlertCircle },
+  reupload: { label: "Re-upload", color: "amber", icon: Clock },
 };
 
 // ─── Helper: Build student checklist from documents ───────────────────────────

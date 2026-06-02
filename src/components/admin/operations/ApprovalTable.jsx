@@ -36,7 +36,7 @@ const ApprovalTable = ({
               <tr key={req.id} className="hover:bg-[#caf0f8]/10 transition-colors text-xs text-gray-700 font-bold">
                 <td className="py-4 px-3 first:pl-2">
                   <span className="block text-[#03045e] font-black">{req.name || "Student"}</span>
-                  <span className="block text-[9px] text-gray-400 mt-0.5">{req.classSec || "Class XI-A"}</span>
+                  <span className="block text-[9px] text-gray-400 mt-0.5">{req.classSec || "Class 11-A"}</span>
                 </td>
                 <td className="py-4 px-3">
                   <span className="inline-block px-2 py-0.5 rounded bg-gray-50 border border-gray-100 text-[9px] font-bold uppercase text-gray-400">

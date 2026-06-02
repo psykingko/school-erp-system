@@ -157,7 +157,9 @@ const ParentsPage = () => {
 
   // Extract unique grades and sections for filters
   const uniqueGrades = useMemo(() => {
-    const grades = new Set(classes.map((c) => c.grade.toString()));
+    const grades = new Set(
+      classes.map((c) => c.grade?.toString()).filter(Boolean)
+    );
     return Array.from(grades).sort((a, b) => {
       if (a === "0") return -1;
       if (b === "0") return 1;

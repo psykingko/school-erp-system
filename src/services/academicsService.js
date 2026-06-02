@@ -15,7 +15,7 @@ import {
 } from "../data/subjectArchitecture";
 import { isSeniorSecondary } from "../utils/classIdentity";
 import { getDataProvider } from "../data";
-import { studentTimetableProjectionService } from "./timetable/studentTimetableProjectionService";
+import { studentTimetableProjectionService } from "./timetable";
 
 /**
  * academicsService.js
@@ -92,7 +92,9 @@ export const getCourses = async (studentId = "stud-001") => {
  * Fetches the timetable for a specific student.
  */
 export const getTimetable = async (studentId = "stud-001") => {
-  return await studentTimetableProjectionService.buildStudentTimetableProjection(studentId);
+  return await studentTimetableProjectionService.buildStudentTimetableProjection(
+    studentId,
+  );
 };
 
 /**
@@ -230,7 +232,7 @@ const subjectCurriculums = {
     textbooks: [
       {
         type: "main",
-        title: "Mathematics for Class XI",
+        title: "Mathematics for Class 11",
         author: "Dr. R.D. Sharma",
       },
       { type: "reference", title: "Higher Algebra", author: "Hall & Knight" },
@@ -411,7 +413,7 @@ const getDetailsForSubject = (subject) => {
     textbooks: [
       {
         type: "main",
-        title: `Textbook of ${name} for Class XI`,
+        title: `Textbook of ${name} for Class 11`,
         author: "Academic Board",
       },
       {
@@ -555,4 +557,85 @@ export const getSubjectDetails = (subjectId) => {
  */
 export const getStreamDetails = (streamId) => {
   return getStreamConfig(streamId);
+};
+
+/**
+ * ADD CLASS - Simple CRUD helper
+ */
+export const addClass = async (classData) => {
+  const provider = getDataProvider();
+  const newClass = {
+    ...classData,
+    id: `class-${classData.level.toLowerCase()}${classData.section.toLowerCase()}`,
+    name: `${classData.level}-${classData.section}`,
+    displayName: `Class ${classData.level}-${classData.section}`,
+    createdAt: new Date().toISOString(),
+    isActive: true,
+  };
+  return await provider.addClass(newClass);
+};
+
+/**
+ * SOFT DELETE CLASS - Sets isActive: false (keeps record in localStorage)
+ */
+export const softDeleteClass = async (classId) => {
+  const provider = getDataProvider();
+  return await provider.updateClass(classId, { isActive: false });
+};
+
+/**
+ * CHECK DEPENDENCIES - Visual warning only (NO cascade)
+ */
+export const getClassDependencies = async (classId) => {
+  const provider = getDataProvider();
+  const [students, timetable] = await Promise.all([
+    provider.getStudents(),
+    provider.getTimetables(),
+  ]);
+
+  return {
+    hasStudents: students.some((s) => s.classId === classId),
+    hasTimetable: timetable.some((t) => t.classId === classId),
+  };
+};
+
+/**
+ * ADD SUBJECT - Simple CRUD helper
+ */
+export const addSubject = async (subjectData) => {
+  const provider = getDataProvider();
+  const newSubject = {
+    ...subjectData,
+    id: `sub-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+  };
+  return await provider.addSubject(newSubject);
+};
+
+/**
+ * UPDATE SUBJECT - Simple CRUD helper
+ */
+export const updateSubject = async (subjectId, subjectData) => {
+  const provider = getDataProvider();
+  return await provider.updateSubject(subjectId, subjectData);
+};
+
+/**
+ * DELETE SUBJECT - Hard delete with safety warning
+ */
+export const deleteSubject = async (subjectId) => {
+  const provider = getDataProvider();
+  return await provider.deleteSubject(subjectId);
+};
+
+/**
+ * CHECK DEPENDENCIES - Visual warning only (NO cascade)
+ */
+export const getSubjectDependencies = async (subjectId) => {
+  const provider = getDataProvider();
+  const assignments = await provider.getTeacherSubjectAssignments();
+
+  return {
+    hasAssignments: assignments.some((a) => a.subjectId === subjectId),
+  };
 };

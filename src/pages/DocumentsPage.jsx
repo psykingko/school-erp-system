@@ -83,6 +83,22 @@ const STATUS_CONFIG = {
     bg: "#ffedd5",
     border: "#fed7aa",
   },
+  expired: {
+    labelEn: "Expired",
+    labelHi: "समाप्त",
+    icon: AlertTriangle,
+    color: "#b91c1c",
+    bg: "#fee2e2",
+    border: "#fca5a5",
+  },
+  reupload: {
+    labelEn: "Re-upload Required",
+    labelHi: "पुनः अपलोड आवश्यक",
+    icon: Clock,
+    color: "#92400e",
+    bg: "#fef3c7",
+    border: "#fde68a",
+  },
 };
 
 const pageVariants = {

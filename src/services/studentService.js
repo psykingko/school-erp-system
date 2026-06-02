@@ -1,6 +1,12 @@
 import { getDataProvider } from "../data";
 import { getSubjectsForStudent } from "./academicsService";
 import { isSeniorSecondary } from "../utils/classIdentity";
+import { getFeeDetails } from "./financeService";
+import { studentTimetableProjectionService } from "./timetable";
+import { getBrandingInfo, getNoticesAndEvents } from "./sharedService";
+import { getAcademicProgress, getAcademicTimeline } from "./assignmentService";
+import { getExamData } from "./examService";
+import { getUpdatesForStudent } from "./classUpdatesService";
 
 /**
  * Fetches the student profile (Purely Relational via storage)
@@ -10,32 +16,32 @@ export const getStudentProfile = async (studentId) => {
   const provider = getDataProvider();
 
   const students = await provider.getStudents();
-  const student = students.find((s) => s.id === id);
+  const student = students.find((s) => s.studentId === id || s.id === id);
   if (!student) return null;
 
-  const classes = await provider.getClasses();
-  const classesMap = new Map(classes.map((c) => [c.id, c]));
-  const classData = classesMap.get(student.classId);
+  // Use flattened class data directly from student
+  const classData = {
+    name: student.className,
+    section: student.section,
+    level: student.classLevel,
+  };
 
   const subjects = await getSubjectsForStudent(id);
 
-  // Resolve Class Teacher relationally
+  // Resolve Class Teacher relationally (find teacher who is CT for this class)
   let classTeacherName = "N/A";
-  if (classData && classData.classTeacherId) {
-    const teachers = await provider.getTeachers();
-    const teachersMap = new Map(teachers.map((t) => [t.id, t]));
-    const teacher = teachersMap.get(classData.classTeacherId);
-    if (teacher) {
-      classTeacherName = teacher.name;
-    }
+  const teachers = await provider.getTeachers();
+  const classTeacher = teachers.find(
+    (t) => t.isClassTeacher && t.className === student.className,
+  );
+  if (classTeacher) {
+    classTeacherName = classTeacher.teacherName || classTeacher.name;
   }
 
-  // Resolve Parents for Family Section
+  // Resolve Parent for Family Section (using parentId from student)
   const parentsList = await provider.getParents();
-  const parentsMap = new Map(parentsList.map((p) => [p.id, p]));
-  const parents = (student.parentIds || [])
-    .map((pid) => parentsMap.get(pid))
-    .filter(Boolean);
+  const parentsMap = new Map(parentsList.map((p) => [p.parentId || p.id, p]));
+  const parent = student.parentId ? parentsMap.get(student.parentId) : null;
 
   // Derive initials and colors
   const initials = student.name
@@ -52,10 +58,11 @@ export const getStudentProfile = async (studentId) => {
   const firstName = student.name.split(" ")[0];
   const emailUsername = student.name.toLowerCase().replace(/\s/g, ".");
 
-  const libraryCardNo = `LIB-${classCode}-${student.id.split("-")[1]}`;
-  const libraryPin = `lib@${firstName}${student.admissionNo.slice(-3)}`;
+  const studentIdNum = student.studentId.split("-")[1];
+  const libraryCardNo = `LIB-${classCode}-${studentIdNum}`;
+  const libraryPin = `lib@${firstName}${studentIdNum}`;
   const schoolEmail = `${emailUsername}@springdale.edu.in`;
-  const emailPassword = `${firstName}@Spring#${student.admissionNo.slice(-2)}`;
+  const emailPassword = `${firstName}@Spring#${studentIdNum}`;
 
   // Return a structured entity-driven profile
   return {
@@ -63,9 +70,9 @@ export const getStudentProfile = async (studentId) => {
       fullName: student.name,
       firstName: firstName,
       lastName: student.name.split(" ").slice(1).join(" "),
-      studentId: student.id,
-      admissionNumber: student.admissionNo,
-      rollNumber: student.id.split("-")[1], // Derived
+      studentId: student.studentId,
+      admissionNumber: student.studentId,
+      rollNumber: studentIdNum, // Derived
       email: schoolEmail,
       avatarInitials: initials,
       avatarColor: "#03045e",
@@ -93,9 +100,10 @@ export const getStudentProfile = async (studentId) => {
     },
     family: {
       father: {
-        name: parents[0]?.name || "N/A",
+        name: parent?.name || "N/A",
         occupation: student.fatherOccupation || "Professional",
-        phoneNumber: student.fatherPhone || "+91 90000 00001",
+        phoneNumber:
+          student.fatherPhone || parent?.phoneNumber || "+91 90000 00001",
       },
       mother: {
         name: student.motherName || "N/A",
@@ -103,10 +111,10 @@ export const getStudentProfile = async (studentId) => {
         phoneNumber: student.motherPhone || "+91 90000 00002",
       },
       guardian: {
-        name: parents[0]?.name || "N/A",
+        name: parent?.name || "N/A",
         relation: "Father",
         phoneNumber:
-          parents[0]?.phoneNumber || student.fatherPhone || "+91 90000 00001",
+          parent?.phoneNumber || student.fatherPhone || "+91 90000 00001",
         address: "123, Park Avenue, New Delhi, India",
       },
     },
@@ -229,7 +237,7 @@ export const getAllStudents = async () => {
 export const updateStudentProfile = async (id, updates) => {
   const provider = getDataProvider();
   const students = await provider.getStudents();
-  const idx = students.findIndex((s) => s.id === id);
+  const idx = students.findIndex((s) => s.studentId === id || s.id === id);
   if (idx === -1) throw new Error("Student not found");
 
   const finalUpdates = { ...updates };
@@ -252,4 +260,214 @@ export const updateStudentProfile = async (id, updates) => {
 
   const updatedStudent = await provider.updateStudent(id, finalUpdates);
   return updatedStudent;
+};
+
+/**
+ * ADD STUDENT - Simple CRUD helper
+ */
+export const addStudent = async (studentData) => {
+  const provider = getDataProvider();
+  const newStudent = {
+    ...studentData,
+    id: `stu-${Date.now()}`,
+    admissionNo: studentData.admissionNo || `ADM${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    isActive: true,
+  };
+  return await provider.addStudent(newStudent);
+};
+
+/**
+ * SOFT DELETE STUDENT - Sets isActive: false (keeps record in localStorage)
+ */
+export const softDeleteStudent = async (studentId) => {
+  const provider = getDataProvider();
+  return await provider.updateStudent(studentId, { isActive: false });
+};
+
+/**
+ * CHECK DEPENDENCIES - Visual warning only (NO cascade)
+ */
+export const getStudentDependencies = async (studentId) => {
+  const provider = getDataProvider();
+  const [fees, attendance, results] = await Promise.all([
+    provider.getFees(),
+    provider.getDailyAttendance(),
+    provider.getResults(),
+  ]);
+
+  return {
+    hasFees: fees.some((f) => f.studentId === studentId),
+    hasAttendance: attendance.some((a) => a.studentId === studentId),
+    hasResults: results.some((r) => r.studentId === studentId),
+  };
+};
+
+// ─── From studentDashboardService (inlined) ───────────────────────────────────
+
+const _dashCache = new Map();
+const CACHE_TTL = 10000;
+
+export const getCriticalStudentDashboardPayload = async (
+  studentId,
+  forceRefresh = false,
+) => {
+  const sId = studentId || "stud-001";
+  const cacheKey = `student-dashboard-critical-${sId}`;
+  if (!forceRefresh && _dashCache.has(cacheKey)) {
+    const entry = _dashCache.get(cacheKey);
+    if (Date.now() - entry.timestamp < CACHE_TTL) return entry.payload;
+  }
+  const [profile, attendance, finance, timetable] = await Promise.all([
+    getStudentProfile(sId),
+    getAttendance(sId),
+    getFeeDetails(sId),
+    studentTimetableProjectionService.buildStudentTimetableProjection(sId),
+  ]);
+  const attendanceWarnings =
+    (attendance?.overall?.percentage || 100) < 75
+      ? [
+          {
+            name: "attendance",
+            percentage: attendance?.overall?.percentage || 100,
+          },
+        ]
+      : [];
+  const payload = {
+    profile,
+    attendance,
+    finance,
+    timetable,
+    derived: { attendanceWarnings },
+  };
+  _dashCache.set(cacheKey, { payload, timestamp: Date.now() });
+  return payload;
+};
+
+export const getDeferredStudentDashboardPayload = async (
+  studentId,
+  isParent,
+  forceRefresh = false,
+) => {
+  const sId = studentId || "stud-001";
+  const cacheKey = `student-dashboard-deferred-${sId}-${!!isParent}`;
+  if (!forceRefresh && _dashCache.has(cacheKey)) {
+    const entry = _dashCache.get(cacheKey);
+    if (Date.now() - entry.timestamp < CACHE_TTL) return entry.payload;
+  }
+  const [
+    progress,
+    timeline,
+    branding,
+    shared,
+    documents,
+    examData,
+    classUpdates,
+  ] = await Promise.all([
+    getAcademicProgress(sId),
+    getAcademicTimeline(sId),
+    getBrandingInfo(),
+    getNoticesAndEvents(sId),
+    getDocuments(sId),
+    getExamData(sId),
+    getUpdatesForStudent(sId, !!isParent),
+  ]);
+  const missingDocuments = (documents || []).filter(
+    (doc) => doc.isMandatory && doc.status === "missing",
+  );
+  const totalTasks = (progress || []).reduce(
+    (acc, curr) => acc + (curr.totalTasks || 0),
+    0,
+  );
+  const completedTasks = (progress || []).reduce(
+    (acc, curr) => acc + (curr.completedTasks || 0),
+    0,
+  );
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const pendingCount = timeline?.upcoming?.length || 0;
+  const overdueCount = timeline?.overdue?.length || 0;
+  const nextExam = (() => {
+    if (!examData?.schedule || examData.schedule.length === 0) return null;
+    const firstExam = examData.schedule[0];
+    return { name: firstExam.subject, date: firstExam.date };
+  })();
+  const payload = {
+    progress,
+    timeline,
+    branding,
+    shared,
+    documents,
+    examData,
+    classUpdates,
+    derived: {
+      missingDocuments,
+      completionRate,
+      pendingCount,
+      overdueCount,
+      nextExam,
+    },
+  };
+  _dashCache.set(cacheKey, { payload, timestamp: Date.now() });
+  return payload;
+};
+
+export const getStudentDashboardPayload = async (
+  studentId,
+  isParent,
+  forceRefresh = false,
+) => {
+  const sId = studentId || "stud-001";
+  const cacheKey = `student-dashboard-${sId}-${!!isParent}`;
+  if (!forceRefresh && _dashCache.has(cacheKey)) {
+    const entry = _dashCache.get(cacheKey);
+    if (Date.now() - entry.timestamp < CACHE_TTL) return entry.payload;
+  }
+  const [critical, deferred] = await Promise.all([
+    getCriticalStudentDashboardPayload(sId, forceRefresh),
+    getDeferredStudentDashboardPayload(sId, isParent, forceRefresh),
+  ]);
+  const payload = {
+    profile: critical.profile,
+    attendance: critical.attendance,
+    finance: critical.finance,
+    timetable: critical.timetable,
+    progress: deferred.progress,
+    timeline: deferred.timeline,
+    branding: deferred.branding,
+    shared: deferred.shared,
+    documents: deferred.documents,
+    examData: deferred.examData,
+    classUpdates: deferred.classUpdates,
+    derived: {
+      attendanceWarnings: critical.derived.attendanceWarnings,
+      missingDocuments: deferred.derived.missingDocuments,
+      completionRate: deferred.derived.completionRate,
+      pendingCount: deferred.derived.pendingCount,
+      overdueCount: deferred.derived.overdueCount,
+      nextExam: deferred.derived.nextExam,
+    },
+  };
+  _dashCache.set(cacheKey, { payload, timestamp: Date.now() });
+  return payload;
+};
+
+export const clearStudentDashboardCache = (studentId, isParent) => {
+  const sId = studentId || "stud-001";
+  _dashCache.delete(`student-dashboard-critical-${sId}`);
+  _dashCache.delete(`student-dashboard-deferred-${sId}-${!!isParent}`);
+  _dashCache.delete(`student-dashboard-${sId}-${!!isParent}`);
+};
+
+export const clearDeferredCache = (studentId, isParent) => {
+  const sId = studentId || "stud-001";
+  _dashCache.delete(`student-dashboard-deferred-${sId}-${!!isParent}`);
+  _dashCache.delete(`student-dashboard-${sId}-${!!isParent}`);
+};
+
+export const studentDashboardService = {
+  getCriticalStudentDashboardPayload,
+  getDeferredStudentDashboardPayload,
+  getStudentDashboardPayload,
+  clearStudentDashboardCache,
 };

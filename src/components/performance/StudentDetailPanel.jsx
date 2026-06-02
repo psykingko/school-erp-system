@@ -353,25 +353,64 @@ export default function StudentDetailPanel({ studentId, teacherId, teacherName, 
                       {details.marks.results.length === 0 ? (
                         <p className="text-xs font-bold text-gray-400 italic">No published exams or marks entered yet.</p>
                       ) : (
-                        <div className="space-y-3">
-                          {details.marks.results.map((res) => (
-                            <div key={res.id} className="p-4 bg-gray-50/50 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div>
-                                <span className="text-xs font-black text-[#03045e] uppercase tracking-wider block">{res.subjectName}</span>
-                                <span className="text-[9px] font-black text-gray-400 block mt-1 uppercase">
-                                  Exam: {res.examName}
-                                </span>
+                        <div className="space-y-6">
+                          {(() => {
+                            const groups = {
+                              "Term Exams": {},
+                              "Unit Tests": {},
+                              "Other Assessments": {}
+                            };
+
+                            details.marks.results.forEach(res => {
+                              const name = res.examName.toUpperCase();
+                              let category = "Other Assessments";
+                              if (name.includes("TERM") || name.includes("SEMESTER") || name.includes("FINAL") || name.includes("HALF YEARLY")) {
+                                category = "Term Exams";
+                              } else if (name.includes("UNIT") || name.includes("PT") || name.includes("PERIODIC") || name.includes("TEST")) {
+                                category = "Unit Tests";
+                              }
+
+                              if (!groups[category][res.examName]) {
+                                groups[category][res.examName] = [];
+                              }
+                              groups[category][res.examName].push(res);
+                            });
+
+                            const activeGroups = Object.entries(groups).filter(([_, exams]) => Object.keys(exams).length > 0);
+
+                            return activeGroups.map(([category, exams]) => (
+                              <div key={category} className="space-y-4">
+                                <h5 className="text-sm font-black text-[#03045e] uppercase tracking-widest bg-indigo-50/50 p-2.5 rounded-xl border border-indigo-100/50">{category}</h5>
+                                <div className="space-y-6 pl-1">
+                                  {Object.entries(exams).map(([examName, results]) => (
+                                    <div key={examName} className="space-y-3">
+                                      <h6 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                                        {examName}
+                                      </h6>
+                                      <div className="grid gap-3">
+                                        {results.map((res) => (
+                                          <div key={res.id} className="p-4 bg-gray-50/50 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:shadow-sm hover:border-indigo-100">
+                                            <div>
+                                              <span className="text-xs font-black text-[#03045e] uppercase tracking-wider block">{res.subjectName}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                              <span className="text-xs font-black text-[#03045e] bg-white px-2.5 py-1.5 rounded-xl border shadow-sm">
+                                                {res.marksObtained} / {res.maxMarks} Marks ({Math.round((res.marksObtained / res.maxMarks) * 100)}%)
+                                              </span>
+                                              <span className="w-8 h-8 rounded-xl bg-[#03045e] text-white font-black text-xs flex items-center justify-center shadow-sm">
+                                                {res.grade}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-3">
-                                <span className="text-xs font-black text-[#03045e] bg-white px-2.5 py-1.5 rounded-xl border shadow-sm">
-                                  {res.marksObtained} / {res.maxMarks} Marks ({Math.round((res.marksObtained / res.maxMarks) * 100)}%)
-                                </span>
-                                <span className="w-8 h-8 rounded-xl bg-[#03045e] text-white font-black text-xs flex items-center justify-center shadow-sm">
-                                  {res.grade}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
+                            ));
+                          })()}
                         </div>
                       )}
                     </div>

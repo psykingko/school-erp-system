@@ -33,21 +33,21 @@ const AcademicAnalyticsPage = () => {
   const demoPerformanceList = [
     {
       classId: "class-11a",
-      className: "Class XI-A",
+      className: "Class 11-A",
       averageScore: 89.2,
       passRate: 100,
       examStatus: "Completed",
     },
     {
       classId: "class-11b",
-      className: "Class XI-B",
+      className: "Class 11-B",
       averageScore: 82.4,
       passRate: 98,
       examStatus: "Completed",
     },
     {
       classId: "class-12a",
-      className: "Class XII-A",
+      className: "Class 12-A",
       averageScore: 91.8,
       passRate: 100,
       examStatus: "Completed",

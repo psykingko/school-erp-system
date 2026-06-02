@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
 import TeacherModuleHeader from "../../components/teacher/TeacherModuleHeader";
-import { teacherScheduleService } from "../../services/teacherScheduleService";
+import { teacherScheduleService } from "../../services/teacherService";
 import { useAuth } from "../../context/AuthContext";
-import { Calendar, Clock, MapPin, CalendarDays, Compass, HelpCircle } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  CalendarDays,
+  Compass,
+  HelpCircle,
+} from "lucide-react";
 import MainCard from "../../components/MainCard";
 
 const ClassTimetablePage = () => {
@@ -17,7 +24,8 @@ const ClassTimetablePage = () => {
     const loadSchedule = async () => {
       setLoading(true);
       try {
-        const sched = await teacherScheduleService.getTeacherWeeklySchedule(teacherId);
+        const sched =
+          await teacherScheduleService.getTeacherWeeklySchedule(teacherId);
         setWeeklySchedule(sched);
       } catch (e) {
         console.error("Failed to load weekly schedule:", e);
@@ -28,8 +36,16 @@ const ClassTimetablePage = () => {
     loadSchedule();
   }, [teacherId]);
 
-  const daysOfTheWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  const dayFilteredSchedule = weeklySchedule.filter(s => s.day === selectedDay);
+  const daysOfTheWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+  ];
+  const dayFilteredSchedule = weeklySchedule.filter(
+    (s) => s.day === selectedDay,
+  );
 
   if (loading) {
     return (
@@ -41,7 +57,7 @@ const ClassTimetablePage = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      <TeacherModuleHeader 
+      <TeacherModuleHeader
         titleKey="nav.class_timetable"
         descriptionKey="Analyze your weekly class allocations, subject streams, and room mappings."
         helperContentEn="The My Schedule page lets you view your complete weekly class coordination plans. Switch tabs to analyze individual days and plan homework releases."
@@ -58,7 +74,9 @@ const ClassTimetablePage = () => {
             </h3>
             <div className="space-y-2">
               {daysOfTheWeek.map((day) => {
-                const count = weeklySchedule.filter(s => s.day === day).length;
+                const count = weeklySchedule.filter(
+                  (s) => s.day === day,
+                ).length;
                 const isSelected = selectedDay === day;
 
                 return (
@@ -72,9 +90,13 @@ const ClassTimetablePage = () => {
                     }`}
                   >
                     <span>{day}</span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
-                      isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-400"
-                    }`}>
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                        isSelected
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-400"
+                      }`}
+                    >
                       {count} {count === 1 ? "Class" : "Classes"}
                     </span>
                   </button>
@@ -104,7 +126,7 @@ const ClassTimetablePage = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {dayFilteredSchedule.map((item, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     className="p-5 rounded-2xl border border-gray-50 bg-gradient-to-br from-white to-gray-50/30 hover:border-blue-100 hover:shadow-sm transition-all"
                   >
@@ -113,7 +135,9 @@ const ClassTimetablePage = () => {
                         <span className="text-[8px] font-black bg-[#caf0f8] text-[#0077b6] px-2 py-0.5 rounded-md uppercase tracking-wider">
                           {item.period}
                         </span>
-                        <h4 className="font-black text-sm text-[#03045e] mt-1.5">{item.subject}</h4>
+                        <h4 className="font-black text-sm text-[#03045e] mt-1.5">
+                          {item.subject}
+                        </h4>
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] font-black text-[#00b4d8] bg-[#caf0f8]/20 px-2.5 py-1 rounded-xl">

@@ -146,8 +146,11 @@ function DayColumn({ day, classes }) {
           initial="hidden"
           animate="visible"
         >
-          {classes.map((cls) => (
-            <ClassBlock key={cls.id} cls={cls} />
+          {classes.map((cls, idx) => (
+            <ClassBlock
+              key={`${cls.day}-${cls.periodNumber}-${idx}`}
+              cls={cls}
+            />
           ))}
         </motion.div>
       )}
@@ -216,8 +219,11 @@ function MobileView({ weeklyTimetable }) {
         transition={{ duration: 0.25 }}
         className="flex flex-col gap-3"
       >
-        {(weeklyTimetable[activeDay] || []).map((cls) => (
-          <ClassBlock key={cls.id} cls={cls} />
+        {(weeklyTimetable[activeDay] || []).map((cls, idx) => (
+          <ClassBlock
+            key={`${activeDay}-${cls.periodNumber}-${idx}`}
+            cls={cls}
+          />
         ))}
         {(!weeklyTimetable[activeDay] ||
           weeklyTimetable[activeDay].length === 0) && (
@@ -237,7 +243,11 @@ function WeeklyTimetablePage() {
   const { t } = useLanguage();
   const { activeStudentId } = useStudent();
   const [showHelper, setShowHelper] = useState(false);
-  const { data: timetable, loading, error } = useService(getTimetable, [activeStudentId], [activeStudentId]);
+  const {
+    data: timetable,
+    loading,
+    error,
+  } = useService(getTimetable, [activeStudentId], [activeStudentId]);
 
   if (error) throw error;
 
@@ -257,11 +267,21 @@ function WeeklyTimetablePage() {
       <div className="relative">
         <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl shadow-sm flex-shrink-0" style={{ backgroundColor: NAVY }}>
-              <CalendarDays size={31} className="text-white" aria-hidden="true" />
+            <div
+              className="p-3 rounded-2xl shadow-sm flex-shrink-0"
+              style={{ backgroundColor: NAVY }}
+            >
+              <CalendarDays
+                size={31}
+                className="text-white"
+                aria-hidden="true"
+              />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-2xl font-black truncate" style={{ color: NAVY }}>
+              <h1
+                className="text-2xl font-black truncate"
+                style={{ color: NAVY }}
+              >
                 {t("timetable.title") || "Weekly Timetable"}
               </h1>
               <p className="text-sm text-gray-500 truncate">
@@ -269,7 +289,6 @@ function WeeklyTimetablePage() {
               </p>
             </div>
           </div>
-
 
           <div className="flex-shrink-0">
             <HelperButton
@@ -284,7 +303,9 @@ function WeeklyTimetablePage() {
             <div className="w-20 h-20 rounded-full bg-[#caf0f8] flex items-center justify-center mb-6">
               <CalendarDays size={40} className="text-[#03045e]" />
             </div>
-            <h2 className="text-xl font-black text-[#03045e] mb-2">No Timetable Available</h2>
+            <h2 className="text-xl font-black text-[#03045e] mb-2">
+              No Timetable Available
+            </h2>
             <p className="text-gray-500 font-semibold max-w-md">
               Timetable has not been set yet.
             </p>
@@ -297,7 +318,11 @@ function WeeklyTimetablePage() {
                 style={{ gridTemplateColumns: "repeat(7, 1fr)" }}
               >
                 {DAYS.map((day) => (
-                  <DayColumn key={day} day={day} classes={weeklyTimetable[day]} />
+                  <DayColumn
+                    key={day}
+                    day={day}
+                    classes={weeklyTimetable[day]}
+                  />
                 ))}
                 <WeekendCard day="Saturday" />
                 <WeekendCard day="Sunday" />
@@ -313,7 +338,11 @@ function WeeklyTimetablePage() {
               style={{ outline: `1px solid ${LIME}` }}
             >
               <div className="flex items-center gap-2 mb-3">
-                <BookOpen size={21} style={{ color: TEAL }} aria-hidden="true" />
+                <BookOpen
+                  size={21}
+                  style={{ color: TEAL }}
+                  aria-hidden="true"
+                />
                 <p className="text-sm font-extrabold" style={{ color: NAVY }}>
                   Subject Color Guide
                 </p>
@@ -328,9 +357,14 @@ function WeeklyTimetablePage() {
                     {},
                   ),
                 ).map((cls) => {
-                  const color = getSubjectColor(cls.subjectId || cls.code || "SUB-00");
+                  const color = getSubjectColor(
+                    cls.subjectId || cls.code || "SUB-00",
+                  );
                   return (
-                    <div key={cls.subjectId} className="flex items-center gap-2">
+                    <div
+                      key={cls.subjectId}
+                      className="flex items-center gap-2"
+                    >
                       <div
                         className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: color.bg }}
@@ -355,8 +389,16 @@ function WeeklyTimetablePage() {
         contentEn="The weekly timetable shows all classes scheduled from Monday to Friday. Saturday and Sunday are holidays. Each colored block shows the subject, course code, teacher, time, and room number."
         contentHi="साप्ताहिक समय-सारणी सोमवार से शुक्रवार तक निर्धारित सभी कक्षाएं दिखाती है। शनिवार और रविवार छुट्टी के दिन हैं। प्रत्येक रंगीन ब्लॉक में विषय, कोर्स कोड, शिक्षक, समय और कमरा नंबर दिखाया जाता है।"
         colorLegend={[
-          { color: NAVY, labelEn: "Navy — Core subjects", labelHi: "नेवी — मुख्य विषय" },
-          { color: TEAL, labelEn: "Teal — Lab sessions", labelHi: "टील — लैब सत्र" },
+          {
+            color: NAVY,
+            labelEn: "Navy — Core subjects",
+            labelHi: "नेवी — मुख्य विषय",
+          },
+          {
+            color: TEAL,
+            labelEn: "Teal — Lab sessions",
+            labelHi: "टील — लैब सत्र",
+          },
           { color: SAGE, labelEn: "Sage — Electives", labelHi: "सेज — ऐच्छिक" },
         ]}
       />

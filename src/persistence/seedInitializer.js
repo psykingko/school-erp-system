@@ -1,16 +1,13 @@
 /**
  * persistence/seedInitializer.js
- * Seed data initialization for the EduDash ERP.
- * Refactored to delegate directly to the Centralized ERP Initialization Engine.
+ * Simplified seed data initialization for the ERP.
  *
- * RESPONSIBILITIES:
- * - Backwards compatible facade for startup and seeding routines.
+ * Now uses direct static seeding without workflow engines.
  */
 
 import { STORAGE_KEYS } from "./storageKeys";
 import { hasKey } from "./storage";
 import { initializeERP } from "../initialization/initializeERP";
-import { initializeSeeds } from "../initialization/initializeSeeds";
 
 /**
  * Checks if seed data needs to be initialized.
@@ -21,11 +18,12 @@ export const needsInitialization = () => {
 };
 
 /**
- * Initializes seed data. Delegates to the Centralized Initialization Engine.
+ * Initializes seed data. Delegates to the simplified ERP Initialization.
  */
 export const initializeSeedData = () => {
   try {
-    return initializeSeeds.checkAndSeed(true);
+    initializeERP();
+    return true;
   } catch (error) {
     console.error("[seedInitializer] Seed initialization error:", error);
     return false;
@@ -33,7 +31,7 @@ export const initializeSeedData = () => {
 };
 
 /**
- * Ensures seed data is initialized. Delegates to Centralized Boot sequence.
+ * Ensures seed data is initialized.
  * @returns {boolean} Success status
  */
 export const ensureSeedData = () => {

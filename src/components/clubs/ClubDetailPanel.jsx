@@ -6,7 +6,7 @@ import ClubUpdatesFeed from "./ClubUpdatesFeed";
 import CreateEventModal from "./CreateEventModal";
 import { clubsService } from "../../services/clubsService";
 
-export default function ClubDetailPanel({ club, onBack, teacherId }) {
+export default function ClubDetailPanel({ club, onBack, teacherId, isReadOnly = false }) {
   const [activeTab, setActiveTab] = useState("members");
   const [members, setMembers] = useState([]);
   const [events, setEvents] = useState([]);
@@ -99,7 +99,7 @@ export default function ClubDetailPanel({ club, onBack, teacherId }) {
         </button>
         <div>
           <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
-            {club.category} Coordinator
+            {club.category} {isReadOnly ? "Member" : "Coordinator"}
           </span>
           <h2 className="text-xl font-black text-[#03045e] mt-1">{club.name}</h2>
         </div>
@@ -118,7 +118,7 @@ export default function ClubDetailPanel({ club, onBack, teacherId }) {
           <div className="flex flex-wrap gap-4 text-[10px] font-bold text-gray-500">
             <div>
               <span className="text-gray-400">Class Scope:</span>{" "}
-              <span className="text-[#03045e]">{club.allowedClasses?.join(", ") || "XI-A, XI-B"}</span>
+              <span className="text-[#03045e]">{club.allowedClasses?.join(", ") || "11-A, 11-B"}</span>
             </div>
             <div>
               <span className="text-gray-400">Max Member Capacity:</span>{" "}
@@ -166,14 +166,14 @@ export default function ClubDetailPanel({ club, onBack, teacherId }) {
         {activeTab === "events" && (
           <ClubEventsList 
             events={events} 
-            onOpenScheduleModal={() => setIsScheduleModalOpen(true)} 
+            onOpenScheduleModal={isReadOnly ? undefined : () => setIsScheduleModalOpen(true)} 
           />
         )}
 
         {activeTab === "updates" && (
           <ClubUpdatesFeed 
             updates={updates} 
-            onPostUpdate={handlePostUpdate} 
+            onPostUpdate={isReadOnly ? undefined : handlePostUpdate} 
           />
         )}
       </div>

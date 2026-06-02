@@ -103,7 +103,7 @@ const ResultsPage = () => {
       studentName: stu ? stu.name : "Student",
       subjectName: sub ? sub.name : "Subject",
       examName: ex ? ex.name : "UT-1 Exam",
-      className: cls ? cls.name : "Class XI",
+      className: cls ? cls.name : "Class 11",
     };
   });
 
@@ -189,10 +189,10 @@ const ResultsPage = () => {
                 className="flex items-center gap-2 border border-[#caf0f8] hover:border-[#00b4d8] px-4 py-2.5 rounded-2xl text-xs font-bold text-[#03045e] transition-colors bg-white outline-none"
               >
                 <option value="">Filter Section...</option>
-                <option value="class-11a">Class XI-A</option>
-                <option value="class-11b">Class XI-B</option>
-                <option value="class-11c">Class XI-C</option>
-                <option value="class-11d">Class XI-D</option>
+                <option value="class-11a">Class 11-A</option>
+                <option value="class-11b">Class 11-B</option>
+                <option value="class-11c">Class 11-C</option>
+                <option value="class-11d">Class 11-D</option>
               </select>
               <select
                 value={selectedExam}

@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Award, Clock, CheckCircle, AlertCircle, Play, ShieldAlert } from "lucide-react";
+import {
+  Award,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Play,
+  ShieldAlert,
+} from "lucide-react";
 import AdminStatCard from "../../../AdminStatCard";
 import MainCard from "../../../../MainCard";
 import ResultReadinessPanel from "./ResultReadinessPanel";
 import PublicationTimelineFeed from "./PublicationTimelineFeed";
 import ResultAnalyticsPreview from "./ResultAnalyticsPreview";
 import PublicationDiagnosticsModal from "./PublicationDiagnosticsModal";
-import { validateSessionForPublication } from "../../../../../services/examService";
-import { transitionExamCycleStatus } from "../../../../../services/examLifecycleService";
+import {
+  validateSessionForPublication,
+  transitionExamCycleStatus,
+} from "../../../../../services/examService";
 
 export default function PublicationDashboard({
   examCycle,
@@ -81,7 +90,8 @@ export default function PublicationDashboard({
             {examCycle.name} Results
           </h3>
           <p className="text-xs text-white/70 font-semibold max-w-lg leading-relaxed">
-            Close the evaluation cycle, freeze teacher scorings, and declare central PTM scores securely.
+            Close the evaluation cycle, freeze teacher scorings, and declare
+            central PTM scores securely.
           </p>
         </div>
 

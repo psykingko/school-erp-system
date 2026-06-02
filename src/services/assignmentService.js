@@ -1,6 +1,7 @@
 import { getDataProvider } from "../data";
 import { getCourses } from "./academicsService";
 import { clearServiceCache } from "../hooks/useService";
+import { formatClassName, extractLevel, extractSection } from "../utils/classIdentity";
 
 /**
  * assignmentService.js
@@ -45,23 +46,20 @@ export const getAssignmentsByClass = async (classId) => {
  */
 export const getStudentAssignments = async (studentId) => {
   const provider = getDataProvider();
-  const assignments = await provider.getAssignmentsByStudent(studentId);
+  
+  const classAssignments = await provider.getAssignmentsByStudent(studentId);
+  
+  // Basic relationship: Only show assignments for subjects the student is actually enrolled in
   const enrolledCourses = await getCourses(studentId);
-
-  const streams = await provider.getStreams();
-  const stream = streams.find((s) => s.id === enrolledCourses.streamId);
-  const streamSubjectIds = stream ? stream.subjectIds : [];
-
-  // Filter assignments by student's subjects to respect stream division (e.g. Commerce vs Science)
-  const filteredAssignments = assignments.filter((asgn) =>
-    streamSubjectIds.includes(asgn.subjectId),
-  );
-
+  const subjectIds = enrolledCourses.map((c) => c.id);
+  
+  const assignments = classAssignments.filter((a) => subjectIds.includes(a.subjectId));
+  
   const submissions = await provider.getSubmissionsByStudent(studentId);
   const subjects = await provider.getSubjects();
 
   // Relational Mapping: Join assignments with student submissions
-  return filteredAssignments.map((asgn) => {
+  return assignments.map((asgn) => {
     const submission = submissions.find((s) => s.assignmentId === asgn.id);
 
     // Status Logic
@@ -100,7 +98,10 @@ export const getAssignmentsByStudent = getStudentAssignments;
  */
 export const getAssignmentsByTeacher = async (teacherId) => {
   const provider = getDataProvider();
+  
+  // Basic relationship: Teachers only see assignments they created for their subjects
   const assignments = await provider.getAssignmentsByTeacher(teacherId);
+
   const resolved = await resolveAssignmentDetails(assignments);
 
   const allSubmissions = await provider.getSubmissions();
@@ -133,13 +134,29 @@ export const getAssignmentsByTeacher = async (teacherId) => {
   });
 };
 
-/**
- * Creates a new assignment.
- * Validates teacher authority (handled at view layer via filtered options).
- */
 export const createAssignment = async (assignmentData) => {
   const provider = getDataProvider();
-  const newAssignment = await provider.createAssignment(assignmentData);
+  const allSubjects = await provider.getSubjects();
+  const allClasses = await provider.getClasses();
+
+  const subject = allSubjects.find((s) => s.id === assignmentData.subjectId);
+  const cls = allClasses.find((c) => c.id === assignmentData.classId);
+
+  let classNameVal = assignmentData.classId;
+  if (cls) {
+    classNameVal = formatClassName(cls.level || extractLevel(cls.id), cls.section || extractSection(cls.id));
+  } else {
+    classNameVal = formatClassName(extractLevel(assignmentData.classId), extractSection(assignmentData.classId));
+  }
+
+  const enrichedData = {
+    ...assignmentData,
+    subjectName: subject ? subject.name : assignmentData.subjectId,
+    className: classNameVal,
+    classDisplayName: classNameVal,
+  };
+
+  const newAssignment = await provider.createAssignment(enrichedData);
   clearServiceCache("assignmentService");
   return newAssignment;
 };
@@ -149,8 +166,33 @@ export const createAssignment = async (assignmentData) => {
  */
 export const updateAssignment = async (assignmentId, updates) => {
   const provider = getDataProvider();
+  
+  let enrichedUpdates = { ...updates };
+  
+  if (updates.subjectId || updates.classId) {
+    const allSubjects = await provider.getSubjects();
+    const allClasses = await provider.getClasses();
+    
+    if (updates.subjectId) {
+      const subject = allSubjects.find((s) => s.id === updates.subjectId);
+      enrichedUpdates.subjectName = subject ? subject.name : updates.subjectId;
+    }
+    
+    if (updates.classId) {
+      const cls = allClasses.find((c) => c.id === updates.classId);
+      let classNameVal = updates.classId;
+      if (cls) {
+        classNameVal = formatClassName(cls.level || extractLevel(cls.id), cls.section || extractSection(cls.id));
+      } else {
+        classNameVal = formatClassName(extractLevel(updates.classId), extractSection(updates.classId));
+      }
+      enrichedUpdates.className = classNameVal;
+      enrichedUpdates.classDisplayName = classNameVal;
+    }
+  }
+
   const updatedAssignment = await provider.updateAssignment(assignmentId, {
-    ...updates,
+    ...enrichedUpdates,
     updatedAt: new Date().toISOString(),
   });
   clearServiceCache("assignmentService");

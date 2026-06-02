@@ -101,7 +101,7 @@ function NoticeItem({ notice, index, isParentMode, isRead, onRead }) {
 
   const handleCardClick = () => {
     if (!isRead && onRead) {
-      onRead(notice.id);
+      onRead(notice.id || notice.noticeId);
     }
   };
 
@@ -356,11 +356,11 @@ function NoticeBoard({
               <ul className="space-y-1" aria-label={t("notice.list")}>
                 {filteredNotices.map((notice, i) => (
                   <NoticeItem
-                    key={notice.id}
+                    key={notice.id || notice.noticeId || i}
                     notice={notice}
                     index={i}
                     isParentMode={isParentMode}
-                    isRead={readNoticeIds.has(notice.id)}
+                    isRead={readNoticeIds.has(notice.id || notice.noticeId)}
                     onRead={handleMarkAsRead}
                   />
                 ))}
@@ -388,8 +388,8 @@ function NoticeBoard({
                     "bg-rose-50 text-rose-600 border-rose-100 shadow-sm shadow-rose-50",
                 };
                 return (
+                  <React.Fragment key={update.id || i}>
                   <motion.li
-                    key={update.id || i}
                     custom={i}
                     variants={cardVariants}
                     initial="hidden"
@@ -429,10 +429,11 @@ function NoticeBoard({
                       </p>
                     </div>
                     <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 border-t border-gray-50/50 pt-1.5 flex justify-between">
-                      <span>By {update.teacherName}</span>
-                      <span>Subject: {update.subjectName}</span>
+                      <span>{user?.role === "teacher" ? `Class ${update.className}` : `By ${update.teacherName}`}</span>
+                      <span>{update.subjectName}</span>
                     </div>
                   </motion.li>
+                  </React.Fragment>
                 );
               })}
             </ul>

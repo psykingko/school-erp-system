@@ -16,17 +16,17 @@ export default function EvaluationTimelineFeed({ examCycle }) {
         parsed = [
           {
             timestamp: new Date(Date.now() - 30 * 60000).toISOString(),
-            message: `Marks entry started for Chemistry XI-A`,
+            message: `Marks entry started for Chemistry 11-A`,
             type: "info",
           },
           {
             timestamp: new Date(Date.now() - 60 * 60000).toISOString(),
-            message: `Math XII-B moderation completed by Coordinator`,
+            message: `Math 12-B moderation completed by Coordinator`,
             type: "success",
           },
           {
             timestamp: new Date(Date.now() - 120 * 60000).toISOString(),
-            message: `Biology marks locked for Class XI-B`,
+            message: `Biology marks locked for Class 11-B`,
             type: "warning",
           },
         ];

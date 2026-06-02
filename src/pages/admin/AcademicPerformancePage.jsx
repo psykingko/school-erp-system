@@ -153,7 +153,7 @@ const StudentPerformanceRow = ({ student, onViewProfile, onPrintReport }) => {
       {expanded && (
         <div className="border-t border-slate-100 px-4 py-3 bg-slate-50/50">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {student.subjects?.map((sub) => {
+            {student.subjects?.map((sub, index) => {
               const subGrade = getGradeFromMarks(
                 sub.marksObtained,
                 sub.maxMarks,
@@ -164,7 +164,7 @@ const StudentPerformanceRow = ({ student, onViewProfile, onPrintReport }) => {
               ).toFixed(0);
               return (
                 <div
-                  key={sub.subjectId}
+                  key={`${sub.subjectId}-${index}`}
                   className="bg-white border border-slate-200 rounded-xl p-3"
                 >
                   <p className="text-[9px] font-black text-slate-400 uppercase">
@@ -300,8 +300,8 @@ const AcademicPerformancePage = () => {
         "8",
         "9",
         "10",
-        "XI",
-        "XII",
+        "11",
+        "12",
       ];
       return order.indexOf(a) - order.indexOf(b);
     });

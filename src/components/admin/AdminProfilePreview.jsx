@@ -377,7 +377,7 @@ const AdminProfilePreview = ({
                             Linked Children
                           </p>
                           <p className="text-xs font-black text-[#03045e]">
-                            {data.childrenMapped || "Ashish Kumar (Class XI-A)"}
+                            {data.childrenMapped || "Ashish Kumar (Class 11-A)"}
                           </p>
                         </div>
                       </div>

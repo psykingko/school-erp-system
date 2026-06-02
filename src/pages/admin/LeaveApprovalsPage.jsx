@@ -102,7 +102,7 @@ const LeaveApprovalsPage = () => {
     return {
       id: leave.id,
       name: stu ? stu.name : "Student Name",
-      classSec: cls ? cls.name : "Class XI-A",
+      classSec: cls ? cls.name : "Class 11-A",
       type:
         leave.reason.toLowerCase().includes("sick") ||
         leave.reason.toLowerCase().includes("fever")

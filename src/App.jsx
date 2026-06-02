@@ -31,8 +31,6 @@ import ChildScopeSwitcher from "./components/parent/ChildScopeSwitcher";
 import ErrorBoundary from "./components/ErrorBoundary";
 import MainCard from "./components/MainCard";
 import { Users, ShieldCheck } from "lucide-react";
-import { startNoticeScheduler } from "./services/noticeScheduler";
-
 // Lazy Loaded Pages
 const CoursesPage = lazy(() => import("./pages/CoursesPage"));
 const FacultyPage = lazy(() => import("./pages/FacultyPage"));
@@ -58,6 +56,7 @@ const AttendanceMgmtPage = lazy(
 const AssignmentsManagementPage = lazy(
   () => import("./pages/teacher/AssignmentsManagementPage"),
 );
+const QuestionPapersPage = lazy(() => import("./pages/teacher/QuestionPapersPage"));
 const MarksExamsPage = lazy(() => import("./pages/teacher/MarksExamsPage"));
 const ClassTimetablePage = lazy(
   () => import("./pages/teacher/ClassTimetablePage"),
@@ -91,11 +90,9 @@ const SubjectsPage = lazy(() => import("./pages/admin/SubjectsPage"));
 const SubjectAllocationPage = lazy(
   () => import("./pages/admin/SubjectAllocationPage"),
 );
-const AcademicStructurePage = lazy(
-  () => import("./pages/admin/AcademicStructurePage"),
-);
 const TimetablePage = lazy(() => import("./pages/admin/TimetablePage"));
 const ExaminationsPage = lazy(() => import("./pages/admin/ExaminationsPage"));
+const QuestionPapersAdminPage = lazy(() => import("./pages/admin/QuestionPapersAdminPage"));
 const AttendanceOverviewPage = lazy(
   () => import("./pages/admin/AttendanceOverviewPage"),
 );
@@ -130,7 +127,9 @@ const ManageDepartmentsPage = lazy(
   () => import("./pages/admin/ManageDepartmentsPage"),
 );
 const AccessControlPage = lazy(() => import("./pages/admin/AccessControlPage"));
-const CommunicationCenterPage = lazy(() => import("./pages/admin/CommunicationCenterPage"));
+const CommunicationCenterPage = lazy(
+  () => import("./pages/admin/CommunicationCenterPage"),
+);
 
 import { formatDate } from "./utils/attendanceHelpers";
 import { LanguageProvider, useLanguage } from "./context/LanguageContext";
@@ -138,7 +137,6 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import SkeletonCard from "./components/SkeletonCard";
-import { onEvent, WORKFLOW_EVENTS } from "./services/workflowEvents";
 
 // Auth & Routing
 import { ROLES } from "./auth/roles";
@@ -177,7 +175,7 @@ import { getUpdatesForStudent } from "./services/classUpdatesService";
 import { useService } from "./hooks/useService";
 
 // Dashboard Aggregation and Skeleton Loaders for High-Performance progressive rendering
-import { studentDashboardService } from "./services/studentDashboardService";
+import { studentDashboardService } from "./services/studentService";
 import DashboardCardSkeleton from "./components/common/skeletons/DashboardCardSkeleton";
 import ScheduleSkeleton from "./components/common/skeletons/ScheduleSkeleton";
 import ActionCenterSkeleton from "./components/common/skeletons/ActionCenterSkeleton";
@@ -335,17 +333,6 @@ const HomePage = React.memo(function HomePage({ onNavigatePage }) {
     };
   }, [fetchCritical, fetchDeferred]);
 
-  useEffect(() => {
-    const unsubscribe = onEvent(WORKFLOW_EVENTS.TIMETABLE_PUBLISHED, () => {
-      fetchCritical(true);
-      fetchDeferred(true);
-      setToastMessage("Timetable updated successfully");
-      setTimeout(() => setToastMessage(null), 3000);
-    });
-
-    return () => unsubscribe();
-  }, [fetchCritical, fetchDeferred]);
-
   const handleNavigate = useCallback((sectionId) => {
     const ref = sectionRefs.current[sectionId];
     const el = ref?.current;
@@ -402,7 +389,7 @@ const HomePage = React.memo(function HomePage({ onNavigatePage }) {
               {errorCritical}
             </div>
           ) : (
-            <MemoizedHeroBanner student={profile?.personal} />
+            <MemoizedHeroBanner student={profile?.personal} academic={profile?.academic} />
           )}
 
           {/* Action Needed Alerts Center */}
@@ -855,8 +842,16 @@ function AppContent() {
           element={<LazyRoute Component={TeacherDashboard} />}
         />
         <Route
+          path="attendance"
+          element={<LazyRoute Component={AttendanceMgmtPage} />}
+        />
+        <Route
           path="assignments"
           element={<LazyRoute Component={AssignmentsManagementPage} />}
+        />
+        <Route
+          path="question-papers"
+          element={<LazyRoute Component={QuestionPapersPage} />}
         />
         <Route
           path="marks"
@@ -927,16 +922,16 @@ function AppContent() {
           element={<LazyRoute Component={SubjectAllocationPage} />}
         />
         <Route
-          path="academic-structure"
-          element={<LazyRoute Component={AcademicStructurePage} />}
-        />
-        <Route
           path="timetable"
           element={<LazyRoute Component={TimetablePage} />}
         />
         <Route
           path="exams"
           element={<LazyRoute Component={ExaminationsPage} />}
+        />
+        <Route
+          path="question-papers"
+          element={<LazyRoute Component={QuestionPapersAdminPage} />}
         />
         <Route
           path="academic-performance"
@@ -1032,12 +1027,6 @@ function App() {
     };
     window.addEventListener("erp-reset-event", handleReset);
     return () => window.removeEventListener("erp-reset-event", handleReset);
-  }, []);
-
-  useEffect(() => {
-    // Start the notice scheduler on app initialization
-    startNoticeScheduler();
-    console.log("[App] Notice scheduler started");
   }, []);
 
   return (

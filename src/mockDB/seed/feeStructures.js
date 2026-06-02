@@ -195,7 +195,7 @@ export const feeStructuresSeed = [
   // ─── Senior Secondary: Class 11 ─────────────────────────────────────────
   {
     id: "fs-11-science-nm",
-    label: "Class XI — Science (Non-Medical)",
+    label: "Class 11 — Science (Non-Medical)",
     level: "11",
     streamId: "SCIENCE_NON_MEDICAL",
     stage: "senior_secondary",
@@ -204,7 +204,7 @@ export const feeStructuresSeed = [
   },
   {
     id: "fs-11-science-med",
-    label: "Class XI — Science (Medical)",
+    label: "Class 11 — Science (Medical)",
     level: "11",
     streamId: "SCIENCE_MEDICAL",
     stage: "senior_secondary",
@@ -213,7 +213,7 @@ export const feeStructuresSeed = [
   },
   {
     id: "fs-11-commerce",
-    label: "Class XI — Commerce",
+    label: "Class 11 — Commerce",
     level: "11",
     streamId: "COMMERCE",
     stage: "senior_secondary",
@@ -222,7 +222,7 @@ export const feeStructuresSeed = [
   },
   {
     id: "fs-11-humanities",
-    label: "Class XI — Humanities",
+    label: "Class 11 — Humanities",
     level: "11",
     streamId: "HUMANITIES",
     stage: "senior_secondary",
@@ -232,7 +232,7 @@ export const feeStructuresSeed = [
   // ─── Senior Secondary: Class 12 ────────────────────────────────────────
   {
     id: "fs-12-science-nm",
-    label: "Class XII — Science (Non-Medical)",
+    label: "Class 12 — Science (Non-Medical)",
     level: "12",
     streamId: "SCIENCE_NON_MEDICAL",
     stage: "senior_secondary",
@@ -241,7 +241,7 @@ export const feeStructuresSeed = [
   },
   {
     id: "fs-12-science-med",
-    label: "Class XII — Science (Medical)",
+    label: "Class 12 — Science (Medical)",
     level: "12",
     streamId: "SCIENCE_MEDICAL",
     stage: "senior_secondary",
@@ -250,7 +250,7 @@ export const feeStructuresSeed = [
   },
   {
     id: "fs-12-commerce",
-    label: "Class XII — Commerce",
+    label: "Class 12 — Commerce",
     level: "12",
     streamId: "COMMERCE",
     stage: "senior_secondary",
@@ -259,7 +259,7 @@ export const feeStructuresSeed = [
   },
   {
     id: "fs-12-humanities",
-    label: "Class XII — Humanities",
+    label: "Class 12 — Humanities",
     level: "12",
     streamId: "HUMANITIES",
     stage: "senior_secondary",

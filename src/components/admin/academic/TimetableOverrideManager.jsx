@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from "lucide-react";
-import { timetableOverrideService } from "../../../services/timetable/timetableOverrideService";
+import { timetableOverrideService } from "../../../services/timetable";
 import PropTypes from "prop-types";
 
 const OVERRIDE_TYPES = [

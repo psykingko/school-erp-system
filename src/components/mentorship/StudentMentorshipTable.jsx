@@ -69,7 +69,7 @@ export default function StudentMentorshipTable({ studentsData, onSelectStudent }
                     {/* Homeroom section */}
                     <td className="p-4">
                       <span className="text-xs font-extrabold text-gray-600 bg-gray-50 border px-2.5 py-1 rounded-xl">
-                        Class {student.className || "XI"}
+                        Class {student.className || "11"}
                       </span>
                     </td>
 

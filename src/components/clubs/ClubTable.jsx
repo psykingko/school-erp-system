@@ -51,7 +51,7 @@ export default function ClubTable({ clubs = [], selectedClubId, onSelectClub }) 
                     </span>
                   </td>
                   <td className="p-4 text-xs font-bold text-gray-600">
-                    {club.allowedClasses?.join(", ") || "XI-A, XI-B"}
+                    {club.allowedClasses?.join(", ") || "11-A, 11-B"}
                   </td>
                   <td className="p-4">
                     <span className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase tracking-tighter">

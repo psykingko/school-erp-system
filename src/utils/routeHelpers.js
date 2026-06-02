@@ -84,6 +84,8 @@ export function getRouteForNavItem(id, role) {
         return "/teacher/assignments";
       case "marks_exams":
         return "/teacher/marks";
+      case "question_papers":
+        return "/teacher/question-papers";
       case "class_timetable":
         return "/teacher/timetable";
       case "student_perf":
@@ -116,12 +118,12 @@ export function getRouteForNavItem(id, role) {
         return "/admin/admins";
       case "admin_classes":
         return "/admin/classes";
-      case "admin_academic_structure":
-        return "/admin/academic-structure";
       case "admin_timetable":
         return "/admin/timetable";
       case "admin_exams":
         return "/admin/exams";
+      case "admin_question_papers":
+        return "/admin/question-papers";
       case "admin_academic_performance":
         return "/admin/academic-performance";
       case "admin_attendance":

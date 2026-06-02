@@ -100,11 +100,10 @@ export const getStudentAssignedMentor = async (studentId) => {
     : classData.classTeacherId;
   if (!activeMentorId) return null;
 
-  const teachers = await provider.getTeachers();
-  const teacher = teachers.find((t) => t.id === activeMentorId);
+  const teacher = await provider.getTeacherById(activeMentorId);
   if (!teacher) return null;
 
-  const initials = teacher.name
+  const initials = (teacher.name || teacher.teacherName || "M")
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -127,8 +126,8 @@ export const getStudentAssignedMentor = async (studentId) => {
     : `${classData.name} के लिए समर्पित कक्षा शिक्षक और शैक्षणिक सलाहकार। पाठ्यक्रम या व्यक्तिगत विकास योजनाओं के लिए परामर्श सत्र निर्धारित कर सकते हैं।`;
 
   return {
-    id: teacher.id,
-    name: teacher.name,
+    id: teacher.id || teacher.teacherId,
+    name: teacher.name || teacher.teacherName,
     designation: teacher.designation || roleName,
     department: teacher.department || "Academic Staff",
     officeHours: "Mon-Fri: 2:00 PM - 3:00 PM",
@@ -141,7 +140,7 @@ export const getStudentAssignedMentor = async (studentId) => {
     bioHi: bioDescHi,
     status: "available",
     avatarInitials: initials,
-    avatarColor: colorMap[teacher.id] || "#03045e",
+    avatarColor: colorMap[teacher.id || teacher.teacherId] || "#03045e",
     isOverride,
   };
 };

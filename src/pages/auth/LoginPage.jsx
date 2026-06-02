@@ -25,7 +25,9 @@ const LoginPage = () => {
       await login(roleCtx, username, password);
       // navigation is handled by the redirect above once isAuthenticated is true
     } catch (err) {
-      setError(err.message || "Authentication failed. Please check your credentials.");
+      setError(
+        err.message || "Authentication failed. Please check your credentials.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -34,7 +36,6 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-[#caf0f8] flex items-center justify-center p-6">
       <MainCard className="w-full max-w-5xl overflow-hidden grid grid-cols-1 md:grid-cols-2 min-h-[600px] shadow-2xl p-0">
-        
         {/* Left/Main Section - ERP Branding */}
         <div className="bg-[#03045e] p-12 flex flex-col justify-between relative overflow-hidden text-white">
           <div className="relative z-10">
@@ -42,16 +43,17 @@ const LoginPage = () => {
               <GraduationCap size={32} />
             </div>
             <h1 className="text-4xl font-black mb-4 leading-tight">
-              Welcome to<br />
+              Welcome to
+              <br />
               <span className="text-[#00b4d8]">EduDash ERP</span>
             </h1>
             <p className="text-blue-200 font-medium leading-relaxed max-w-sm">
-              The centralized institutional management system. 
-              Access your personalized dashboard, manage records, 
-              and stay connected with the academic ecosystem.
+              The centralized institutional management system. Access your
+              personalized dashboard, manage records, and stay connected with
+              the academic ecosystem.
             </p>
           </div>
-          
+
           <div className="relative z-10 mt-12">
             <div className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">
               Secure Relational Portal
@@ -72,27 +74,33 @@ const LoginPage = () => {
         <div className="p-12 flex flex-col justify-center bg-white">
           <div className="mb-6">
             <h2 className="text-2xl font-black text-[#03045e] mb-2">Sign In</h2>
-            <p className="text-gray-500 font-medium text-sm">Enter your institutional credentials to continue</p>
+            <p className="text-gray-500 font-medium text-sm">
+              Enter your institutional credentials to continue
+            </p>
           </div>
 
-          <RoleSelector 
-            selectedRole={selectedRole} 
-            onSelectRole={setSelectedRole} 
-          />
-
-          <LoginForm 
+          <RoleSelector
             selectedRole={selectedRole}
             onSelectRole={setSelectedRole}
-            onLogin={handleLogin} 
-            error={error} 
-            isLoading={isLoading} 
           />
 
-          <div className="mt-8 text-center border-t border-gray-150 pt-4">
-            <button 
+          <LoginForm
+            selectedRole={selectedRole}
+            onSelectRole={setSelectedRole}
+            onLogin={handleLogin}
+            error={error}
+            isLoading={isLoading}
+          />
+
+          <div className="mt-6 text-center">
+            <button
               type="button"
               onClick={() => {
-                if (window.confirm("Are you sure you want to completely reset all institutional ERP data to standard seeds? This will clear all custom inputs.")) {
+                if (
+                  window.confirm(
+                    "Are you sure you want to completely reset all institutional ERP data to standard seeds? This will clear all custom inputs.",
+                  )
+                ) {
                   resetERPData();
                 }
               }}
@@ -102,7 +110,6 @@ const LoginPage = () => {
             </button>
           </div>
         </div>
-
       </MainCard>
     </div>
   );

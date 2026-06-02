@@ -45,7 +45,7 @@ export const getNoticesAndEvents = async (studentId) => {
   });
 
   return {
-    general: filteredNotices.filter((n) => n.category === "general"),
+    general: filteredNotices.filter((n) => n.category !== "examination"),
     exam: filteredNotices.filter((n) => n.category === "examination"),
     events: filteredEvents.filter((e) => e.status === "happening"),
     upcoming: filteredEvents.filter((e) => e.status === "upcoming"),

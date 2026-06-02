@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Building2,
@@ -15,18 +15,32 @@ import {
   AlertCircle,
   Check,
   ArrowRightLeft,
+  Trash,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import AdminStatCard from "../../components/admin/AdminStatCard";
 import AdminDataTable from "../../components/admin/AdminDataTable";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
 import AdminEditForm from "../../components/admin/AdminEditForm";
+import AdminSubjectMappingTable from "../../components/admin/academic/AdminSubjectMappingTable";
 import TimetableGrid from "../../components/admin/academic/TimetableGrid";
+import ConfirmationModal from "../../components/shared/ConfirmationModal";
+import ToastNotification from "../../components/shared/ToastNotification";
+import LoadingSkeleton from "../../components/shared/LoadingSkeleton";
+import ChartWrapper from "../../components/shared/ChartWrapper";
+import ActivityFeed from "../../components/shared/ActivityFeed";
 import { getDataProvider } from "../../data";
 import {
   changeClassTeacher,
   getEligibleClassTeachers,
-} from "../../services/teacherMappingService";
+} from "../../services/teacherService";
+import {
+  addClass,
+  softDeleteClass,
+  getClassDependencies,
+} from "../../services/academicsService";
 
 // Institutional class levels
 const CLASS_LEVELS = [
@@ -47,7 +61,7 @@ const CLASS_LEVELS = [
   "12",
 ];
 
-// Derive display level from class name (e.g., "XI-A" -> "11", "Nursery-A" -> "Nursery")
+// Derive display level from class name (e.g., "11-A" -> "11", "Nursery-A" -> "Nursery")
 const getLevelFromName = (name) => {
   const prefix = name.split("-")[0];
   if (prefix === "XI") return "11";
@@ -65,6 +79,7 @@ const ClassesPage = () => {
   const [dailyAttendance, setDailyAttendance] = useState([]);
   const [exams, setExams] = useState([]);
   const [results, setResults] = useState([]);
+  const [timetables, setTimetables] = useState([]);
 
   // Navigation selectors
   const [selectedClassLevel, setSelectedClassLevel] = useState("");
@@ -72,6 +87,23 @@ const ClassesPage = () => {
 
   // Edit state
   const [editClass, setEditClass] = useState(null);
+  const [addClassOpen, setAddClassOpen] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
+
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    classId: null,
+    className: "",
+    warning: "",
+  });
+
+  // Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   // Change Class Teacher modal state
   const [ctModalOpen, setCtModalOpen] = useState(false);
@@ -80,6 +112,29 @@ const ClassesPage = () => {
   const [ctLoading, setCtLoading] = useState(false);
   const [ctError, setCtError] = useState("");
   const [ctSuccess, setCtSuccess] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Manual activity feed (no auto-sync, human language only)
+  const [activities] = useState([
+    {
+      type: "other",
+      description: "New section created for Class 8-C",
+      timestamp: Date.now() - 1000 * 60 * 20,
+      user: "Admin",
+    },
+    {
+      type: "teacher",
+      description: "Class teacher changed for Class 11-A",
+      timestamp: Date.now() - 1000 * 60 * 150,
+      user: "Admin",
+    },
+    {
+      type: "other",
+      description: "Class section deactivated for Nursery-B",
+      timestamp: Date.now() - 1000 * 60 * 270,
+      user: "Admin",
+    },
+  ]);
 
   useEffect(() => {
     fetchData();
@@ -108,6 +163,7 @@ const ClassesPage = () => {
         provider.getDailyAttendance(),
         provider.getExams(),
         provider.getResults(),
+        provider.getTimetables(),
       ]);
 
       setClasses(allClasses || []);
@@ -119,8 +175,11 @@ const ClassesPage = () => {
       setDailyAttendance(allAttendance || []);
       setExams(allExams || []);
       setResults(allResults || []);
+      setTimetables(allTimetables || []);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,9 +191,94 @@ const ClassesPage = () => {
       await provider.updateClass(classId, formData);
       const updatedClasses = await provider.getClasses();
       setClasses(updatedClasses || []);
+      setToast({
+        show: true,
+        message: "Class updated successfully",
+        type: "success",
+      });
     } catch (e) {
       console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to update class",
+        type: "error",
+      });
     }
+  };
+
+  const handleAddClass = async (formData) => {
+    try {
+      const newClass = await addClass(formData);
+      // Optimistic update
+      setClasses((prev) => [...prev, newClass]);
+      setAddClassOpen(false);
+      setToast({
+        show: true,
+        message: "Class created successfully",
+        type: "success",
+      });
+    } catch (e) {
+      console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to create class",
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeleteClick = async (cls) => {
+    const dependencies = await getClassDependencies(cls.id);
+    const warnings = [];
+    if (dependencies.hasStudents)
+      warnings.push("This class has enrolled students.");
+    if (dependencies.hasTimetable)
+      warnings.push("This class has timetable entries.");
+
+    setDeleteConfirm({
+      isOpen: true,
+      classId: cls.id,
+      className: cls.name,
+      warning: warnings.length > 0 ? warnings.join(" ") : "",
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await softDeleteClass(deleteConfirm.classId);
+      // Optimistic update
+      setClasses((prev) =>
+        prev.map((c) =>
+          c.id === deleteConfirm.classId ? { ...c, isActive: false } : c,
+        ),
+      );
+      setDeleteConfirm({
+        isOpen: false,
+        classId: null,
+        className: "",
+        warning: "",
+      });
+      setToast({
+        show: true,
+        message: "Class deactivated successfully",
+        type: "success",
+      });
+    } catch (e) {
+      console.error(e);
+      setToast({
+        show: true,
+        message: "Failed to deactivate class",
+        type: "error",
+      });
+    }
+  };
+
+  // Form defaults (in page, NOT separate utils file)
+  const classFormDefaults = {
+    level: "1",
+    section: "A",
+    room: "Room 101",
+    stream: "",
   };
 
   // ── Change Class Teacher handlers ──────────────────────────────────────────
@@ -199,9 +343,13 @@ const ClassesPage = () => {
   // ── Derived class navigation ───────────────────────────────────────────────
 
   const classLevels = useMemo(() => {
-    const levels = new Set(classes.map((c) => getLevelFromName(c.name)));
+    // Exclude inactive by default unless showInactive is true
+    const activeClasses = showInactive
+      ? classes
+      : classes.filter((c) => c.isActive !== false);
+    const levels = new Set(activeClasses.map((c) => getLevelFromName(c.name)));
     return CLASS_LEVELS.filter((l) => levels.has(l));
-  }, [classes]);
+  }, [classes, showInactive]);
 
   const availableSections = useMemo(() => {
     if (!selectedClassLevel) return [];
@@ -253,42 +401,30 @@ const ClassesPage = () => {
     [classes, getTeacher],
   );
 
-  const getSubjectTeachers = useCallback(
-    (cId) => {
-      const classAssignments = assignments.filter((a) => a.classId === cId);
-      const mapping = new Map();
-      classAssignments.forEach((a) => {
-        const sub = getSubject(a.subjectId);
-        const t = getTeacher(a.teacherId);
-        if (sub && t) {
-          if (!mapping.has(sub.id)) {
-            mapping.set(sub.id, { subject: sub, teachers: [] });
-          }
-          mapping.get(sub.id).teachers.push(t);
-        }
-      });
-      return Array.from(mapping.values());
-    },
-    [assignments, getSubject, getTeacher],
-  );
-
   // Build timetable schedule for selected class
   const getClassSchedule = useCallback(
     (cId) => {
-      const classAssignments = assignments.filter((a) => a.classId === cId);
-      return classAssignments.map((a) => {
-        const sub = getSubject(a.subjectId);
-        const t = getTeacher(a.teacherId);
-        return {
-          day: a.day,
-          period: a.period,
-          subject: sub?.name || "",
-          teacher: t?.name || "",
-          room: a.room || "",
-        };
+      const tt = timetables.find(t => t.classId === cId);
+      if (!tt || !tt.weeklySchedule) return [];
+      
+      const flat = [];
+      Object.entries(tt.weeklySchedule).forEach(([day, slots]) => {
+         slots.forEach(slot => {
+            if (slot.periodType === 'break' || slot.subjectId === 'break') return;
+            const sub = getSubject(slot.subjectId);
+            const t = getTeacher(slot.teacherId);
+            flat.push({
+               day: day.charAt(0).toUpperCase() + day.slice(1).toLowerCase(),
+               period: `P${String(slot.periodNumber).replace('P', '')}`,
+               subject: sub?.name || slot.subject || "",
+               teacher: t?.name || t?.metadata?.name || slot.teacher || "",
+               room: slot.room || "",
+            });
+         });
       });
+      return flat;
     },
-    [assignments, getSubject, getTeacher],
+    [timetables, getSubject, getTeacher],
   );
 
   // Attendance snapshot for selected class
@@ -365,11 +501,12 @@ const ClassesPage = () => {
   ];
 
   const classStudents = selectedClass ? getClassStudents(selectedClass.id) : [];
-  const classTeacher = selectedClass ? getClassTeacher(selectedClass.id) : null;
-  const subjectTeachers = selectedClass
-    ? getSubjectTeachers(selectedClass.id)
+  const classTeacher = selectedClass
+    ? getClassTeacher(selectedClass.id)
+    : null;
+  const schedule = selectedClass
+    ? getClassSchedule(selectedClass.id)
     : [];
-  const schedule = selectedClass ? getClassSchedule(selectedClass.id) : [];
   const attendanceStats = selectedClass
     ? getClassAttendanceStats(selectedClass.id)
     : { present: 0, absent: 0, percentage: 0 };
@@ -377,6 +514,92 @@ const ClassesPage = () => {
     ? getClassExamSummary(selectedClass.id)
     : [];
   const stream = selectedClass ? getStream(selectedClass.stream) : null;
+
+  // Component-level analytics (no service, read-only derivation)
+  const analytics = useMemo(() => {
+    const activeClasses = classes.filter((c) => c.isActive !== false);
+    const inactiveClasses = classes.filter((c) => c.isActive === false);
+    const classesWithCT = activeClasses.filter((c) => c.classTeacherId);
+    const classesWithoutCT = activeClasses.filter((c) => !c.classTeacherId);
+
+    // Class level distribution
+    const levelCounts = activeClasses.reduce((acc, c) => {
+      const level = getLevelFromName(c.name);
+      acc[level] = (acc[level] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Section distribution
+    const sectionCounts = activeClasses.reduce((acc, c) => {
+      acc[c.section] = (acc[c.section] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Stream distribution (for classes 11-12)
+    const streamCounts = activeClasses.reduce((acc, c) => {
+      if (c.stream) {
+        acc[c.stream] = (acc[c.stream] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    return {
+      total: activeClasses.length,
+      inactive: inactiveClasses.length,
+      withCT: classesWithCT.length,
+      withoutCT: classesWithoutCT.length,
+      levelCounts,
+      sectionCounts,
+      streamCounts,
+    };
+  }, [classes]);
+
+  // Chart data (component-level, no service)
+  const levelDistributionData = useMemo(() => {
+    return Object.entries(analytics.levelCounts).map(([name, value]) => ({
+      name: name === "11" ? "Class 11" : name === "12" ? "Class 12" : name,
+      value,
+    }));
+  }, [analytics.levelCounts]);
+
+  const sectionDistributionData = useMemo(() => {
+    return Object.entries(analytics.sectionCounts).map(([name, value]) => ({
+      name: `Section ${name}`,
+      value,
+    }));
+  }, [analytics.sectionCounts]);
+
+  const streamDistributionData = useMemo(() => {
+    return Object.entries(analytics.streamCounts).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }, [analytics.streamCounts]);
+
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-6 pb-12"
+      >
+        <AdminPageHeader
+          title="Classes & Sections"
+          description="Navigate academic hierarchy, view class dashboards, and manage institutional sections."
+          breadcrumbs={["Admin Portal", "Academic", "Classes"]}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <LoadingSkeleton variant="stat-card" />
+          <LoadingSkeleton variant="stat-card" />
+          <LoadingSkeleton variant="stat-card" />
+        </div>
+        <AdminSectionCard>
+          <LoadingSkeleton variant="table-row" count={5} />
+        </AdminSectionCard>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -390,7 +613,10 @@ const ClassesPage = () => {
         description="Navigate academic hierarchy, view class dashboards, and manage institutional sections."
         breadcrumbs={["Admin Portal", "Academic", "Classes"]}
         actionButton={
-          <button className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] text-white px-5 py-2.5 rounded-2xl shadow-sm text-xs font-black transition-colors">
+          <button
+            onClick={() => setAddClassOpen(true)}
+            className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] text-white px-5 py-2.5 rounded-2xl shadow-sm text-xs font-black transition-colors"
+          >
             <Plus size={16} />
             <span>CREATE NEW SECTION</span>
           </button>
@@ -401,30 +627,32 @@ const ClassesPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <AdminStatCard
           title="Active Sections"
-          value={classes.length.toString()}
+          value={analytics.total.toString()}
           badgeText="Term Balanced"
           badgeType="success"
           icon={Building2}
         />
         <AdminStatCard
-          title="Avg Section Strength"
-          value={Math.round(students.length / (classes.length || 1)).toString()}
-          badgeText="Capacity Safe"
-          badgeType="info"
-          icon={Users}
+          title="With Class Teacher"
+          value={analytics.withCT.toString()}
+          badgeText="Assigned"
+          badgeType="success"
+          icon={GraduationCap}
           color="#0096c7"
           bg="#ade8f4"
         />
         <AdminStatCard
-          title="Unassigned Sections"
-          value={classes.filter((c) => !c.classTeacherId).length.toString()}
-          badgeText="Verification"
-          badgeType="neutral"
-          icon={Building2}
-          color="#03045e"
-          bg="#e0f2fe"
+          title="Inactive Sections"
+          value={analytics.inactive.toString()}
+          badgeText="Deactivated"
+          badgeType="warning"
+          icon={EyeOff}
+          color="#f59e0b"
+          bg="#fef3c7"
         />
       </div>
+
+
 
       {/* ── Academic Navigation Bar ── */}
       <AdminSectionCard>
@@ -453,6 +681,8 @@ const ClassesPage = () => {
               ))}
             </select>
 
+
+
             {/* Section Selector */}
             <select
               value={selectedSection}
@@ -469,13 +699,15 @@ const ClassesPage = () => {
             </select>
 
             {selectedClass && (
-              <button
-                onClick={() => setEditClass(selectedClass)}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#03045e] text-white text-xs font-black hover:bg-[#0077b6] transition-colors"
-              >
-                <Building2 size={14} />
-                EDIT CLASS
-              </button>
+              <>
+                <button
+                  onClick={() => setEditClass(selectedClass)}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#03045e] text-white text-xs font-black hover:bg-[#0077b6] transition-colors"
+                >
+                  <Building2 size={14} />
+                  EDIT CLASS
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -497,9 +729,9 @@ const ClassesPage = () => {
         </AdminSectionCard>
       ) : (
         <div className="space-y-6">
+        <div className="space-y-6">
           {/* ── Class Overview Card ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3 bg-white rounded-3xl border border-[#caf0f8]/60 p-6 shadow-sm">
+          <div className="bg-white rounded-3xl border border-[#caf0f8]/60 p-6 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-[#03045e] text-white">
@@ -602,50 +834,20 @@ const ClassesPage = () => {
                     {stream?.name || "General"}
                   </p>
                   <p className="text-[10px] text-gray-500 font-semibold mt-1">
-                    {subjectTeachers.length} Subjects Allocated
+                    {assignments.filter(a => a.classId === selectedClass.id).length} Subjects Allocated
                   </p>
                 </div>
               </div>
+              </div>
             </div>
 
-            {/* Subject Teachers Sidebar */}
-            <div className="bg-white rounded-3xl border border-[#caf0f8]/60 p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <BookOpen size={14} className="text-[#0077b6]" />
-                <h3 className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">
-                  Subject Teachers
-                </h3>
-              </div>
-              <div className="space-y-2.5 max-h-[260px] overflow-y-auto pr-1">
-                {subjectTeachers.length > 0 ? (
-                  subjectTeachers.map(({ subject, teachers: tchs }) => (
-                    <div
-                      key={subject.id}
-                      className="p-2.5 rounded-xl bg-[#caf0f8]/20 border border-[#caf0f8]/40"
-                    >
-                      <p className="text-[10px] font-black text-[#03045e]">
-                        {subject.name}
-                      </p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {tchs.map((t) => (
-                          <span
-                            key={t.id}
-                            className="text-[9px] font-bold text-gray-500 bg-white px-1.5 py-0.5 rounded-md border border-[#caf0f8]/60"
-                          >
-                            {t.metadata?.name || t.name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-[10px] text-gray-400 font-semibold">
-                    No subject allocations
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          {/* ── Subject - Teacher Mapping ── */}
+          <AdminSubjectMappingTable
+            selectedClass={selectedClass}
+            subjects={subjects}
+            teachers={teachers}
+            refreshData={fetchData}
+          />
 
           {/* ── Enrolled Students ── */}
           <AdminSectionCard>
@@ -882,6 +1084,76 @@ const ClassesPage = () => {
           </motion.div>
         </div>
       )}
+
+      {/* Add Class Modal */}
+      <AdminEditForm
+        isOpen={addClassOpen}
+        onClose={() => setAddClassOpen(false)}
+        title="Create New Class Section"
+        data={classFormDefaults}
+        fields={[
+          {
+            name: "level",
+            label: "Class Level",
+            type: "select",
+            options: CLASS_LEVELS,
+            required: true,
+          },
+          {
+            name: "section",
+            label: "Section",
+            type: "select",
+            options: ["A", "B", "C", "D"],
+            required: true,
+          },
+          {
+            name: "room",
+            label: "Room Number",
+            type: "text",
+            required: true,
+          },
+          {
+            name: "stream",
+            label: "Stream (Classes 11 & 12 only)",
+            type: "select",
+            options: [
+              "",
+              "Science Non-Medical",
+              "Science Medical",
+              "Commerce",
+              "Humanities",
+            ],
+          },
+        ]}
+        onSubmit={handleAddClass}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirm.isOpen}
+        title="Deactivate Class"
+        message={`Are you sure you want to deactivate ${deleteConfirm.className}? This will hide the class from active listings.`}
+        warningText={deleteConfirm.warning}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() =>
+          setDeleteConfirm({
+            isOpen: false,
+            classId: null,
+            className: "",
+            warning: "",
+          })
+        }
+        confirmButtonText="Deactivate"
+        cancelButtonText="Cancel"
+      />
+
+      {/* Toast Notification */}
+      <ToastNotification
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
     </motion.div>
   );
 };

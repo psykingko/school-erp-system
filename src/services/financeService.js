@@ -1,40 +1,29 @@
 import { getDataProvider } from "../data";
-import { getFeeStructureForClass } from "../mockDB/seed/feeStructures";
 
 /**
- * Fetches the overall financial details for a student (Relational & Invoice-Centric)
+ * Fetches the overall financial details for a student
  */
 export const getStudentFinanceSummary = async (studentId) => {
   const id = studentId || "stud-001";
   const provider = getDataProvider();
-  const [students, classes, feeStructures] = await Promise.all([
+
+  const [students, invoices, receipts] = await Promise.all([
     provider.getStudents(),
-    provider.getClasses(),
-    provider.getFeeStructures(),
+    provider.getInvoicesByStudent(id),
+    provider.getReceiptsByStudent(id),
   ]);
+
   const student = students.find((s) => s.id === id);
   if (!student) return null;
 
-  // Resolve fee structure template for this student's class
-  const cls = classes.find((c) => c.id === student.classId);
-  const feeStructure = feeStructures.length
-    ? getFeeStructureForClass(feeStructures, cls)
-    : null;
-
-  const studentInvoices = await provider.getInvoicesByStudent(id);
-  const studentReceipts = await provider.getReceiptsByStudent(id);
-
-  // 1. Total Fees Due is the sum of all invoices
-  const totalFees = studentInvoices.reduce((sum, inv) => sum + inv.amount, 0);
-
-  // 2. Total Paid Till Date is the sum of paid amount on all invoices
-  const totalPaid = studentInvoices.reduce(
+  // Compute direct totals
+  const totalFees = invoices.reduce((sum, inv) => sum + inv.amount, 0);
+  const totalPaid = invoices.reduce(
     (sum, inv) => sum + (inv.paidAmount || 0),
     0,
   );
 
-  // 3. Outstanding Balance is the sum of unpaid amounts for PENDING and OVERDUE invoices, excluding future UPCOMING invoices
-  const outstandingBalance = studentInvoices
+  const outstandingBalance = invoices
     .filter(
       (inv) =>
         inv.status === "Pending" ||
@@ -43,8 +32,7 @@ export const getStudentFinanceSummary = async (studentId) => {
     )
     .reduce((sum, inv) => sum + (inv.amount - (inv.paidAmount || 0)), 0);
 
-  // 4. Pending bills consists of unpaid or partially paid active invoices
-  const pendingInvoices = studentInvoices
+  const pendingInvoices = invoices
     .filter(
       (inv) =>
         inv.status === "Pending" ||
@@ -52,16 +40,6 @@ export const getStudentFinanceSummary = async (studentId) => {
         inv.status === "Partially Paid",
     )
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-
-  const releasedSettledCount = studentInvoices.filter(
-    (inv) => inv.status === "Paid",
-  ).length;
-  const upcomingCount = studentInvoices.filter(
-    (inv) => inv.status === "Upcoming",
-  ).length;
-
-  const totalInvoicesCount = studentInvoices.length;
-  const activeDuesCount = pendingInvoices.length;
 
   const summary = {
     totalFees,
@@ -75,65 +53,31 @@ export const getStudentFinanceSummary = async (studentId) => {
         : totalPaid > 0
           ? "Partially Paid"
           : "Pending",
-    releasedSettledCount,
-    upcomingCount,
-    totalInvoicesCount,
-    activeDuesCount,
+    releasedSettledCount: invoices.filter((inv) => inv.status === "Paid")
+      .length,
+    upcomingCount: invoices.filter((inv) => inv.status === "Upcoming").length,
+    totalInvoicesCount: invoices.length,
+    activeDuesCount: pendingInvoices.length,
   };
 
-  // Build a map of headId → monthly base amount from live fee structure
-  const liveHeadMap = {};
-  if (feeStructure && feeStructure.feeHeads) {
-    feeStructure.feeHeads.forEach((h) => {
-      liveHeadMap[h.label] = {
-        monthlyBase: Math.round(h.annualAmount / 12),
-        annualAmount: h.annualAmount,
-        applicableMonths: h.applicableMonths || null,
-      };
-    });
-  }
-
-  // Convert raw invoices to UI fee structure presentation
-  const structure = studentInvoices
+  const structure = invoices
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-    .map((inv) => {
-      // Overlay live fee structure amounts if available, keeping vacation adjustments
-      const isSummer = inv.vacationType === "SUMMER";
-      const isWinter = inv.vacationType === "WINTER";
-      const components = (inv.lineItems || []).map((item) => {
-        let amount = item.amount;
-        if (liveHeadMap[item.label]) {
-          // Recalculate from live structure with vacation rules
-          let base = liveHeadMap[item.label].monthlyBase;
-          if (
-            isSummer &&
-            (item.label === "Transport Fee" || item.label === "Activity Fee")
-          )
-            base = 0;
-          else if (
-            isWinter &&
-            (item.label === "Transport Fee" || item.label === "Activity Fee")
-          )
-            base = Math.round(base * 0.5);
-          amount = base;
-        }
-        return { head: item.label, amount };
-      });
-
-      return {
-        id: inv.id,
-        label: inv.targetLabel || `${inv.billingMonth} Invoice`,
-        total: inv.amount,
-        paidAmount: inv.paidAmount || 0,
-        remainingAmount: inv.amount - (inv.paidAmount || 0),
-        status: inv.status,
-        dueDate: inv.dueDate,
-        invoiceNo: inv.invoiceNo,
-        isVacationMonth: inv.isVacationMonth,
-        vacationType: inv.vacationType,
-        components,
-      };
-    });
+    .map((inv) => ({
+      id: inv.id,
+      label: inv.targetLabel || `${inv.billingMonth} Invoice`,
+      total: inv.amount,
+      paidAmount: inv.paidAmount || 0,
+      remainingAmount: inv.amount - (inv.paidAmount || 0),
+      status: inv.status,
+      dueDate: inv.dueDate,
+      invoiceNo: inv.invoiceNo,
+      isVacationMonth: inv.isVacationMonth,
+      vacationType: inv.vacationType,
+      components: (inv.lineItems || []).map((item) => ({
+        head: item.label,
+        amount: item.amount,
+      })),
+    }));
 
   return {
     summary,
@@ -148,16 +92,16 @@ export const getStudentFinanceSummary = async (studentId) => {
       status: inv.status,
       targetLabel: inv.targetLabel || `${inv.billingMonth} Invoice`,
     })),
-    receipts: studentReceipts
+    receipts: receipts
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .map((rcp) => ({
         ...rcp,
         receiptNo: rcp.receiptNo || `REC-2025-${rcp.id.split("-").pop()}`,
       })),
     itCertificate: {
-      studentName: student?.name || "Rohan Kumar",
-      rollNo: student?.admissionNo || "2024001",
-      year: "2024-2025",
+      studentName: student.name,
+      rollNo: student.admissionNo,
+      year: "2025-2026",
       dateGenerated: new Date().toLocaleDateString("en-IN", {
         day: "2-digit",
         month: "short",
@@ -169,5 +113,39 @@ export const getStudentFinanceSummary = async (studentId) => {
   };
 };
 
-// Backward compatibility alias for studentDashboardService
 export const getFeeDetails = getStudentFinanceSummary;
+
+/**
+ * ADD FEE - Simple CRUD helper
+ */
+export const addFee = async (feeData) => {
+  const provider = getDataProvider();
+  const newFee = {
+    ...feeData,
+    id: `fee-${Date.now()}`,
+    paidAmount: 0,
+    status: "Unpaid",
+    createdAt: new Date().toISOString(),
+  };
+  return await provider.addFee(newFee);
+};
+
+/**
+ * DELETE FEE - Hard delete with safety warning
+ */
+export const deleteFee = async (feeId) => {
+  const provider = getDataProvider();
+  return await provider.deleteFee(feeId);
+};
+
+/**
+ * CHECK DEPENDENCIES - Visual warning only (NO cascade)
+ */
+export const getFeeDependencies = async (feeId) => {
+  const provider = getDataProvider();
+  const fee = await provider.getFeeById(feeId);
+
+  return {
+    hasPayment: fee && fee.paidAmount > 0,
+  };
+};
