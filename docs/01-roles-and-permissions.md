@@ -148,6 +148,26 @@ graph TD
 
 ---
 
+### 📝 1.7 Question Paper Management Module
+```mermaid
+graph TD
+    subgraph "Roles"
+        Admin["👑 System Admin"]
+        Teacher["👨‍🏫 Teacher"]
+    end
+
+    subgraph "Module Data"
+        M_QuestionPapers["📝 Question Papers Workspace"]
+    end
+
+    Teacher -->|✍️ Drafts & Submits Papers| M_QuestionPapers
+    Admin -->|✍️ Reviews & Approves Papers| M_QuestionPapers
+
+    style M_QuestionPapers fill:#d1fae5,stroke:#10b981,stroke-width:2px
+```
+
+---
+
 ## 📊 2. Permissions Matrix Grid
 
 This grid maps features to roles using permissions. You can easily add rows for new features or update cell symbols.
@@ -165,6 +185,7 @@ This grid maps features to roles using permissions. You can easily add rows for 
 | **Attendance Logs** | `👁️ View (Global)` | `✍️ Manage` | `👁️ View (Self)` | `👁️ View (Child)` |
 | **Assignments & Homework** | `❌ None` | `✍️ Manage` | `💬 Interact` | `👁️ View` |
 | **Exams & Grading** | `✍️ Manage (Lifecycle)` | `✍️ Manage (Marks)` | `👁️ View` | `👁️ View` |
+| **Question Papers** | `✍️ Manage (Approve)` | `✍️ Manage (Draft)` | `❌ None` | `❌ None` |
 | **Fees & Payments Ledger** | `✍️ Manage` | `❌ None` | `👁️ View` | `👁️ View` |
 | **Transport & Routes** | `✍️ Manage` | `❌ None` | `👁️ View` | `👁️ View` |
 | **Leave Request System** | `✍️ Manage (Approve)` | `💬 Interact (Self)` | `💬 Interact (Self)` | `💬 Interact (Child)` |

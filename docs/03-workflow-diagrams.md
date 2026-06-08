@@ -127,6 +127,17 @@ flowchart LR
 ```
 
 
+# Question Paper Management Workflow
+
+```mermaid
+flowchart LR
+    A[Teacher Drafts Question Paper] --> B[Submits for Approval]
+    B --> C[Admin Reviews]
+    C -->|Approves| D[Paper Ready for Exam]
+    C -->|Rejects with Remarks| A
+```
+
+
 # Examination Workflow
 
 ```mermaid

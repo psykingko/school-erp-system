@@ -420,6 +420,26 @@ All values are stored as JSON arrays (or objects). Below is the complete key reg
 }
 ```
 
+### Question Paper
+
+```js
+{
+  id: "qp-{timestamp}",
+  title: "Mid-Term Physics Paper",
+  teacherId: "teach-001",         // FK → teachers.id
+  subjectId: "sub-phy",           // FK → subjects.id
+  classSectionId: "class-11a",    // FK → classes.id
+  status: "approved",             // draft | pending_approval | approved | rejected
+  content: "...",                 // Text content or rich text
+  uploadedFile: "url/to/pdf",     // URL to uploaded paper file
+  approvedBy: "admin-001",        // FK → authUsers.id / admins.id
+  approvedAt: "2026-03-01T10:00:00Z",
+  remarks: "Approved for Mid-Terms",
+  createdAt: "2026-02-28T14:30:00Z",
+  updatedAt: "2026-03-01T10:00:00Z"
+}
+```
+
 ### Result
 
 ```js
