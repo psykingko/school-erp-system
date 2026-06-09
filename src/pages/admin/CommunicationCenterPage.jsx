@@ -9,6 +9,7 @@ import {
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import AdminStatCard from "../../components/admin/AdminStatCard";
 import MainCard from "../../components/MainCard";
+import AudienceSelector from "../../components/shared/AudienceSelector";
 
 // ─── School Structure ─────────────────────────────────────────────────────────
 
@@ -135,99 +136,7 @@ const SECTION_TABS = [
   { id: "templates", label: "Templates Library",  icon: LayoutGrid },
 ];
 
-// ─── Audience Filter Picker ───────────────────────────────────────────────────
-
-const AudienceFilterPicker = ({ selectedFilters, onToggle }) => {
-  const [openGroup, setOpenGroup] = useState(null);
-  const [filterSearch, setFilterSearch] = useState("");
-
-  const toggle = (grpLabel) =>
-    setOpenGroup((prev) => (prev === grpLabel ? null : grpLabel));
-
-  return (
-    <div className="space-y-2">
-      {/* Quick search */}
-      <div className="relative mb-3">
-        <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search class / section…"
-          value={filterSearch}
-          onChange={(e) => setFilterSearch(e.target.value)}
-          className="w-full pl-8 pr-3 py-2 rounded-lg border border-[#caf0f8] text-[10px] font-bold text-[#03045e] outline-none focus:border-[#0077b6] transition-colors"
-        />
-      </div>
-
-      {/* Grouped accordions */}
-      {FILTER_GROUPS.map((group) => {
-        const opts = filterSearch
-          ? group.options.filter((o) => o.toLowerCase().includes(filterSearch.toLowerCase()))
-          : group.options;
-        if (opts.length === 0) return null;
-        const isOpen = openGroup === group.label || filterSearch.length > 0;
-        const selected = opts.filter((o) => selectedFilters.includes(o));
-        return (
-          <div key={group.label} className="border border-[#caf0f8]/60 rounded-xl overflow-hidden">
-            <button
-              type="button"
-              onClick={() => toggle(group.label)}
-              className="w-full flex items-center justify-between px-3 py-2 bg-[#caf0f8]/10 hover:bg-[#caf0f8]/30 transition-colors"
-            >
-              <span className="text-[9px] font-black text-gray-500 uppercase tracking-wider">{group.label}</span>
-              <div className="flex items-center gap-2">
-                {selected.length > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-[#0077b6] text-white text-[8px] font-black">
-                    {selected.length}
-                  </span>
-                )}
-                <ChevronDown
-                  size={12}
-                  className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                />
-              </div>
-            </button>
-            {isOpen && (
-              <div className="p-2 flex flex-wrap gap-1.5">
-                {opts.map((opt) => (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => onToggle(opt)}
-                    className={`px-2 py-1 rounded-lg text-[9px] font-black border transition-all ${
-                      selectedFilters.includes(opt)
-                        ? "bg-[#00b4d8]/20 text-[#0077b6] border-[#00b4d8]"
-                        : "bg-white text-gray-400 border-gray-200 hover:border-[#0077b6]/40 hover:text-[#03045e]"
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      {/* Selected summary */}
-      {selectedFilters.length > 0 && (
-        <div className="pt-1">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] font-black text-[#0077b6] uppercase tracking-wider">
-              {selectedFilters.length} filter{selectedFilters.length > 1 ? "s" : ""} selected
-            </span>
-            <button
-              type="button"
-              onClick={() => selectedFilters.forEach(onToggle)}
-              className="text-[9px] font-black text-red-400 hover:text-red-600 transition-colors"
-            >
-              Clear all
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+// Removed AudienceFilterPicker in favor of shared AudienceSelector
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
@@ -251,8 +160,9 @@ const Toast = ({ message, onClose }) => (
 const CommunicationCenterPage = () => {
   // Composer state
   const [activeChannel, setActiveChannel]             = useState("email");
-  const [selectedAudience, setSelectedAudience]       = useState([]);
-  const [selectedFilters, setSelectedFilters]         = useState([]);
+  const [audienceObj, setAudienceObj]                 = useState({
+    groups: [], classes: [], sections: [], streams: [], teacherTypes: [], subjects: [], studentIds: [], employeeIds: []
+  });
   const [subject, setSubject]                         = useState("");
   const [messageBody, setMessageBody]                 = useState("");
   const [priority, setPriority]                       = useState("normal");
@@ -296,16 +206,6 @@ const CommunicationCenterPage = () => {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const toggleAudience = (g) =>
-    setSelectedAudience((prev) =>
-      prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]
-    );
-
-  const toggleFilter = (f) =>
-    setSelectedFilters((prev) =>
-      prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]
-    );
-
   const toggleDeliveryChannel = (ch) =>
     setDeliveryChannels((prev) =>
       prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch]
@@ -315,14 +215,17 @@ const CommunicationCenterPage = () => {
     setMessageBody((prev) => prev + " " + tag);
 
   const handleSendCampaign = () => {
-    if (!subject.trim() || !messageBody.trim() || selectedAudience.length === 0) {
+    // Basic check
+    const hasAudience = Object.values(audienceObj).some(arr => arr.length > 0);
+    if (!subject.trim() || !messageBody.trim() || !hasAudience) {
       showToast("⚠️  Fill in subject, message, and select an audience.");
       return;
     }
     const newCamp = {
       id: `camp-${Date.now()}`,
       name: subject,
-      audience: selectedAudience,
+      audience: [...audienceObj.groups, ...audienceObj.classes.map(c => `Class ${c}`)], // Simplified for UI history list display
+      audienceMetadata: audienceObj, // Real backend targeting logic goes here
       channels: deliveryChannels.map((c) => c.charAt(0).toUpperCase() + c.slice(1)),
       status: sendTiming === "now" ? "sending" : sendTiming === "schedule" ? "scheduled" : "draft",
       sentBy: "Admin Portal",
@@ -331,7 +234,7 @@ const CommunicationCenterPage = () => {
       sent: 0,
     };
     setCampaigns((prev) => [newCamp, ...prev]);
-    setSubject(""); setMessageBody(""); setSelectedAudience([]); setSelectedFilters([]);
+    setSubject(""); setMessageBody(""); setAudienceObj({ groups: [], classes: [], sections: [], streams: [], teacherTypes: [], subjects: [], studentIds: [], employeeIds: [] });
     showToast("✅  Campaign queued successfully");
   };
 
@@ -438,72 +341,40 @@ const CommunicationCenterPage = () => {
 
           {/* ══ COMPOSER ══════════════════════════════════════════════════ */}
           {activeSection === "composer" && (
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="max-w-5xl mx-auto space-y-6">
 
-              {/* Left column */}
-              <div className="xl:col-span-1 space-y-4">
+              {/* Audience groups */}
+              <MainCard className="p-5 border border-[#caf0f8]/60">
+                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Target Audience</h3>
+                <AudienceSelector value={audienceObj} onChange={setAudienceObj} />
+              </MainCard>
 
-                {/* Communication type */}
-                <MainCard className="p-5 border border-[#caf0f8]/60">
-                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Communication Type</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {CHANNEL_OPTIONS.map(({ id, label, icon: Icon, activeBg }) => (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => setActiveChannel(id)}
-                        className={`flex items-center gap-2 p-3 rounded-xl border-2 text-xs font-black transition-all ${
-                          activeChannel === id
-                            ? `${activeBg} text-[#03045e]`
-                            : "border-[#caf0f8] text-gray-400 hover:border-[#0077b6]/40 hover:text-[#03045e]"
-                        }`}
-                      >
-                        <Icon size={14} className={activeChannel === id ? "text-[#0077b6]" : ""} />
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </MainCard>
+              {/* Subject */}
+              <MainCard className="p-5 border border-[#caf0f8]/60">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                  Campaign Subject / Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. PTM Reminder – Grade 10 Parents"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-[#caf0f8] text-sm font-bold text-[#03045e] outline-none focus:border-[#0077b6] transition-colors placeholder:font-normal placeholder:text-gray-300"
+                />
+              </MainCard>
 
-                {/* Audience groups */}
-                <MainCard className="p-5 border border-[#caf0f8]/60">
-                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Audience Groups</h3>
-                  <div className="flex flex-wrap gap-2 mb-5">
-                    {AUDIENCE_GROUPS.map((g) => (
-                      <button
-                        key={g}
-                        type="button"
-                        onClick={() => toggleAudience(g)}
-                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black border transition-all ${
-                          selectedAudience.includes(g)
-                            ? "bg-[#03045e] text-white border-[#03045e]"
-                            : "bg-white text-gray-500 border-[#caf0f8] hover:border-[#0077b6]"
-                        }`}
-                      >
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="border-t border-[#caf0f8]/40 pt-4">
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Advanced Filters</h3>
-                    <AudienceFilterPicker
-                      selectedFilters={selectedFilters}
-                      onToggle={toggleFilter}
-                    />
-                  </div>
-                </MainCard>
-
+              {/* Settings Row (Priority + Channels) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Priority */}
                 <MainCard className="p-5 border border-[#caf0f8]/60">
                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Priority Level</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     {PRIORITIES.map(({ value, label, cls }) => (
                       <button
                         key={value}
                         type="button"
                         onClick={() => setPriority(value)}
-                        className={`px-3 py-2 rounded-xl text-[10px] font-black border-2 transition-all ${
+                        className={`px-3 py-2 rounded-xl text-xs font-black border-2 transition-all ${
                           priority === value ? cls : "border-[#caf0f8] text-gray-400 hover:border-[#0077b6]/40"
                         }`}
                       >
@@ -516,7 +387,7 @@ const CommunicationCenterPage = () => {
                 {/* Delivery channels */}
                 <MainCard className="p-5 border border-[#caf0f8]/60">
                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Delivery Channels</h3>
-                  <div className="space-y-2.5">
+                  <div className="grid grid-cols-2 gap-3">
                     {[
                       { id: "portal",   label: "Portal Notification", icon: Bell         },
                       { id: "email",    label: "Email",               icon: Mail         },
@@ -543,25 +414,8 @@ const CommunicationCenterPage = () => {
                 </MainCard>
               </div>
 
-              {/* Right column */}
-              <div className="xl:col-span-2 space-y-4">
-
-                {/* Subject */}
-                <MainCard className="p-5 border border-[#caf0f8]/60">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-                    Campaign Subject / Title
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. PTM Reminder – Grade 10 Parents"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-[#caf0f8] text-sm font-bold text-[#03045e] outline-none focus:border-[#0077b6] transition-colors placeholder:font-normal placeholder:text-gray-300"
-                  />
-                </MainCard>
-
-                {/* Message body */}
-                <MainCard className="p-5 border border-[#caf0f8]/60 space-y-3">
+              {/* Message body */}
+              <MainCard className="p-5 border border-[#caf0f8]/60 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Message Body</label>
                     <span className="text-[9px] font-black text-gray-300 uppercase">{messageBody.length} chars</span>
@@ -666,13 +520,12 @@ const CommunicationCenterPage = () => {
                       {sendTiming === "now" ? "Send Campaign" : sendTiming === "schedule" ? "Schedule Campaign" : "Save Draft"}
                     </motion.button>
                     <p className="text-[9px] text-gray-400 font-bold">
-                      {selectedAudience.length > 0
-                        ? `Targeting: ${selectedAudience.join(", ")}${selectedFilters.length > 0 ? ` + ${selectedFilters.length} filter${selectedFilters.length > 1 ? "s" : ""}` : ""}`
+                      {Object.values(audienceObj).some(arr => arr.length > 0)
+                        ? "Audience selected."
                         : "Select an audience group to continue"}
                     </p>
                   </div>
                 </MainCard>
-              </div>
             </div>
           )}
 

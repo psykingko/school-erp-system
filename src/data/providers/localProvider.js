@@ -683,6 +683,19 @@ const localProvider = {
     return getItem(STORAGE_KEYS.DOCUMENTS) || [];
   },
 
+  updateDocument: async (docId, updates) => {
+    const docs = getItem(STORAGE_KEYS.DOCUMENTS) || [];
+    const idx = docs.findIndex((d) => d.id === docId);
+    if (idx === -1) throw new Error("Document not found");
+    docs[idx] = {
+      ...docs[idx],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    setItem(STORAGE_KEYS.DOCUMENTS, docs);
+    return docs[idx];
+  },
+
   getDocumentsByStudent: async (studentId) => {
     const docs = getItem(STORAGE_KEYS.DOCUMENTS) || [];
     return docs.filter((d) => d.studentId === studentId);

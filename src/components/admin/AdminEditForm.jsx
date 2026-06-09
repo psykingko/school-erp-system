@@ -77,7 +77,7 @@ const AdminEditForm = ({
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: "spring", stiffness: 350, damping: 30 }}
               onSubmit={handleFormSubmit}
-              className="bg-white rounded-3xl shadow-2xl border border-[#caf0f8] w-full max-w-lg flex flex-col pointer-events-auto overflow-hidden max-h-[90vh]"
+              className="bg-white rounded-3xl shadow-2xl border border-[#caf0f8] w-full max-w-2xl flex flex-col pointer-events-auto overflow-hidden max-h-[90vh]"
             >
               {/* Modal Header */}
               <div className="p-5 border-b border-[#caf0f8] flex items-center justify-between bg-gray-50/50">
@@ -112,9 +112,11 @@ const AdminEditForm = ({
                           className="w-full px-4 py-2.5 rounded-2xl bg-[#caf0f8]/10 border border-[#caf0f8]/50 text-xs text-gray-700 font-bold focus:outline-none focus:border-[#0077b6] transition-colors"
                         >
                           <option value="">Select option...</option>
-                          {(field.options || []).map(opt => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
+                          {(field.options || []).map(opt => {
+                            const val = typeof opt === 'object' ? opt.value : opt;
+                            const label = typeof opt === 'object' ? opt.label : opt;
+                            return <option key={val} value={val}>{label}</option>;
+                          })}
                         </select>
                       ) : field.type === "checkbox" ? (
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -126,6 +128,19 @@ const AdminEditForm = ({
                           />
                           <span className="text-xs text-gray-700 font-bold">Yes, Assign Authority</span>
                         </label>
+                      ) : field.type === "textarea" ? (
+                        <textarea
+                          value={formState[field.name] || ""}
+                          onChange={(e) => handleChange(field.name, e.target.value)}
+                          placeholder={`Enter ${field.label.toLowerCase()}...`}
+                          className="w-full px-4 py-2.5 rounded-2xl bg-[#caf0f8]/10 border border-[#caf0f8]/50 text-xs text-gray-700 font-bold focus:outline-none focus:border-[#0077b6] placeholder-gray-300 transition-colors min-h-[100px]"
+                          required={field.required}
+                        />
+                      ) : field.type === "custom" ? (
+                        field.render({
+                          value: formState[field.name],
+                          onChange: (val) => handleChange(field.name, val)
+                        })
                       ) : (
                         <input
                           type={field.type || "text"}

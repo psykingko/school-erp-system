@@ -240,8 +240,7 @@ const StatusBadge = ({ status, size = "sm" }) => {
 // ─── StudentRow Component (Collapsible) ──────────────────────────────────────
 const StudentChecklistRow = ({
   student,
-  onVerify,
-  onReject,
+  onReview,
   selected,
   onSelect,
 }) => {
@@ -371,20 +370,12 @@ const StudentChecklistRow = ({
 
                 <div className="mt-2 flex items-center gap-2">
                   {doc.status === "pending" && (
-                    <>
-                      <button
-                        onClick={() => onVerify(student.studentId, doc.id)}
-                        className="flex-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 px-2 py-1 rounded-lg text-[9px] font-black transition-colors"
-                      >
-                        <CheckCircle size={10} className="inline mr-1" /> Verify
-                      </button>
-                      <button
-                        onClick={() => onReject(student.studentId, doc.id)}
-                        className="flex-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 px-2 py-1 rounded-lg text-[9px] font-black transition-colors"
-                      >
-                        <XCircle size={10} className="inline mr-1" /> Reject
-                      </button>
-                    </>
+                    <button
+                      onClick={() => onReview(student, doc)}
+                      className="w-full flex items-center justify-center gap-1.5 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 px-2 py-1.5 rounded-lg text-[9px] font-black transition-colors"
+                    >
+                      <Eye size={10} /> Review Document
+                    </button>
                   )}
                   {doc.status === "verified" && (
                     <button className="w-full flex items-center justify-center gap-1 text-[9px] font-black text-[#0077b6] hover:bg-sky-50 border border-transparent hover:border-sky-200 px-2 py-1 rounded-lg transition-colors">
@@ -409,8 +400,7 @@ const StudentChecklistRow = ({
 // ─── TeacherChecklistRow Component (for Employee/Teacher documents) ────────────
 const TeacherChecklistRow = ({
   teacher,
-  onVerify,
-  onReject,
+  onReview,
   selected,
   onSelect,
 }) => {
@@ -540,20 +530,12 @@ const TeacherChecklistRow = ({
 
                 <div className="mt-2 flex items-center gap-2">
                   {doc.status === "pending" && (
-                    <>
-                      <button
-                        onClick={() => onVerify(teacher.teacherId, doc.id)}
-                        className="flex-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 px-2 py-1 rounded-lg text-[9px] font-black transition-colors"
-                      >
-                        <CheckCircle size={10} className="inline mr-1" /> Verify
-                      </button>
-                      <button
-                        onClick={() => onReject(teacher.teacherId, doc.id)}
-                        className="flex-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 px-2 py-1 rounded-lg text-[9px] font-black transition-colors"
-                      >
-                        <XCircle size={10} className="inline mr-1" /> Reject
-                      </button>
-                    </>
+                    <button
+                      onClick={() => onReview(teacher, doc)}
+                      className="w-full flex items-center justify-center gap-1.5 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 px-2 py-1.5 rounded-lg text-[9px] font-black transition-colors"
+                    >
+                      <Eye size={10} /> Review Document
+                    </button>
                   )}
                   {doc.status === "verified" && (
                     <button className="w-full flex items-center justify-center gap-1 text-[9px] font-black text-[#0077b6] hover:bg-sky-50 border border-transparent hover:border-sky-200 px-2 py-1 rounded-lg transition-colors">
@@ -606,7 +588,7 @@ const buildTeacherChecklist = (teachers, documents) => {
     return {
       teacherId: teacher.id,
       employeeId: teacher.employeeId || teacher.id,
-      teacherName: teacher.name,
+      teacherName: teacher.teacherName || teacher.name,
       designation: teacher.designation || "Teacher",
       department: teacher.department || "Academic",
       checklist,
@@ -769,6 +751,89 @@ const MissingDocsReport = ({ checklist, onClose, entityType = "students" }) => {
   );
 };
 
+// ─── Document Viewer Modal ───────────────────────────────────────────────────
+const DocumentViewerModal = ({ doc, onVerify, onReject, onClose }) => {
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [remarks, setRemarks] = useState("");
+
+  if (!doc) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div>
+            <h3 className="text-lg font-black text-[#03045e]">{doc.title}</h3>
+            <p className="text-xs text-slate-400 font-bold">{doc.subtitle}</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+            <X size={20} className="text-slate-400" />
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 flex flex-col items-center justify-center">
+            {/* Dummy Document Placeholder */}
+            <div className="w-full max-w-md aspect-[1/1.4] bg-white border-2 border-slate-200 border-dashed rounded-xl flex flex-col items-center justify-center text-slate-400 shadow-sm">
+                <FileText size={64} className="text-slate-300 mb-4" />
+                <p className="text-sm font-black text-slate-500">Document Preview</p>
+                <p className="text-[10px] font-bold text-slate-400 mt-1">{doc.fileSize || "1.2 MB"} • PDF Document</p>
+                <div className="mt-8 px-8 py-4 bg-slate-50 rounded-lg border border-slate-100 max-w-[80%] text-center">
+                    <p className="text-[10px] text-slate-500">This is a placeholder for the actual document file viewer (PDF/Image).</p>
+                </div>
+            </div>
+        </div>
+
+        {doc.status === "pending" && !showRejectForm && (
+          <div className="border-t border-slate-100 p-4 bg-white flex items-center justify-end gap-3">
+            <button 
+              onClick={() => setShowRejectForm(true)}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors"
+            >
+              <XCircle size={16} /> Reject
+            </button>
+            <button 
+              onClick={() => { onVerify(doc.id); onClose(); }}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-sm transition-colors"
+            >
+              <CheckCircle size={16} /> Approve & Verify
+            </button>
+          </div>
+        )}
+
+        {showRejectForm && (
+          <div className="border-t border-slate-100 p-4 bg-white flex flex-col gap-3">
+            <textarea
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="Please provide a reason for rejection..."
+              className="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-bold text-[#03045e] outline-none focus:border-rose-500 transition-colors"
+              rows={3}
+            />
+            <div className="flex items-center justify-end gap-3">
+              <button 
+                onClick={() => { setShowRejectForm(false); setRemarks(""); }}
+                className="px-6 py-2.5 rounded-xl text-sm font-black text-slate-500 hover:bg-slate-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                disabled={!remarks.trim()}
+                onClick={() => { onReject(doc.id, remarks); onClose(); }}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-50 transition-colors"
+              >
+                <XCircle size={16} /> Confirm Rejection
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
 // ─── Main Documents Page ─────────────────────────────────────────────────────
 const DocumentsPage = () => {
   // Entity Type: 'students' or 'teachers'
@@ -788,6 +853,7 @@ const DocumentsPage = () => {
   // View State
   const [activeView, setActiveView] = useState("checklist"); // checklist | bytype | recent
   const [showMissingReport, setShowMissingReport] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState(null);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -847,9 +913,9 @@ const DocumentsPage = () => {
   const filteredChecklist = useMemo(() => {
     return currentChecklist.filter((item) => {
       const nameField =
-        entityType === "students" ? item.studentName : item.teacherName;
+        (entityType === "students" ? item.studentName : item.teacherName) || "";
       const idField =
-        entityType === "students" ? item.admissionNo : item.employeeId;
+        (entityType === "students" ? item.admissionNo : item.employeeId) || "";
       const matchesSearch =
         nameField.toLowerCase().includes(searchTerm.toLowerCase()) ||
         idField.toLowerCase().includes(searchTerm.toLowerCase());
@@ -905,14 +971,42 @@ const DocumentsPage = () => {
   }, [students, teachers, currentChecklist, currentDocuments, entityType]);
 
   // Handlers
-  const handleVerify = useCallback((_studentId, _docTypeId) => {
-    setSuccessBanner("Document verified successfully");
-    setTimeout(() => setSuccessBanner(""), 3000);
-  }, []);
+  const handleVerifyDoc = useCallback(async (docId) => {
+    try {
+      const provider = getDataProvider();
+      if(entityType === "students") {
+          await provider.updateDocument(docId, { status: "verified" });
+      } else {
+          await provider.updateTeacherDocument(docId, { status: "verified" });
+      }
+      await fetchData();
+      setSuccessBanner("Document verified successfully");
+      setTimeout(() => setSuccessBanner(""), 3000);
+    } catch(e) { console.error(e); }
+  }, [entityType]);
 
-  const handleReject = useCallback((_studentId, _docTypeId) => {
-    setSuccessBanner("Document rejected with remarks");
-    setTimeout(() => setSuccessBanner(""), 3000);
+  const handleRejectDoc = useCallback(async (docId, remarks = "") => {
+    try {
+      const provider = getDataProvider();
+      if(entityType === "students") {
+          await provider.updateDocument(docId, { status: "rejected", remarks });
+      } else {
+          await provider.updateTeacherDocument(docId, { status: "rejected", remarks });
+      }
+      await fetchData();
+      setSuccessBanner("Document rejected");
+      setTimeout(() => setSuccessBanner(""), 3000);
+    } catch(e) { console.error(e); }
+  }, [entityType]);
+
+  const handleReviewChecklist = useCallback((entity, checklistItem) => {
+    setViewingDoc({
+      id: checklistItem.docId,
+      status: checklistItem.status,
+      fileSize: checklistItem.fileSize,
+      title: checklistItem.label,
+      subtitle: `${entity.studentName || entity.teacherName} • ${entity.admissionNo || entity.employeeId}`
+    });
   }, []);
 
   const handleSelectItem = useCallback((itemId, selected) => {
@@ -1207,8 +1301,7 @@ const DocumentsPage = () => {
                       onSelect={(sel) =>
                         handleSelectItem(student.studentId, sel)
                       }
-                      onVerify={handleVerify}
-                      onReject={handleReject}
+                      onReview={handleReviewChecklist}
                     />
                   ))
                 : filteredChecklist.map((teacher) => (
@@ -1219,8 +1312,7 @@ const DocumentsPage = () => {
                       onSelect={(sel) =>
                         handleSelectItem(teacher.teacherId, sel)
                       }
-                      onVerify={handleVerify}
-                      onReject={handleReject}
+                      onReview={handleReviewChecklist}
                     />
                   ))}
             </div>
@@ -1338,9 +1430,27 @@ const DocumentsPage = () => {
                       </p>
                     </div>
                     <StatusBadge status={doc.status} />
-                    <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                      <MoreHorizontal size={16} className="text-slate-400" />
-                    </button>
+                    {doc.status === "pending" ? (
+                      <div className="flex gap-1 items-center">
+                        <button
+                          onClick={() => setViewingDoc({
+                            id: doc.id,
+                            status: doc.status,
+                            fileSize: doc.fileSize,
+                            title: type?.label || doc.titleEn,
+                            subtitle: `${entity?.name || "Unknown"} • ${doc.uploadDate}`
+                          })}
+                          title="Review"
+                          className="p-1.5 hover:bg-sky-50 text-sky-600 rounded-lg transition-colors"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <MoreHorizontal size={16} className="text-slate-400" />
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -1356,6 +1466,14 @@ const DocumentsPage = () => {
           onClose={() => setShowMissingReport(false)}
         />
       )}
+
+      {/* Viewer Modal */}
+      <DocumentViewerModal
+        doc={viewingDoc}
+        onClose={() => setViewingDoc(null)}
+        onVerify={handleVerifyDoc}
+        onReject={handleRejectDoc}
+      />
     </motion.div>
   );
 };

@@ -33,6 +33,7 @@ import ConfirmationModal from "../../shared/components/ConfirmationModal";
 import ToastNotification from "../../shared/components/ToastNotification";
 import LoadingSkeleton from "../../shared/components/LoadingSkeleton";
 import ChartWrapper from "../../shared/components/ChartWrapper";
+import AudienceSelector from "../../components/shared/AudienceSelector";
 
 const NoticesPage = () => {
   const [notices, setNotices] = useState([]);
@@ -289,7 +290,16 @@ const NoticesPage = () => {
     category: NOTICE_CATEGORIES.GENERAL,
     priority: NOTICE_PRIORITIES.NORMAL,
     status: "draft",
-    targetAudience: { type: AUDIENCE_TYPES.ALL },
+    targetAudience: {
+      groups: [],
+      classes: [],
+      sections: [],
+      streams: [],
+      teacherTypes: [],
+      subjects: [],
+      studentIds: [],
+      employeeIds: []
+    },
   };
 
   const getPriorityColor = (priority) => {
@@ -331,18 +341,29 @@ const NoticesPage = () => {
   };
 
   const estimateRecipients = (notice) => {
-    if (notice.targetAudience?.type === AUDIENCE_TYPES.ALL) return 500;
-    if (notice.targetAudience?.type === AUDIENCE_TYPES.CLASS) {
-      return (notice.targetAudience.classIds?.length || 1) * 40;
-    }
-    if (notice.targetAudience?.type === AUDIENCE_TYPES.SPECIFIC) {
-      return (
-        (notice.targetAudience.studentIds?.length || 0) +
-        (notice.targetAudience.parentIds?.length || 0) +
-        (notice.targetAudience.teacherIds?.length || 0)
-      );
-    }
-    return 50;
+    let count = 0;
+    const aud = notice.targetAudience || {};
+    
+    // Safety check for legacy types
+    if (aud.type === AUDIENCE_TYPES.ALL) return 500;
+    if (aud.type === AUDIENCE_TYPES.CLASS) return (aud.classIds?.length || 1) * 40;
+    if (aud.type === AUDIENCE_TYPES.SPECIFIC) return (aud.studentIds?.length || 0) + (aud.parentIds?.length || 0) + (aud.teacherIds?.length || 0);
+
+    // New format
+    if (aud.groups?.includes("Students")) count += 500;
+    if (aud.groups?.includes("Parents")) count += 500;
+    if (aud.groups?.includes("Teachers")) count += 50;
+
+    if (aud.classes?.length > 0) count += (aud.classes.length * 40);
+    if (aud.streams?.length > 0) count += (aud.streams.length * 80);
+    
+    if (aud.teacherTypes?.length > 0) count += (aud.teacherTypes.length * 10);
+    if (aud.subjects?.length > 0) count += (aud.subjects.length * 5);
+
+    if (aud.studentIds) count += aud.studentIds.length;
+    if (aud.employeeIds) count += aud.employeeIds.length;
+
+    return count;
   };
 
   // Component-level analytics (no service, read-only derivation)
@@ -800,6 +821,14 @@ const NoticesPage = () => {
             options: ["draft", NOTICE_STATUS.PUBLISHED, "scheduled"],
             required: true,
           },
+          {
+            name: "targetAudience",
+            label: "Target Audience",
+            type: "custom",
+            render: ({ value, onChange }) => (
+              <AudienceSelector value={value} onChange={onChange} />
+            )
+          }
         ]}
         onSubmit={handleAddNotice}
       />
@@ -845,11 +874,17 @@ const NoticesPage = () => {
               "draft",
               NOTICE_STATUS.PUBLISHED,
               "scheduled",
-              "archived",
-              "cancelled",
             ],
             required: true,
           },
+          {
+            name: "targetAudience",
+            label: "Target Audience",
+            type: "custom",
+            render: ({ value, onChange }) => (
+              <AudienceSelector value={value} onChange={onChange} />
+            )
+          }
         ]}
         onSubmit={handleUpdateNotice}
       />
