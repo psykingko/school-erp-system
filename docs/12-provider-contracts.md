@@ -155,4 +155,42 @@ export const ParentProviderContract = {
    */
   async getParentById(id) {}
 };
+
+---
+
+## 6. Transport Provider Interface
+
+```javascript
+/**
+ * @interface TransportProvider
+ */
+export const TransportProviderContract = {
+  // --- Routes & Vehicles ---
+  async getTransportRoutes() {},
+  async getTransportRouteById(id) {},
+  async createTransportRoute(data) {},
+  
+  async getTransportVehicles() {},
+  async getTransportVehicleById(id) {},
+  async createTransportVehicle(data) {},
+  
+  // --- Stops ---
+  async getTransportStops() {},
+  async getTransportStopsByRoute(routeId) {},
+  async createTransportStop(data) {},
+  async deleteTransportStop(id) {},
+  
+  // --- Allocations ---
+  async getTransportAllocations() {},
+  async getTransportAllocationsByRoute(routeId) {},
+  async getTransportAssignmentByStudent(studentId) {},
+  async createTransportAllocation(data) {},
+  async deleteTransportAllocation(id) {},
+  
+  // --- Alerts ---
+  async getTransportAlerts() {},
+  async createTransportAlert(data) {},
+  async deleteTransportAlert(id) {}
+};
+```
 ```

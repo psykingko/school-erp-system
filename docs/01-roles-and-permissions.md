@@ -168,6 +168,28 @@ graph TD
 
 ---
 
+### 🚌 1.8 Transport & Logistics Module
+```mermaid
+graph TD
+    subgraph "Roles"
+        Admin["👑 System Admin"]
+        Student["🎓 Student"]
+        Parent["👪 Parent"]
+    end
+
+    subgraph "Module Data"
+        M_Transport["🚌 Transport & Alerts Database"]
+    end
+
+    Admin -->|✍️ Manages Routes, Stops, Allocations & Pushes Alerts| M_Transport
+    Student -->|👁️ Tracks Assigned Route & Reads Alerts| M_Transport
+    Parent -->|👁️ Monitors Child's Route & Reads Alerts| M_Transport
+
+    style M_Transport fill:#fef3c7,stroke:#d97706,stroke-width:2px
+```
+
+---
+
 ## 📊 2. Permissions Matrix Grid
 
 This grid maps features to roles using permissions. You can easily add rows for new features or update cell symbols.

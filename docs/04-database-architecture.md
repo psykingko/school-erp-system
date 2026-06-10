@@ -63,8 +63,12 @@ We recommend using **PostgreSQL Schemas** (Deliverable 15) to logically group ta
 *   **`receipts`**: Payments made against invoices.
 
 ### Schema: `transport`
-*   **`routes`**, **`stops`**, **`vehicles`**, **`drivers`**.
-*   **`student_transport_allocations`**: Maps `student_id` to `route_stop_id`.
+*   **`routes`**: Core bus routes mapping paths and zones.
+*   **`vehicles`**: Bus/Van details including capacity and features.
+*   **`drivers`**: Operational staff (links to `core.employees`).
+*   **`stops`**: Sequence of pickup/drop points linked to routes.
+*   **`allocations`**: Maps `student_id` to `route_id` and `stop_id`. Calculates occupancy dynamically.
+*   **`alerts`**: Live system broadcast messages tied to `route_id` (or `ALL`).
 
 ### Schema: `communication`
 *   **`notices`**: Announcements with `target_roles` and `target_classes` JSONB filters.
@@ -119,9 +123,11 @@ erDiagram
     INVOICES ||--o{ RECEIPTS : "paid via"
     
     %% Transport
-    ROUTES ||--o{ ROUTE_STOPS : "has"
-    STUDENTS ||--o{ TRANSPORT_ALLOCATIONS : "uses"
-    ROUTE_STOPS ||--o{ TRANSPORT_ALLOCATIONS : "at"
+    ROUTES ||--o{ STOPS : "has"
+    ROUTES ||--o{ ALERTS : "broadcasts"
+    STUDENTS ||--o{ ALLOCATIONS : "assigned"
+    ROUTES ||--o{ ALLOCATIONS : "serves"
+    STOPS ||--o{ ALLOCATIONS : "pickup at"
 ```
 
 ---
