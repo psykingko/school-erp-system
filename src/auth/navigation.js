@@ -38,6 +38,7 @@ export const ROLE_NAVIGATION = {
   ],
   [ROLES.TEACHER]: [
     { id: "teacher_home", icon: "LayoutDashboard" },
+    { id: "teacher_leaves", icon: "CalendarDays" },
     { id: "attendance_mgmt", icon: "CheckSquare" },
     { id: "assignments_mgmt", icon: "ClipboardList" },
     { id: "marks_exams", icon: "FileEdit" },
@@ -55,6 +56,8 @@ export const ROLE_NAVIGATION = {
     { id: "admin_home", icon: "LayoutDashboard" },
     { id: "admin_students", icon: "Users" },
     { id: "admin_teachers", icon: "Briefcase" },
+    { id: "admin_employees", icon: "Users" },
+    { id: "admin_employee_leaves", icon: "CalendarDays" },
     { id: "admin_parents", icon: "User" },
     { id: "admin_admins", icon: "ShieldCheck" },
     { id: "admin_classes", icon: "Building2" },
@@ -65,7 +68,7 @@ export const ROLE_NAVIGATION = {
     { id: "admin_question_papers", icon: "FileText" },
     { id: "admin_academic_performance", icon: "BarChart2" },
     { id: "admin_attendance", icon: "CheckSquare" },
-    { id: "admin_leaves", icon: "CalendarDays" },
+    { id: "admin_leave_approval", icon: "CheckSquare" },
     { id: "admin_transport", icon: "Bus" },
     { id: "admin_fees", icon: "Wallet" },
     { id: "admin_documents", icon: "Folder" },
@@ -96,8 +99,8 @@ export const ADMIN_SECTIONS = [
     items: [
       { id: "admin_students", icon: "Users" },
       { id: "admin_teachers", icon: "Briefcase" },
+      { id: "admin_employees", icon: "Users" },
       { id: "admin_parents", icon: "User" },
-      { id: "admin_admins", icon: "ShieldCheck" },
     ],
   },
   {
@@ -114,7 +117,7 @@ export const ADMIN_SECTIONS = [
     title: "Operations",
     items: [
       { id: "admin_attendance", icon: "CheckSquare" },
-      { id: "admin_leaves", icon: "CalendarDays" },
+      { id: "admin_leave_approval", icon: "CheckSquare" },
       { id: "admin_transport", icon: "Bus" },
       { id: "admin_fees", icon: "Wallet" },
       { id: "admin_documents", icon: "Folder" },
@@ -144,7 +147,9 @@ export const ADMIN_SECTIONS = [
     title: "Settings",
     items: [
       { id: "admin_profile", icon: "User" },
+      { id: "admin_employee_leaves", icon: "CalendarDays" },
       { id: "admin_access_control", icon: "ShieldCheck" },
+      { id: "admin_admins", icon: "ShieldCheck" },
       { id: "admin_school_settings", icon: "Settings" },
       { id: "logout", icon: "LogOut" },
     ],

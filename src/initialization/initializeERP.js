@@ -128,7 +128,7 @@ export const initializeERP = () => {
         username: "admin",
         password: "admin123",
         role: ROLES.ADMIN,
-        linkedEntityId: "admin-001",
+        linkedEntityId: "EMP-010",
         active: true,
       });
 
@@ -224,6 +224,7 @@ export const resetERPData = () => {
 
     if (bootstrapState.isInitialized) {
       window.dispatchEvent(new Event("erp-reset-event"));
+      window.location.reload();
     }
 
     return bootstrapState.isInitialized;

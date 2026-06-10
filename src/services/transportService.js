@@ -1,5 +1,128 @@
 import { getDataProvider } from "../data";
 
+// === ROUTE MANAGEMENT ===
+export const getAllRoutes = async () => {
+  const provider = getDataProvider();
+  const [routes, vehicles, employees, allocations] = await Promise.all([
+    provider.getTransportRoutes(),
+    provider.getTransportVehicles(),
+    provider.getEmployees(),
+    provider.getTransportAllocations(),
+  ]);
+
+  return routes.map((r) => {
+    const vehicle = vehicles.find((v) => v.id === r.vehicleId);
+    const driver = employees.find((e) => e.employeeId === r.driverId);
+    // Occupancy = calculated from allocations, not stored
+    const routeAllocations = allocations.filter((a) => a.routeId === r.id && a.status === "ACTIVE");
+    
+    return {
+      ...r,
+      vehicleNo: vehicle?.vehicleNo || "N/A",
+      capacity: vehicle?.capacity || 40,
+      vehicleModel: vehicle?.model || "N/A",
+      registrationNo: vehicle?.registrationNo || "N/A",
+      driverName: driver?.employeeName || "Unassigned",
+      driverPhone: driver?.phone || "N/A",
+      occupancy: routeAllocations.length,
+      boys: routeAllocations.filter(a => a.gender === "Male").length,
+      girls: routeAllocations.filter(a => a.gender === "Female").length,
+    };
+  });
+};
+
+
+export const createRoute = async (routeData) => {
+  return await getDataProvider().createTransportRoute(routeData);
+};
+
+export const updateRoute = async (id, updates) => {
+  return await getDataProvider().updateTransportRoute(id, updates);
+};
+
+export const deleteRoute = async (id) => {
+  return await getDataProvider().deleteTransportRoute(id);
+};
+
+// === VEHICLE MANAGEMENT ===
+export const getAllVehicles = async () => {
+  return await getDataProvider().getTransportVehicles();
+};
+
+export const createVehicle = async (vehicleData) => {
+  return await getDataProvider().createTransportVehicle(vehicleData);
+};
+
+export const updateVehicle = async (id, updates) => {
+  return await getDataProvider().updateTransportVehicle(id, updates);
+};
+
+export const deleteVehicle = async (id) => {
+  return await getDataProvider().deleteTransportVehicle(id);
+};
+
+// === DRIVER MANAGEMENT ===
+export const getAllDrivers = async () => {
+  return await getDataProvider().getTransportDrivers();
+};
+
+export const createDriver = async (driverData) => {
+  return await getDataProvider().createEmployee(driverData);
+};
+
+// === ALERT MANAGEMENT ===
+export const getAllAlerts = async () => {
+  return await getDataProvider().getTransportAlerts();
+};
+
+export const createAlert = async (alertData) => {
+  return await getDataProvider().createTransportAlert(alertData);
+};
+
+export const deleteAlert = async (alertId) => {
+  return await getDataProvider().deleteTransportAlert(alertId);
+};
+
+// === STOPS MANAGEMENT ===
+export const getStopsByRoute = async (routeId) => {
+  return await getDataProvider().getTransportStopsByRoute(routeId);
+};
+
+export const getAllStops = async () => {
+  return await getDataProvider().getTransportStops();
+};
+
+export const createStop = async (stopData) => {
+  return await getDataProvider().createTransportStop(stopData);
+};
+
+export const updateStop = async (stopId, updates) => {
+  return await getDataProvider().updateTransportStop(stopId, updates);
+};
+
+export const deleteStop = async (stopId) => {
+  return await getDataProvider().deleteTransportStop(stopId);
+};
+
+// === STUDENT ALLOCATION MANAGEMENT ===
+export const getAllAllocations = async () => {
+  return await getDataProvider().getTransportAllocations();
+};
+
+export const getAllocationsByRoute = async (routeId) => {
+  return await getDataProvider().getTransportAllocationsByRoute(routeId);
+};
+
+export const createAllocation = async (data) => {
+  return await getDataProvider().createTransportAllocation(data);
+};
+
+export const deleteAllocation = async (allocationId) => {
+  return await getDataProvider().deleteTransportAllocation(allocationId);
+};
+
+
+
 export const getTransportSummary = async (studentId) => {
   const id = studentId || "stud-001";
   const provider = getDataProvider();
@@ -145,38 +268,40 @@ export const getRouteTimeline = async (studentIdOrRouteId, studentId = null) => 
 
 export const getTransportNotices = async (studentId, lang = "en") => {
   const provider = getDataProvider();
-  const assignment = await provider.getTransportAssignmentByStudent(studentId);
-  if (!assignment) return [];
-
   const alertsList = await provider.getTransportAlerts();
-  const alerts = alertsList.filter(
-    (al) => al.routeId === assignment.assignedRouteId,
+
+  // Determine student's route (if available) to also include route-specific alerts
+  let studentRouteId = null;
+  try {
+    const assignment = await provider.getTransportAssignmentByStudent(studentId);
+    studentRouteId = assignment?.routeId || assignment?.assignedRouteId || null;
+  } catch (_) {}
+
+  // Show: global ALL alerts + route-specific alerts for the student's route
+  const relevant = alertsList.filter((al) =>
+    al.routeId === "ALL" ||
+    (studentRouteId && al.routeId === studentRouteId)
   );
 
-  return alerts.map((al) => ({
+  const typeLabel = (type, lang) => {
+    const map = {
+      delay:        { en: "Route Delay Alert",         hi: "मार्ग विलंब सूचना" },
+      breakdown:    { en: "Vehicle Breakdown Alert",   hi: "वाहन खराबी अलर्ट" },
+      diversion:    { en: "Route Diversion Warning",   hi: "मार्ग डायवर्जन सूचना" },
+      reassignment: { en: "Vehicle Reassignment",      hi: "वाहन पुनर्वितरण सूचना" },
+      general:      { en: "Transport Notice",          hi: "परिवहन सूचना" },
+      weather:      { en: "Weather Advisory",          hi: "मौसम सलाह" },
+    };
+    return (map[type] || map.general)[lang] || map.general.en;
+  };
+
+  return relevant.map((al) => ({
     id: al.alertId,
-    title:
-      al.type === "delay"
-        ? lang === "hi"
-          ? "मार्ग विलंब सूचना"
-          : "Route Status Alert"
-        : al.type === "breakdown"
-          ? lang === "hi"
-            ? "वाहन खराबी अलर्ट"
-            : "Vehicle Breakdown Alert"
-          : al.type === "diversion"
-            ? lang === "hi"
-              ? "मार्ग डायवर्जन सूचना"
-              : "Route Diversion Warning"
-            : al.type === "reassignment"
-              ? lang === "hi"
-                ? "वाहन पुनर्वितरण सूचना"
-                : "Vehicle Reassignment Notice"
-              : lang === "hi"
-                ? "परिवहन सूचना"
-                : "Transport Notice",
-    message: lang === "hi" ? al.messageHi : al.messageEn,
+    title: typeLabel(al.type, lang),
+    message: lang === "hi" ? (al.messageHi || al.messageEn) : al.messageEn,
     priority: al.severity === "danger" ? "high" : "normal",
+    routeId: al.routeId,
+    createdAt: al.createdAt,
   }));
 };
 

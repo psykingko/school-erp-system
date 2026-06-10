@@ -13,6 +13,8 @@ export const STORAGE_KEYS = {
   TEACHERS: "erp_teachers",
   PARENTS: "erp_parents",
   AUTH_USERS: "erp_authUsers",
+  EMPLOYEES: "erp_employees",
+  APPROVAL_SETTINGS: "erp_approvalSettings",
   CLASSES: "erp_classes",
   SUBJECTS: "erp_subjects",
   STREAMS: "erp_streams",
@@ -44,6 +46,8 @@ export const STORAGE_KEYS = {
   TRANSPORT_DRIVERS: "erp_transportDrivers",
   TRANSPORT_ASSIGNMENTS: "erp_transportAssignments",
   TRANSPORT_ALERTS: "erp_transportAlerts",
+  TRANSPORT_STOPS: "erp_transportStops",
+  TRANSPORT_ALLOCATIONS: "erp_transportAllocations",
 
   // Documents
   DOCUMENTS: "erp_documents",

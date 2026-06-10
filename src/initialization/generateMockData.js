@@ -302,42 +302,163 @@ export const generateMissingMockData = () => {
   // 8. Seed Transport Data
   const existingTransportAssignments = getItem(STORAGE_KEYS.TRANSPORT_ASSIGNMENTS);
   if (!existingTransportAssignments || existingTransportAssignments.length === 0) {
-    const drivers = [
-      { id: "dr-1", name: "Ramesh Chand", rating: 4.8, experience: "12 Years", emergencyContact: "+91 98765 43210", shift: "Morning Shift" }
+    const zones = ["North Zone", "South Zone", "East Zone", "West Zone", "Central Zone"];
+    const attendantNames = [
+      "Geeta Devi", "Satish Mehra", "Sunita Rani", "Rakesh Bhai", "Meena Kumari",
+      "Suresh Bhai", "Pooja Sharma", "Anil Kumar", "Shanti Devi", "Vinod Kumar"
     ];
-    const vehicles = [
-      {
-        id: "vh-1", vehicleNo: "DL-1PB-4521", model: "Tata Starbus 40", type: "AC Bus",
-        capacity: 40, fuelType: "CNG", zone: "North Zone", features: ["GPS", "CCTV", "First Aid"],
-        coordinator: "Mr. Sharma (Transport Head)", driverId: "dr-1", attendantName: "Mr. Satish Mehra"
-      }
+    const attendantPhones = [
+      "+91-9911223340", "+91-9911223341", "+91-9911223342", "+91-9911223343", "+91-9911223344",
+      "+91-9911223345", "+91-9911223346", "+91-9911223347", "+91-9911223348", "+91-9911223349"
     ];
-    const routes = [
-      {
-        id: "rt-101", routeNo: "RT-101", activeDirection: "PICKUP_ROUTE", dropTime: "04:00 PM",
-        stops: [
-          { stopId: "st-1", stopName: "Green Park Extension", eta: "07:05 AM", afternoonEta: "04:30 PM" },
-          { stopId: "st-2", stopName: "Main Road Square", eta: "07:15 AM", afternoonEta: "04:15 PM" },
-          { stopId: "st-3", stopName: "Springdale Senior Secondary", isSchool: true, eta: "08:10 AM", afternoonEta: "04:00 PM" }
-        ]
-      }
-    ];
-    const assignments = studentsSeed.map((student) => (
-      { studentId: student.id, assignedRouteId: "rt-101", assignedVehicleId: "vh-1", pickupStopId: "st-2", dropStopId: "st-2", status: "Active" }
-    ));
-    const alerts = [
-      {
-        alertId: "al-1", routeId: "rt-101", type: "delay", severity: "warning",
-        messageEn: "Bus delayed by 10 mins due to moderate traffic.", messageHi: "मध्यम ट्रैफिक के कारण बस 10 मिनट देरी से चल रही है।"
-      }
+    const driversData = [
+      { id: "EMP-011", name: "Ramesh Chand",    phone: "+91-9876543220" },
+      { id: "EMP-012", name: "Sunita Devi",     phone: "+91-9876543221" },
+      { id: "EMP-013", name: "Mohammad Ali",    phone: "+91-9876543222" },
+      { id: "EMP-014", name: "Karan Singh",     phone: "+91-9876543223" },
+      { id: "EMP-015", name: "Vikram Yadav",    phone: "+91-9876543224" },
+      { id: "EMP-016", name: "Rajendra Prasad", phone: "+91-9876543225" },
+      { id: "EMP-017", name: "Sanjay Gupta",    phone: "+91-9876543226" },
+      { id: "EMP-018", name: "Manoj Tiwari",    phone: "+91-9876543227" },
+      { id: "EMP-019", name: "Balram Jat",      phone: "+91-9876543228" },
+      { id: "EMP-020", name: "Deepak Chaurasia",phone: "+91-9876543229" }
     ];
 
-    setItem(STORAGE_KEYS.TRANSPORT_DRIVERS, drivers);
+    const stopNamesByZone = {
+      "North Zone":   ["Sector 62 Metro Gate", "Fortis Hospital Chowk", "DPS School Crossing", "Rohini Sector 15", "Pitampura Red Light", "Netaji Subhash Place"],
+      "South Zone":   ["Saket Metro Station", "GK-2 M Block Market", "Malviya Nagar", "Hauz Khas Village", "Qutub Minar Gate", "Mehrauli Flyover"],
+      "East Zone":    ["Laxmi Nagar Metro", "Preet Vihar Chowk", "Nirman Vihar", "Shahdara Bus Stand", "Seelampur Junction", "Dilshad Garden"],
+      "West Zone":    ["Dwarka Sector 21", "Uttam Nagar West", "Janakpuri B Block", "Subhash Nagar Metro", "Peeragarhi", "Paschim Vihar Ext."],
+      "Central Zone": ["Connaught Place", "Mandi House Metro", "Pragati Maidan", "ITO Intersection", "Lodi Colony", "Safdarjung Enclave"]
+    };
+
+    const vehicles = Array.from({ length: 10 }).map((_, i) => ({
+      id: `vh-${i + 1}`,
+      vehicleNo: `UP32 AB ${1000 + i * 11}`,
+      model: i % 2 === 0 ? "Tata Starbus 40" : "Ashok Leyland 42",
+      type: "AC Bus",
+      capacity: i % 2 === 0 ? 40 : 42,
+      fuelType: "CNG",
+      registrationNo: `REG-DL-${String(2020 + i)}-${String(1000 + i * 13)}`,
+      insuranceExpiry: "2026-12-31"
+    }));
+
+    const routes = Array.from({ length: 10 }).map((_, i) => ({
+      id: `rt-10${i + 1}`,
+      routeNo: `RT-10${i + 1}`,
+      zone: zones[i % 5],
+      vehicleId: `vh-${i + 1}`,
+      driverId: driversData[i].id,
+      attendantName: attendantNames[i],
+      attendantPhone: attendantPhones[i],
+      activeDirection: "PICKUP_ROUTE",
+      pickupTime: "07:00 AM",
+      dropTime: "04:00 PM",
+      estimatedDuration: `${40 + i * 3} mins`,
+      status: i % 3 === 0 ? "Completed" : "In-Route"
+    }));
+
+    // TRANSPORT_STOPS — separate normalized collection
+    const allStops = [];
+    routes.forEach((route, i) => {
+      const zoneStopNames = stopNamesByZone[route.zone];
+      const numStops = 4 + (i % 3);
+      for (let j = 0; j < numStops; j++) {
+        const pickupMin = 5 + j * 8;
+        const pickupHour = 7 + Math.floor(pickupMin / 60);
+        const pickupMinFinal = pickupMin % 60;
+        allStops.push({
+          stopId: `STOP-${route.id}-${j + 1}`,
+          routeId: route.id,
+          stopName: zoneStopNames[j % zoneStopNames.length],
+          sequence: j + 1,
+          pickupTime: `${String(pickupHour).padStart(2, "0")}:${String(pickupMinFinal).padStart(2, "0")} AM`
+        });
+      }
+      allStops.push({
+        stopId: `STOP-${route.id}-school`,
+        routeId: route.id,
+        stopName: "Springdale Senior Secondary",
+        sequence: 99,
+        pickupTime: "08:15 AM",
+        isSchool: true
+      });
+    });
+
+    // TRANSPORT_ALLOCATIONS — normalized student ↔ route ↔ stop mapping
+    const femaleFirstNames = ["Aarohi", "Ananya", "Diya", "Ishita", "Kavya", "Myra", "Navya", "Prisha"];
+    const allocations = studentsSeed.map((student, index) => {
+      const routeIdx = index % 10;
+      const route = routes[routeIdx];
+      const routeStops = allStops.filter(s => s.routeId === route.id && !s.isSchool);
+      const stop = routeStops[index % Math.max(routeStops.length, 1)];
+      const firstName = student.name.split(" ")[0];
+      return {
+        allocationId: `ALLOC-${student.id}`,
+        studentId: student.id,
+        studentName: student.name,
+        className: student.className,
+        gender: femaleFirstNames.includes(firstName) ? "Female" : "Male",
+        routeId: route.id,
+        stopId: stop?.stopId || `STOP-${route.id}-1`,
+        status: "ACTIVE"
+      };
+    });
+
+    const alerts = [
+      { alertId: "al-1", routeId: "rt-101", type: "delay",     severity: "warning", messageEn: "Bus delayed by 10 mins due to moderate traffic.",   messageHi: "मध्यम ट्रैफिक के कारण बस 10 मिनट देरी से चल रही है।" },
+      { alertId: "al-2", routeId: "rt-103", type: "breakdown", severity: "danger",  messageEn: "Minor breakdown, replacement vehicle dispatched.",   messageHi: "मामूली खराबी, वैकल्पिक वाहन भेजा गया।" },
+      { alertId: "al-3", routeId: "rt-105", type: "delay",     severity: "warning", messageEn: "Driver reported late due to personal emergency.",    messageHi: "आपात स्थिति के कारण ड्राइवर ने देरी से सूचना दी।" }
+    ];
+
     setItem(STORAGE_KEYS.TRANSPORT_VEHICLES, vehicles);
     setItem(STORAGE_KEYS.TRANSPORT_ROUTES, routes);
-    setItem(STORAGE_KEYS.TRANSPORT_ASSIGNMENTS, assignments);
+    setItem(STORAGE_KEYS.TRANSPORT_STOPS, allStops);
+    setItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS, allocations);
+    setItem(STORAGE_KEYS.TRANSPORT_ASSIGNMENTS, allocations); // backward-compat alias
     setItem(STORAGE_KEYS.TRANSPORT_ALERTS, alerts);
-    console.log(`[InitializationEngine] Generated and Seeded Transport Data`);
+    console.log(`[InitializationEngine] Generated and Seeded Transport Data (Stops + Allocations)`);
+  }
+
+  // 8b. Back-fill stops if missing (partial reset scenario)
+  const existingStops = getItem(STORAGE_KEYS.TRANSPORT_STOPS);
+  if (!existingStops || existingStops.length === 0) {
+    // If routes exist but stops are missing, re-seed stops from routes
+    const routes = getItem(STORAGE_KEYS.TRANSPORT_ROUTES) || [];
+    const stopNamesByZone = {
+      "North Zone":   ["Sector 62 Metro Gate", "Fortis Hospital Chowk", "DPS School Crossing", "Rohini Sector 15"],
+      "South Zone":   ["Saket Metro Station", "GK-2 M Block Market", "Malviya Nagar", "Hauz Khas Village"],
+      "East Zone":    ["Laxmi Nagar Metro", "Preet Vihar Chowk", "Nirman Vihar", "Shahdara Bus Stand"],
+      "West Zone":    ["Dwarka Sector 21", "Uttam Nagar West", "Janakpuri B Block", "Subhash Nagar Metro"],
+      "Central Zone": ["Connaught Place", "Mandi House Metro", "Pragati Maidan", "ITO Intersection"]
+    };
+    if (routes.length > 0) {
+      const stops = [];
+      routes.forEach((route, i) => {
+        const zoneStops = stopNamesByZone[route.zone] || stopNamesByZone["North Zone"];
+        const numStops = 4 + (i % 3);
+        for (let j = 0; j < numStops; j++) {
+          const pickupMin = 5 + j * 8;
+          stops.push({
+            stopId: `STOP-${route.id}-${j + 1}`,
+            routeId: route.id,
+            stopName: zoneStops[j % zoneStops.length],
+            sequence: j + 1,
+            pickupTime: `07:${String((pickupMin) % 60).padStart(2, '0')} AM`
+          });
+        }
+        stops.push({
+          stopId: `STOP-${route.id}-school`,
+          routeId: route.id,
+          stopName: "Springdale Senior Secondary",
+          sequence: 99,
+          pickupTime: "08:15 AM",
+          isSchool: true
+        });
+      });
+      setItem(STORAGE_KEYS.TRANSPORT_STOPS, stops);
+      console.log(`[InitializationEngine] Re-seeded Transport Stops`);
+    }
   }
 
   // 9. Seed Mentor Support Data

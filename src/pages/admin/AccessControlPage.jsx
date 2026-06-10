@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import MainCard from "../../components/MainCard";
+import localProvider from "../../data/providers/localProvider";
 
 // Realistic School ERP Role Structure
 const ROLES_SEED = [
@@ -347,6 +348,32 @@ const AccessControlPage = () => {
   const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
   const [expandedRole, setExpandedRole] = useState(null);
 
+  const [approvalSettings, setApprovalSettings] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(false);
+
+  // Fetch approval settings when tab is selected
+  useMemo(() => {
+    if (activeTab === "approval_settings") {
+      setIsLoadingSettings(true);
+      Promise.all([
+        localProvider.getApprovalSettings(),
+        localProvider.getEmployees()
+      ]).then(([settings, emps]) => {
+        setApprovalSettings(settings);
+        setEmployees(emps);
+        setIsLoadingSettings(false);
+      });
+    }
+  }, [activeTab]);
+
+  const handleUpdateApprover = async (moduleName, empId) => {
+    await localProvider.updateApprovalSetting(moduleName, { approverEmployeeId: empId });
+    const settings = await localProvider.getApprovalSettings();
+    setApprovalSettings(settings);
+    alert("Approval setting updated.");
+  };
+
   const filteredRoles = useMemo(() => {
     return ROLES_SEED.filter((role) => {
       return (
@@ -467,6 +494,7 @@ const AccessControlPage = () => {
             { id: "permissions", label: "Permissions", icon: Key },
             { id: "users", label: "User Assignments", icon: Users },
             { id: "logs", label: "Access Logs", icon: FileText },
+            { id: "approval_settings", label: "Approval Settings", icon: Check },
           ].map((tab) => (
             <button
               key={tab.id}

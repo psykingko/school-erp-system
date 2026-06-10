@@ -417,31 +417,100 @@ const localProvider = {
   },
 
   // === LEAVE REQUEST DATA ===
+  _initializeLeaveRequests: async () => {
+    const version = getItem(STORAGE_KEYS.LEAVE_SCHEMA_VERSION);
+    if (version === "2") return;
+    
+    let leaves = getItem(STORAGE_KEYS.LEAVE_REQUESTS) || [];
+    const students = getItem(STORAGE_KEYS.STUDENTS) || [];
+    
+    // 1. Migrate existing old format
+    leaves = leaves.map(old => {
+      if (old.applicantType) return old;
+      
+      const st = students.find(s => s.id === old.studentId || s.studentId === old.studentId);
+      const studentName = st ? (st.name || `${st.firstName || ''} ${st.lastName || ''}`).trim() : "Unknown Student";
+      
+      const statusMap = { "PENDING": "Pending", "APPROVED": "Approved", "REJECTED": "Rejected" };
+      
+      return {
+        id: old.id,
+        applicantType: "Student",
+        applicantId: old.studentId || "unknown",
+        applicantName: studentName,
+        department: null,
+        leaveType: "General Leave",
+        fromDate: old.startDate,
+        toDate: old.endDate,
+        reason: old.reason || "No reason provided",
+        status: statusMap[old.status] || "Pending",
+        source: "Legacy System",
+        approvedBy: old.reviewedBy || null,
+        approvedAt: old.reviewedAt || null,
+        createdAt: old.appliedAt || new Date().toISOString(),
+        updatedAt: old.reviewedAt || old.appliedAt || new Date().toISOString(),
+        // Legacy compat fields
+        appliedTo: old.appliedTo || null,
+        classId: old.classId || null,
+      };
+    });
+
+    // 2. Add realistic seed data
+    const teachers = getItem(STORAGE_KEYS.TEACHERS) || [];
+    if (teachers.length >= 3) {
+      leaves.push({ id: `leave_seed_t1`, applicantType: "Teacher", applicantId: teachers[0].id || teachers[0].teacherId, applicantName: teachers[0].teacherName || teachers[0].name, department: "Academic Affairs", leaveType: "Casual Leave", fromDate: "2023-11-01", toDate: "2023-11-02", reason: "Personal work", status: "Approved", source: "Teacher Portal", approvedBy: "EMP-001", approvedAt: "2023-10-28T10:00:00Z", createdAt: "2023-10-27T09:00:00Z", updatedAt: "2023-10-28T10:00:00Z" });
+      leaves.push({ id: `leave_seed_t2`, applicantType: "Teacher", applicantId: teachers[1].id || teachers[1].teacherId, applicantName: teachers[1].teacherName || teachers[1].name, department: "Academic Affairs", leaveType: "Sick Leave", fromDate: "2023-11-15", toDate: "2023-11-16", reason: "Fever", status: "Pending", source: "Teacher Portal", approvedBy: null, approvedAt: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      leaves.push({ id: `leave_seed_t3`, applicantType: "Teacher", applicantId: teachers[2].id || teachers[2].teacherId, applicantName: teachers[2].teacherName || teachers[2].name, department: "Academic Affairs", leaveType: "Earned Leave", fromDate: "2023-12-01", toDate: "2023-12-05", reason: "Family trip", status: "Rejected", source: "Teacher Portal", approvedBy: "EMP-001", approvedAt: "2023-11-20T10:00:00Z", createdAt: "2023-11-19T09:00:00Z", updatedAt: "2023-11-20T10:00:00Z" });
+    }
+
+    const employees = getItem(STORAGE_KEYS.EMPLOYEES) || [];
+    if (employees.length >= 3) {
+      leaves.push({ id: `leave_seed_e1`, applicantType: "Employee", applicantId: employees[0].employeeId, applicantName: employees[0].employeeName, department: "Finance & Accounts", leaveType: "Personal Leave", fromDate: "2023-11-10", toDate: "2023-11-10", reason: "Bank work", status: "Approved", source: "Admin Portal", approvedBy: "EMP-001", approvedAt: "2023-11-05T10:00:00Z", createdAt: "2023-11-04T09:00:00Z", updatedAt: "2023-11-05T10:00:00Z" });
+      leaves.push({ id: `leave_seed_e2`, applicantType: "Employee", applicantId: employees[1].employeeId, applicantName: employees[1].employeeName, department: "Administration", leaveType: "Sick Leave", fromDate: "2023-11-20", toDate: "2023-11-22", reason: "Medical emergency", status: "Pending", source: "Admin Portal", approvedBy: null, approvedAt: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      leaves.push({ id: `leave_seed_e3`, applicantType: "Employee", applicantId: employees[2].employeeId, applicantName: employees[2].employeeName, department: "IT Infrastructure", leaveType: "Casual Leave", fromDate: "2023-12-10", toDate: "2023-12-11", reason: "Out of station", status: "Approved", source: "Admin Portal", approvedBy: "EMP-001", approvedAt: "2023-12-05T10:00:00Z", createdAt: "2023-12-04T09:00:00Z", updatedAt: "2023-12-05T10:00:00Z" });
+    }
+
+    const parents = getItem(STORAGE_KEYS.PARENTS) || [];
+    if (parents.length >= 2) {
+       leaves.push({ id: `leave_seed_p1`, applicantType: "Student", applicantId: parents[0].childIds?.[0] || "stud-001", applicantName: parents[0].name || "Student 1", department: null, leaveType: "Family Event", fromDate: "2023-11-05", toDate: "2023-11-06", reason: "Attending wedding", status: "Approved", source: "Parent Portal", approvedBy: "TCH-001", approvedAt: "2023-11-01T10:00:00Z", createdAt: "2023-10-31T09:00:00Z", updatedAt: "2023-11-01T10:00:00Z" });
+       leaves.push({ id: `leave_seed_p2`, applicantType: "Student", applicantId: parents[1].childIds?.[0] || "stud-002", applicantName: parents[1].name || "Student 2", department: null, leaveType: "Medical", fromDate: "2023-11-25", toDate: "2023-11-26", reason: "Doctor appointment", status: "Pending", source: "Parent Portal", approvedBy: null, approvedAt: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    }
+
+    setItem(STORAGE_KEYS.LEAVE_REQUESTS, leaves);
+    setItem(STORAGE_KEYS.LEAVE_SCHEMA_VERSION, "2");
+  },
+
   getLeaveRequests: async () => {
+    await localProvider._initializeLeaveRequests();
     return getItem(STORAGE_KEYS.LEAVE_REQUESTS) || [];
   },
 
   getLeaveRequestsByStudent: async (studentId) => {
+    await localProvider._initializeLeaveRequests();
     const leaves = getItem(STORAGE_KEYS.LEAVE_REQUESTS) || [];
-    return leaves.filter((l) => l.studentId === studentId);
+    return leaves.filter((l) => l.applicantId === studentId);
   },
 
   getLeaveRequestsForTeacher: async (teacherId) => {
+    await localProvider._initializeLeaveRequests();
     const leaves = getItem(STORAGE_KEYS.LEAVE_REQUESTS) || [];
     return leaves.filter((l) => l.appliedTo === teacherId);
   },
 
   getLeaveRequestById: async (leaveId) => {
+    await localProvider._initializeLeaveRequests();
     const leaves = getItem(STORAGE_KEYS.LEAVE_REQUESTS) || [];
     return leaves.find((l) => l.id === leaveId) || null;
   },
 
   createLeaveRequest: async (leaveData) => {
+    await localProvider._initializeLeaveRequests();
     const newRequest = {
       id: `leave_${Date.now()}`,
       ...leaveData,
-      appliedAt: new Date().toISOString(),
-      status: "PENDING",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: leaveData.status || "Pending",
     };
 
     const leaves = getItem(STORAGE_KEYS.LEAVE_REQUESTS) || [];
@@ -451,13 +520,23 @@ const localProvider = {
   },
 
   updateLeaveRequest: async (leaveId, updates) => {
+    await localProvider._initializeLeaveRequests();
     const leaves = getItem(STORAGE_KEYS.LEAVE_REQUESTS) || [];
     const idx = leaves.findIndex((l) => l.id === leaveId);
     if (idx === -1) throw new Error("Leave request not found");
 
-    leaves[idx] = { ...leaves[idx], ...updates };
+    leaves[idx] = { ...leaves[idx], ...updates, updatedAt: new Date().toISOString() };
     setItem(STORAGE_KEYS.LEAVE_REQUESTS, leaves);
     return leaves[idx];
+  },
+
+  deleteLeaveRequest: async (leaveId) => {
+    await localProvider._initializeLeaveRequests();
+    const leaves = getItem(STORAGE_KEYS.LEAVE_REQUESTS) || [];
+    const filtered = leaves.filter((l) => l.id !== leaveId);
+    if (filtered.length === leaves.length) return false;
+    setItem(STORAGE_KEYS.LEAVE_REQUESTS, filtered);
+    return true;
   },
 
   // === FINANCE DATA ===
@@ -493,6 +572,36 @@ const localProvider = {
     return getItem(STORAGE_KEYS.TRANSPORT_ROUTES) || [];
   },
 
+  createTransportRoute: async (routeData) => {
+    const routes = getItem(STORAGE_KEYS.TRANSPORT_ROUTES) || [];
+    const newRoute = {
+      ...routeData,
+      id: routeData.id || `RT-${Math.floor(Math.random() * 1000)}`,
+      createdAt: new Date().toISOString()
+    };
+    routes.push(newRoute);
+    setItem(STORAGE_KEYS.TRANSPORT_ROUTES, routes);
+    return newRoute;
+  },
+
+  updateTransportRoute: async (id, updates) => {
+    const routes = getItem(STORAGE_KEYS.TRANSPORT_ROUTES) || [];
+    const idx = routes.findIndex(r => r.id === id);
+    if (idx === -1) return null;
+    routes[idx] = { ...routes[idx], ...updates, updatedAt: new Date().toISOString() };
+    setItem(STORAGE_KEYS.TRANSPORT_ROUTES, routes);
+    return routes[idx];
+  },
+
+  deleteTransportRoute: async (id) => {
+    const routes = getItem(STORAGE_KEYS.TRANSPORT_ROUTES) || [];
+    const filtered = routes.filter(r => r.id !== id);
+    if (filtered.length === routes.length) return false;
+    setItem(STORAGE_KEYS.TRANSPORT_ROUTES, filtered);
+    return true;
+  },
+
+
   getTransportRouteById: async (routeId) => {
     const routes = getItem(STORAGE_KEYS.TRANSPORT_ROUTES) || [];
     return routes.find((r) => r.id === routeId) || null;
@@ -502,20 +611,147 @@ const localProvider = {
     return getItem(STORAGE_KEYS.TRANSPORT_VEHICLES) || [];
   },
 
+  createTransportVehicle: async (vehicleData) => {
+    const vehicles = getItem(STORAGE_KEYS.TRANSPORT_VEHICLES) || [];
+    const newVehicle = {
+      ...vehicleData,
+      id: vehicleData.id || `VH-${Math.floor(Math.random() * 1000)}`,
+      createdAt: new Date().toISOString()
+    };
+    vehicles.push(newVehicle);
+    setItem(STORAGE_KEYS.TRANSPORT_VEHICLES, vehicles);
+    return newVehicle;
+  },
+
+  updateTransportVehicle: async (id, updates) => {
+    const vehicles = getItem(STORAGE_KEYS.TRANSPORT_VEHICLES) || [];
+    const idx = vehicles.findIndex(v => v.id === id || v.vehicleId === id);
+    if (idx === -1) return null;
+    vehicles[idx] = { ...vehicles[idx], ...updates, updatedAt: new Date().toISOString() };
+    setItem(STORAGE_KEYS.TRANSPORT_VEHICLES, vehicles);
+    return vehicles[idx];
+  },
+
+  deleteTransportVehicle: async (id) => {
+    const vehicles = getItem(STORAGE_KEYS.TRANSPORT_VEHICLES) || [];
+    const filtered = vehicles.filter(v => v.id !== id && v.vehicleId !== id);
+    if (filtered.length === vehicles.length) return false;
+    setItem(STORAGE_KEYS.TRANSPORT_VEHICLES, filtered);
+    return true;
+  },
+
   getTransportVehicleById: async (vehicleId) => {
     const vehicles = getItem(STORAGE_KEYS.TRANSPORT_VEHICLES) || [];
     return vehicles.find((v) => v.vehicleId === vehicleId || v.id === vehicleId) || null;
   },
 
   getTransportDrivers: async () => {
-    return getItem(STORAGE_KEYS.TRANSPORT_DRIVERS) || [];
+    const employees = getItem(STORAGE_KEYS.EMPLOYEES) || [];
+    return employees.filter(e => e.designation === "Driver");
   },
 
   getTransportAlerts: async () => {
     return getItem(STORAGE_KEYS.TRANSPORT_ALERTS) || [];
   },
 
-  // === PARENT DATA ===
+  createTransportAlert: async (alertData) => {
+    const alerts = getItem(STORAGE_KEYS.TRANSPORT_ALERTS) || [];
+    const newAlert = {
+      ...alertData,
+      alertId: alertData.alertId || `al-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    alerts.unshift(newAlert); // newest first
+    setItem(STORAGE_KEYS.TRANSPORT_ALERTS, alerts);
+    return newAlert;
+  },
+
+  deleteTransportAlert: async (alertId) => {
+    const alerts = getItem(STORAGE_KEYS.TRANSPORT_ALERTS) || [];
+    const filtered = alerts.filter(a => a.alertId !== alertId);
+    if (filtered.length === alerts.length) return false;
+    setItem(STORAGE_KEYS.TRANSPORT_ALERTS, filtered);
+    return true;
+  },
+
+
+  getTransportStops: async () => {
+    return getItem(STORAGE_KEYS.TRANSPORT_STOPS) || [];
+  },
+
+  getTransportStopsByRoute: async (routeId) => {
+    const stops = getItem(STORAGE_KEYS.TRANSPORT_STOPS) || [];
+    return stops.filter(s => s.routeId === routeId).sort((a, b) => a.sequence - b.sequence);
+  },
+
+  createTransportStop: async (stopData) => {
+    const stops = getItem(STORAGE_KEYS.TRANSPORT_STOPS) || [];
+    const newStop = {
+      ...stopData,
+      stopId: stopData.stopId || `STOP-${stopData.routeId}-${Date.now()}`,
+    };
+    stops.push(newStop);
+    setItem(STORAGE_KEYS.TRANSPORT_STOPS, stops);
+    return newStop;
+  },
+
+  updateTransportStop: async (stopId, updates) => {
+    const stops = getItem(STORAGE_KEYS.TRANSPORT_STOPS) || [];
+    const idx = stops.findIndex(s => s.stopId === stopId);
+    if (idx === -1) return null;
+    stops[idx] = { ...stops[idx], ...updates };
+    setItem(STORAGE_KEYS.TRANSPORT_STOPS, stops);
+    return stops[idx];
+  },
+
+  deleteTransportStop: async (stopId) => {
+    const stops = getItem(STORAGE_KEYS.TRANSPORT_STOPS) || [];
+    const filtered = stops.filter(s => s.stopId !== stopId);
+    if (filtered.length === stops.length) return false;
+    setItem(STORAGE_KEYS.TRANSPORT_STOPS, filtered);
+    return true;
+  },
+
+  // === TRANSPORT ALLOCATIONS ===
+  getTransportAllocations: async () => {
+    return getItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS) || [];
+  },
+
+  getTransportAllocationsByRoute: async (routeId) => {
+    const allocations = getItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS) || [];
+    return allocations.filter(a => a.routeId === routeId);
+  },
+
+  createTransportAllocation: async (data) => {
+    const allocations = getItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS) || [];
+    const newAlloc = {
+      ...data,
+      allocationId: data.allocationId || `ALLOC-${data.studentId}-${Date.now()}`,
+      status: data.status || "ACTIVE"
+    };
+    allocations.push(newAlloc);
+    setItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS, allocations);
+    return newAlloc;
+  },
+
+  updateTransportAllocation: async (allocationId, updates) => {
+    const allocations = getItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS) || [];
+    const idx = allocations.findIndex(a => a.allocationId === allocationId);
+    if (idx === -1) return null;
+    allocations[idx] = { ...allocations[idx], ...updates };
+    setItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS, allocations);
+    return allocations[idx];
+  },
+
+  deleteTransportAllocation: async (allocationId) => {
+    const allocations = getItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS) || [];
+    const filtered = allocations.filter(a => a.allocationId !== allocationId);
+    if (filtered.length === allocations.length) return false;
+    setItem(STORAGE_KEYS.TRANSPORT_ALLOCATIONS, filtered);
+    return true;
+  },
+
+
   getParents: async () => {
     return getItem(STORAGE_KEYS.PARENTS) || [];
   },
@@ -1141,6 +1377,143 @@ const localProvider = {
     fees[idx] = { ...fees[idx], ...updates };
     setItem(STORAGE_KEYS.FEES, fees);
     return fees[idx];
+  },
+
+  // === DEPARTMENTS ===
+  getDepartments: async () => {
+    let departments = getItem("school_erp_departments") || [];
+    if (departments.length === 0) {
+      departments = [
+        { departmentId: "dept-academics", departmentName: "Academic Affairs", departmentHead: "EMP-002", status: "active" },
+        { departmentId: "dept-examination", departmentName: "Examination & Evaluation", departmentHead: "EMP-003", status: "active" },
+        { departmentId: "dept-student-affairs", departmentName: "Student Affairs", departmentHead: null, status: "active" },
+        { departmentId: "dept-administration", departmentName: "Administration", departmentHead: "EMP-010", status: "active" },
+        { departmentId: "dept-finance", departmentName: "Finance & Accounts", departmentHead: "EMP-001", status: "active" },
+        { departmentId: "dept-transport", departmentName: "Transport Services", departmentHead: "EMP-004", status: "active" },
+        { departmentId: "dept-it", departmentName: "IT Infrastructure", departmentHead: "EMP-009", status: "active" },
+        { departmentId: "dept-facilities", departmentName: "Facilities Management", departmentHead: null, status: "active" },
+        { departmentId: "dept-sports", departmentName: "Sports & Physical Education", departmentHead: null, status: "active" },
+        { departmentId: "dept-library", departmentName: "Library & Information Services", departmentHead: "EMP-008", status: "active" }
+      ];
+      setItem("school_erp_departments", departments);
+    }
+    return departments;
+  },
+
+  updateDepartment: async (departmentId, updates) => {
+    const departments = await localProvider.getDepartments();
+    const idx = departments.findIndex((d) => d.departmentId === departmentId);
+    if (idx === -1) throw new Error("Department not found");
+    departments[idx] = { ...departments[idx], ...updates };
+    setItem("school_erp_departments", departments);
+    return departments[idx];
+  },
+
+  createDepartment: async (departmentData) => {
+    const departments = await localProvider.getDepartments();
+    const newDept = {
+      ...departmentData,
+      departmentId: departmentData.departmentId || `dept-${Date.now()}`
+    };
+    departments.push(newDept);
+    setItem("school_erp_departments", departments);
+    return newDept;
+  },
+
+  deleteDepartment: async (departmentId) => {
+    const departments = await localProvider.getDepartments();
+    const filtered = departments.filter((d) => d.departmentId !== departmentId);
+    if (filtered.length === departments.length) return false;
+    setItem("school_erp_departments", filtered);
+    return true;
+  },
+
+  // === EMPLOYEES ===
+  getEmployees: async () => {
+    let employees = getItem(STORAGE_KEYS.EMPLOYEES) || [];
+    if (employees.length === 0) {
+      employees = [
+        { employeeId: "EMP-001", employeeName: "Deepak Joshi", departmentId: "dept-finance", roleId: "role-hr-manager", designation: "HR Manager", phone: "+91-9876543210", email: "deepak.joshi@school.edu", joiningDate: "2023-01-15", status: "active" },
+        { employeeId: "EMP-002", employeeName: "Amit Verma", departmentId: "dept-academics", roleId: "role-academic-coordinator", designation: "Academic Coordinator", phone: "+91-9876543211", email: "amit.verma@school.edu", joiningDate: "2023-02-01", status: "active" },
+        { employeeId: "EMP-003", employeeName: "Neha Sharma", departmentId: "dept-examination", roleId: "role-exam-controller", designation: "Exam Officer", phone: "+91-9876543212", email: "neha.sharma@school.edu", joiningDate: "2023-03-10", status: "active" },
+        { employeeId: "EMP-004", employeeName: "Vijay Patel", departmentId: "dept-transport", roleId: "role-transport-manager", designation: "Transport Coordinator", phone: "+91-9876543213", email: "vijay.patel@school.edu", joiningDate: "2023-04-15", status: "active" },
+        { employeeId: "EMP-005", employeeName: "Rajesh Kumar", departmentId: "dept-finance", roleId: "role-accountant", designation: "Finance Executive", phone: "+91-9876543214", email: "rajesh.kumar@school.edu", joiningDate: "2023-05-20", status: "active" },
+        { employeeId: "EMP-006", employeeName: "Sunita Singh", departmentId: "dept-finance", roleId: "role-accountant", designation: "Accountant", phone: "+91-9876543215", email: "sunita.singh@school.edu", joiningDate: "2023-06-01", status: "active" },
+        { employeeId: "EMP-007", employeeName: "Priya Gupta", departmentId: "dept-administration", roleId: "role-receptionist", designation: "Receptionist", phone: "+91-9876543216", email: "priya.gupta@school.edu", joiningDate: "2023-07-10", status: "active" },
+        { employeeId: "EMP-008", employeeName: "Lakshmi Mehta", departmentId: "dept-library", roleId: "role-librarian", designation: "Library Officer", phone: "+91-9876543217", email: "lakshmi.mehta@school.edu", joiningDate: "2023-08-05", status: "active" },
+        { employeeId: "EMP-009", employeeName: "Krishna Reddy", departmentId: "dept-it", roleId: "role-super-admin", designation: "IT Support", phone: "+91-9876543218", email: "krishna.reddy@school.edu", joiningDate: "2023-09-12", status: "active" },
+        { employeeId: "EMP-010", employeeName: "Suresh Kumar", departmentId: "dept-administration", roleId: "role-super-admin", designation: "Administrative Executive", phone: "+91-9876543219", email: "suresh.kumar@school.edu", joiningDate: "2023-10-01", status: "active" },
+        { employeeId: "EMP-011", employeeName: "Ramesh Chand", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543220", email: "ramesh.chand@school.edu", joiningDate: "2021-04-10", status: "active" },
+        { employeeId: "EMP-012", employeeName: "Sunita Devi", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543221", email: "sunita.devi@school.edu", joiningDate: "2021-05-15", status: "active" },
+        { employeeId: "EMP-013", employeeName: "Mohammad Ali", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543222", email: "mohammad.ali@school.edu", joiningDate: "2022-01-20", status: "active" },
+        { employeeId: "EMP-014", employeeName: "Karan Singh", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543223", email: "karan.singh@school.edu", joiningDate: "2022-03-05", status: "active" },
+        { employeeId: "EMP-015", employeeName: "Vikram Yadav", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543224", email: "vikram.yadav@school.edu", joiningDate: "2022-06-11", status: "active" },
+        { employeeId: "EMP-016", employeeName: "Rajendra Prasad", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543225", email: "rajendra.prasad@school.edu", joiningDate: "2022-08-14", status: "active" },
+        { employeeId: "EMP-017", employeeName: "Sanjay Gupta", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543226", email: "sanjay.gupta@school.edu", joiningDate: "2023-01-10", status: "active" },
+        { employeeId: "EMP-018", employeeName: "Manoj Tiwari", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543227", email: "manoj.tiwari@school.edu", joiningDate: "2023-02-18", status: "active" },
+        { employeeId: "EMP-019", employeeName: "Balram Jat", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543228", email: "balram.jat@school.edu", joiningDate: "2023-05-22", status: "active" },
+        { employeeId: "EMP-020", employeeName: "Deepak Chaurasia", departmentId: "dept-transport", roleId: "role-driver", designation: "Driver", phone: "+91-9876543229", email: "deepak.c@school.edu", joiningDate: "2023-07-30", status: "active" },
+      ];
+      setItem(STORAGE_KEYS.EMPLOYEES, employees);
+    }
+    return employees;
+  },
+
+  getEmployeeById: async (employeeId) => {
+    const employees = await localProvider.getEmployees();
+    return employees.find((e) => e.employeeId === employeeId) || null;
+  },
+
+  createEmployee: async (employeeData) => {
+    const employees = await localProvider.getEmployees();
+    const newEmployee = {
+      ...employeeData,
+      employeeId: employeeData.employeeId || `EMP-${String(employees.length + 1).padStart(3, "0")}`,
+    };
+    employees.push(newEmployee);
+    setItem(STORAGE_KEYS.EMPLOYEES, employees);
+    return newEmployee;
+  },
+
+  updateEmployee: async (employeeId, updates) => {
+    const employees = await localProvider.getEmployees();
+    const idx = employees.findIndex((e) => e.employeeId === employeeId);
+    if (idx === -1) throw new Error("Employee not found");
+    employees[idx] = { ...employees[idx], ...updates };
+    setItem(STORAGE_KEYS.EMPLOYEES, employees);
+    return employees[idx];
+  },
+
+  deleteEmployee: async (employeeId) => {
+    const employees = await localProvider.getEmployees();
+    const filtered = employees.filter((e) => e.employeeId !== employeeId);
+    if (filtered.length === employees.length) return false;
+    setItem(STORAGE_KEYS.EMPLOYEES, filtered);
+    return true;
+  },
+
+  // === APPROVAL SETTINGS ===
+  getApprovalSettings: async () => {
+    let settings = getItem(STORAGE_KEYS.APPROVAL_SETTINGS) || [];
+    if (settings.length === 0) {
+      settings = [
+        { module: "leave_management", approverEmployeeId: "EMP-001" }
+      ];
+      setItem(STORAGE_KEYS.APPROVAL_SETTINGS, settings);
+    }
+    return settings;
+  },
+
+  updateApprovalSetting: async (moduleName, updates) => {
+    const settings = await localProvider.getApprovalSettings();
+    const idx = settings.findIndex((s) => s.module === moduleName);
+    if (idx === -1) {
+      settings.push({ module: moduleName, ...updates });
+    } else {
+      settings[idx] = { ...settings[idx], ...updates };
+    }
+    setItem(STORAGE_KEYS.APPROVAL_SETTINGS, settings);
+    return settings.find((s) => s.module === moduleName);
   },
 };
 

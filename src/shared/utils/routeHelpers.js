@@ -76,6 +76,8 @@ export function getRouteForNavItem(id, role) {
     switch (id) {
       case "teacher_home":
         return "/teacher/dashboard";
+      case "teacher_leaves":
+        return "/teacher/leaves";
       case "teacher_notices":
         return "/teacher/notices";
       case "attendance_mgmt":
@@ -110,6 +112,10 @@ export function getRouteForNavItem(id, role) {
         return "/admin/dashboard";
       case "admin_students":
         return "/admin/students";
+      case "admin_employees":
+        return "/admin/employees";
+      case "admin_employee_leaves":
+        return "/admin/employee-leaves";
       case "admin_teachers":
         return "/admin/teachers";
       case "admin_parents":
@@ -128,8 +134,8 @@ export function getRouteForNavItem(id, role) {
         return "/admin/academic-performance";
       case "admin_attendance":
         return "/admin/attendance";
-      case "admin_leaves":
-        return "/admin/leaves";
+      case "admin_leave_approval":
+        return "/admin/leave-approval";
       case "admin_transport":
         return "/admin/transport";
       case "admin_fees":

@@ -78,6 +78,7 @@ const ProfileSettingsPage = lazy(
   () => import("./pages/teacher/ProfileSettingsPage"),
 );
 const LeaveMgmtPage = lazy(() => import("./pages/teacher/LeaveMgmtPage"));
+const TeacherLeavePage = lazy(() => import("./pages/teacher/TeacherLeavePage"));
 
 // Admin Portal Pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -130,6 +131,15 @@ const ManageDepartmentsPage = lazy(
 const AccessControlPage = lazy(() => import("./pages/admin/AccessControlPage"));
 const CommunicationCenterPage = lazy(
   () => import("./pages/admin/CommunicationCenterPage"),
+);
+const EmployeeDirectoryPage = lazy(
+  () => import("./pages/admin/EmployeeDirectoryPage"),
+);
+const EmployeeLeavePage = lazy(
+  () => import("./pages/admin/EmployeeLeavePage"),
+);
+const LeaveApprovalPage = lazy(
+  () => import("./pages/admin/LeaveApprovalPage"),
 );
 
 import { formatDate } from "./shared/utils/attendanceHelpers";
@@ -886,6 +896,10 @@ function AppContent() {
           path="leave-management"
           element={<LazyRoute Component={LeaveMgmtPage} />}
         />
+        <Route
+          path="leaves"
+          element={<LazyRoute Component={TeacherLeavePage} />}
+        />
       </Route>
 
       {/* Admin Portal Routes */}
@@ -917,6 +931,8 @@ function AppContent() {
         />
         <Route path="parents" element={<LazyRoute Component={ParentsPage} />} />
         <Route path="admins" element={<LazyRoute Component={AdminsPage} />} />
+        <Route path="employees" element={<LazyRoute Component={EmployeeDirectoryPage} />} />
+        <Route path="employee-leaves" element={<LazyRoute Component={EmployeeLeavePage} />} />
         <Route path="classes" element={<LazyRoute Component={ClassesPage} />} />
         <Route
           path="subjects"
@@ -947,8 +963,8 @@ function AppContent() {
           element={<LazyRoute Component={AttendanceOverviewPage} />}
         />
         <Route
-          path="leaves"
-          element={<LazyRoute Component={LeaveApprovalsPage} />}
+          path="leave-approval"
+          element={<LazyRoute Component={LeaveApprovalPage} />}
         />
         <Route
           path="transport"
