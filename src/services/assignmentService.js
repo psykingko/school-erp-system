@@ -135,6 +135,10 @@ export const getAssignmentsByTeacher = async (teacherId) => {
 };
 
 export const createAssignment = async (assignmentData) => {
+  if (!assignmentData.description?.trim() && !assignmentData.attachment) {
+    throw new Error("Provide assignment description or attachment.");
+  }
+
   const provider = getDataProvider();
   const allSubjects = await provider.getSubjects();
   const allClasses = await provider.getClasses();
@@ -195,7 +199,6 @@ export const updateAssignment = async (assignmentId, updates) => {
     ...enrichedUpdates,
     updatedAt: new Date().toISOString(),
   });
-  clearServiceCache("assignmentService");
   return updatedAssignment;
 };
 
@@ -205,7 +208,6 @@ export const updateAssignment = async (assignmentId, updates) => {
 export const deleteAssignment = async (assignmentId) => {
   const provider = getDataProvider();
   const result = await provider.deleteAssignment(assignmentId);
-  clearServiceCache("assignmentService");
   return result;
 };
 
@@ -218,13 +220,16 @@ export const submitAssignment = async (
   assignmentId,
   submissionData,
 ) => {
+  if (!submissionData.submissionText?.trim() && !submissionData.attachment) {
+    throw new Error("Provide submission text or attachment.");
+  }
+
   const provider = getDataProvider();
   const newSubmission = await provider.createSubmission({
     assignmentId,
     studentId,
     ...submissionData,
   });
-  clearServiceCache("assignmentService");
   return {
     success: true,
     submission: newSubmission,
@@ -237,11 +242,23 @@ export const submitAssignment = async (
  */
 export const gradeSubmission = async (submissionId, gradeData) => {
   const provider = getDataProvider();
-  const submission = await provider.updateSubmission(submissionId, {
-    ...gradeData,
-    gradedAt: new Date().toISOString(),
-  });
-  clearServiceCache("assignmentService");
+
+  let submission;
+  if (!submissionId || submissionId.startsWith("draft-")) {
+    // Roster grading mode: student hasn't submitted yet, teacher directly assigns a grade
+    submission = await provider.createSubmission({
+      ...gradeData,
+      status: "GRADED",
+      gradedAt: new Date().toISOString()
+    });
+  } else {
+    submission = await provider.updateSubmission(submissionId, {
+      ...gradeData,
+      status: "GRADED",
+      gradedAt: new Date().toISOString(),
+    });
+  }
+
   return {
     success: true,
     submission,
@@ -254,7 +271,41 @@ export const gradeSubmission = async (submissionId, gradeData) => {
  */
 export const getSubmissionsByAssignment = async (assignmentId) => {
   const provider = getDataProvider();
-  return await provider.getSubmissionsByAssignment(assignmentId);
+  const submissions = await provider.getSubmissionsByAssignment(assignmentId);
+  const assignment = await provider.getAssignmentById(assignmentId);
+  if (!assignment) return [];
+
+  const students = await provider.getStudents();
+
+  // Find students in this assignment's class
+  const classStudents = students.filter(s => {
+    if (assignment.classId && s.classId === assignment.classId) return true;
+    if (assignment.className && s.className === assignment.className) return true;
+    return false;
+  });
+
+  if (classStudents.length === 0) {
+    return submissions.map(sub => {
+      const student = students.find(s => s.studentId === sub.studentId || s.id === sub.studentId) || {};
+      return {
+        ...sub,
+        admissionNo: student.admissionNumber || student.admissionNo || "N/A"
+      };
+    });
+  }
+
+  return classStudents.map(student => {
+    const studentIdentifier = student.studentId || student.id;
+    const subm = submissions.find(s => s.studentId === studentIdentifier);
+    return {
+      studentId: studentIdentifier,
+      studentName: student.name || `${student.firstName || ''} ${student.lastName || ''}`.trim(),
+      admissionNo: student.admissionNumber || student.admissionNo || "N/A",
+      ...(subm || {}),
+      id: subm ? subm.id : `draft-${studentIdentifier}`,
+      status: subm ? subm.status : "PENDING",
+    };
+  });
 };
 
 /**

@@ -10,7 +10,8 @@ import {
   X,
   Eye,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Paperclip
 } from "lucide-react";
 import MainCard from "../../components/MainCard";
 import { useAuth } from "../../context/AuthContext";
@@ -44,6 +45,18 @@ const TeacherLeavePage = () => {
   const [reason, setReason] = useState("");
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [mockFile, setMockFile] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleMockFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setMockFile({
+        file: e.target.files[0],
+        name: e.target.files[0].name,
+        size: (e.target.files[0].size / 1024).toFixed(1) + " KB"
+      });
+    }
+  };
 
   // Success Notification
   const [successMsg, setSuccessMsg] = useState("");
@@ -80,6 +93,7 @@ const TeacherLeavePage = () => {
     } finally {
       setLoading(false);
     }
+    setRefreshTrigger(prev => prev + 1);
   };
 
   useEffect(() => {
@@ -94,13 +108,39 @@ const TeacherLeavePage = () => {
     const selectedPortfolio = leaveTypes.find(t => t.leaveTypeId === leaveTypeId);
 
     try {
+      let attachmentUrl = null;
+      if (mockFile && mockFile.file) {
+        const fileData = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(mockFile.file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+        });
+
+        const uploadRes = await fetch('/api/upload-leave-proof', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: mockFile.name,
+            fileData
+          })
+        });
+
+        const uploadData = await uploadRes.json();
+        if (!uploadData.success) {
+          throw new Error("Failed to upload attachment: " + uploadData.error);
+        }
+        attachmentUrl = uploadData.filePath;
+      }
+
       await createTeacherLeaveRequest({
         teacherId: user?.linkedEntityId,
         fromDate,
         toDate,
         reason,
         leaveTypeId,
-        leaveTypeNameSnapshot: selectedPortfolio?.leaveTypeName
+        leaveTypeNameSnapshot: selectedPortfolio?.leaveTypeName,
+        attachmentUrl
       });
       
       setSuccessMsg("Leave application submitted successfully!");
@@ -108,6 +148,7 @@ const TeacherLeavePage = () => {
       setFromDate("");
       setToDate("");
       setReason("");
+      setMockFile(null);
       fetchLeaves();
       setTimeout(() => setSuccessMsg(""), 5000);
     } catch (err) {
@@ -182,7 +223,7 @@ const TeacherLeavePage = () => {
         icon={CalendarDays}
       />
 
-      <LeavePortfolioDashboard userId={user?.linkedEntityId} userType="teacher" gender={user?.profile?.gender} />
+      <LeavePortfolioDashboard userId={user?.linkedEntityId} userType="teacher" gender={user?.profile?.gender} refreshTrigger={refreshTrigger} />
 
       <div className="flex justify-between items-center mt-8">
         <h2 className="text-lg font-black text-[#03045e]">Leave Dashboard</h2>
@@ -422,6 +463,25 @@ const TeacherLeavePage = () => {
                     />
                   </div>
 
+                  <div className="space-y-3 pt-2">
+                    <div className="p-3 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 hover:bg-gray-50 transition-colors relative cursor-pointer group">
+                      <input
+                        type="file"
+                        onChange={handleMockFileChange}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                      <Paperclip size={18} className="text-gray-400 group-hover:text-[#00b4d8] transition-colors" />
+                      <span className="text-[10px] font-extrabold text-gray-400 group-hover:text-gray-500 uppercase tracking-wider">
+                        {mockFile ? mockFile.name : "Attach Supporting Documents (Optional)"}
+                      </span>
+                      {mockFile && (
+                        <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-full">
+                          Uploaded ({mockFile.size})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="pt-4 flex items-center justify-end gap-3">
                     <button
                       type="button"
@@ -476,11 +536,13 @@ const TeacherLeavePage = () => {
               </div>
 
               <div className="p-6 space-y-6">
-                <div className="flex items-start justify-between">
+                <div className="mb-6 flex justify-between items-start">
                   <div>
-                    <h4 className="text-sm font-black text-[#03045e]">{viewLeave.applicantName}</h4>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                      Applied By: {viewLeave.applicantId} &bull; {viewLeave.department}
+                    <h4 className="text-sm font-black text-[#03045e]">
+                      {viewLeave.applicantName === "undefined undefined" ? "Unknown Applicant" : viewLeave.applicantName}
+                    </h4>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
+                      Applied By: {viewLeave.applicantId} • {viewLeave.department}
                     </p>
                   </div>
                   <div>
@@ -512,6 +574,22 @@ const TeacherLeavePage = () => {
                     </p>
                   </div>
                 </div>
+
+                {viewLeave.attachmentUrl && (
+                  <div>
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">Attachment</span>
+                    <div className="mt-1">
+                      <a 
+                        href={viewLeave.attachmentUrl} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#caf0f8] text-[#03045e] hover:bg-[#00b4d8] hover:text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors"
+                      >
+                        <Paperclip size={12} /> View Document
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between border-t border-gray-100 pt-4 text-[10px] font-bold text-gray-400">
                   <span>Applied: {new Date(viewLeave.createdAt).toLocaleString()}</span>

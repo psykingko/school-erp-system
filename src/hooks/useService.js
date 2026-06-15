@@ -25,8 +25,8 @@ export const useService = (serviceFn, args = [], deps = []) => {
 
   const hasCachedData = fnCache.has(argsKey);
 
-  // Single trigger state to prompt React re-renders when async data resolves
-  const [, setTrigger] = useState(0);
+  // Single trigger state to prompt React re-renders and re-run effects when refetching
+  const [trigger, setTrigger] = useState(0);
   const [error, setError] = useState(null);
 
   // Dynamically resolve values directly from the cache during render phase.
@@ -63,7 +63,7 @@ export const useService = (serviceFn, args = [], deps = []) => {
     return () => {
       isMounted = false;
     };
-  }, [serviceFn, argsKey, ...deps]);
+  }, [serviceFn, argsKey, trigger, ...deps]);
 
   const refetch = () => {
     if (fnCache.has(argsKey)) {

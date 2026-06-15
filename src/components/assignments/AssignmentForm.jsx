@@ -12,7 +12,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
   const [subjectId, setSubjectId] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [totalMarks, setTotalMarks] = useState("20");
-  const [attachment, setAttachment] = useState("");
+  const [attachment, setAttachment] = useState(null);
 
   const [classesList, setClassesList] = useState([]);
   const [subjectsList, setSubjectsList] = useState([]);
@@ -87,14 +87,14 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
       setSubjectId(assignmentToEdit.subjectId || "");
       setDueDate(assignmentToEdit.dueDate || "");
       setTotalMarks(String(assignmentToEdit.totalMarks || 20));
-      setAttachment(assignmentToEdit.attachment || "");
+      setAttachment(assignmentToEdit.attachment || null);
       setValidationError("");
     } else {
       setTitle("");
       setDescription("");
       setDueDate("");
       setTotalMarks("20");
-      setAttachment("");
+      setAttachment(null);
       setValidationError("");
     }
   }, [assignmentToEdit, isOpen]);
@@ -104,8 +104,13 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title.trim() || !description.trim() || !classId || !subjectId || !dueDate || !totalMarks) {
-      setValidationError("All fields are mandatory except the attachment.");
+    if (!title.trim() || !classId || !subjectId || !dueDate || !totalMarks) {
+      setValidationError("Please fill all required fields (Title, Class, Subject, Due Date, Marks).");
+      return;
+    }
+
+    if (!description.trim() && !attachment) {
+      setValidationError("Provide an assignment description or attach a file.");
       return;
     }
 
@@ -125,7 +130,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
         subjectId,
         dueDate,
         totalMarks: Number(totalMarks),
-        attachment: attachment.trim() || null,
+        attachment: attachment || null,
         teacherId: teacherProfile.id
       };
 
@@ -242,16 +247,44 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
                 />
               </div>
 
-              {/* Attachment/Link */}
+              {/* Attachment */}
               <div className="md:col-span-2 space-y-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Reference Link / Material URL (Optional)</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Attachment (Max 10MB)</span>
                 <input 
-                  type="url"
-                  className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
-                  placeholder="https://drive.google.com/..."
-                  value={attachment}
-                  onChange={(e) => setAttachment(e.target.value)}
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (file.size > 10 * 1024 * 1024) {
+                      setValidationError("File size exceeds 10MB limit.");
+                      e.target.value = "";
+                      return;
+                    }
+                    setValidationError("");
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      setAttachment({
+                        id: `ATT-${Date.now()}`,
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileSize: file.size,
+                        data: event.target.result
+                      });
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                  className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-3 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
                 />
+                {attachment && attachment.fileName && (
+                  <p className="text-xs text-emerald-600 font-bold ml-1">
+                    Selected File: {attachment.fileName} ({(attachment.fileSize / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                )}
+                {attachment && typeof attachment === "string" && (
+                  <p className="text-xs text-blue-600 font-bold ml-1">
+                    Existing Link: {attachment}
+                  </p>
+                )}
               </div>
 
               {/* Description */}

@@ -68,12 +68,39 @@ const LeavePage = () => {
     setLoading(true);
 
     try {
+      let attachmentUrl = null;
+      if (mockFile && mockFile.file) {
+        // Read file as base64
+        const fileData = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(mockFile.file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+        });
+
+        const uploadRes = await fetch('/api/upload-leave-proof', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: mockFile.name,
+            fileData
+          })
+        });
+
+        const uploadData = await uploadRes.json();
+        if (!uploadData.success) {
+          throw new Error("Failed to upload attachment: " + uploadData.error);
+        }
+        attachmentUrl = uploadData.filePath;
+      }
+
       await applyLeave({
         studentId: activeStudentId,
         classId: activeStudent?.classId,
         reason,
         fromDate,
-        toDate
+        toDate,
+        attachmentUrl
       });
 
       setSuccessMsg("Leave application submitted successfully! Your class teacher has been notified.");
@@ -96,6 +123,7 @@ const LeavePage = () => {
   const handleMockFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setMockFile({
+        file: e.target.files[0],
         name: e.target.files[0].name,
         size: (e.target.files[0].size / 1024).toFixed(1) + " KB"
       });
@@ -387,6 +415,22 @@ const LeavePage = () => {
                           )}
                         </div>
                       </div>
+
+                      {selectedLeave.attachmentUrl && (
+                        <div>
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">Attachment</span>
+                          <div className="mt-1">
+                            <a 
+                              href={selectedLeave.attachmentUrl} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#caf0f8] text-[#03045e] hover:bg-[#00b4d8] hover:text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors"
+                            >
+                              <Paperclip size={12} /> View Document
+                            </a>
+                          </div>
+                        </div>
+                      )}
 
                       {selectedLeave.status !== "PENDING" && (
                         <div className="space-y-2 bg-[#caf0f8]/20 p-4 rounded-3xl border border-[#caf0f8]/30">

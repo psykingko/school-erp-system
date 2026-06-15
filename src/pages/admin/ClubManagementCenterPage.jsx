@@ -84,19 +84,21 @@ const ClubManagementCenterPage = () => {
     e.preventDefault();
     try {
       if (modalMode === "create") {
-        const selectedTeacher = teachers.find(t => t.id === currentClub.coordinatorTeacherId);
+        const selectedTeacher = teachers.find(t => (t.id || t.teacherId) === currentClub.coordinatorTeacherId);
+        const tName = selectedTeacher ? (selectedTeacher.name || selectedTeacher.teacherName || `${selectedTeacher.firstName || ""} ${selectedTeacher.lastName || ""}`.trim()) : "Unassigned";
         await clubsService.createClub({
           ...currentClub,
-          coordinatorTeacherName: selectedTeacher ? selectedTeacher.name : "Unassigned"
+          coordinatorTeacherName: tName || "Unassigned"
         });
       } else {
-        const selectedTeacher = teachers.find(t => t.id === currentClub.coordinatorTeacherId);
+        const selectedTeacher = teachers.find(t => (t.id || t.teacherId) === currentClub.coordinatorTeacherId);
+        const tName = selectedTeacher ? (selectedTeacher.name || selectedTeacher.teacherName || `${selectedTeacher.firstName || ""} ${selectedTeacher.lastName || ""}`.trim()) : "Unassigned";
         await clubsService.updateClub(currentClub.id, {
           name: currentClub.name,
           category: currentClub.category,
           description: currentClub.description,
           coordinatorTeacherId: currentClub.coordinatorTeacherId,
-          coordinatorTeacherName: selectedTeacher ? selectedTeacher.name : "Unassigned",
+          coordinatorTeacherName: tName || "Unassigned",
           logo: currentClub.logo
         });
       }
@@ -577,9 +579,13 @@ const ClubManagementCenterPage = () => {
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#0077b6] focus:border-[#0077b6] outline-none font-semibold text-gray-800"
                   >
                     <option value="">Unassigned</option>
-                    {teachers.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
+                    {teachers.map(t => {
+                      const tName = t.name || t.teacherName || `${t.firstName || ""} ${t.lastName || ""}`.trim() || "Unknown";
+                      const tId = t.id || t.teacherId;
+                      return (
+                        <option key={tId} value={tId}>{tName}</option>
+                      );
+                    })}
                   </select>
                 </div>
               </div>

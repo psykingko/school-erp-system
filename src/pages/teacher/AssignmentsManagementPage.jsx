@@ -374,16 +374,27 @@ const AssignmentsManagementPage = () => {
                   </div>
                   {selectedAssignment.attachment && (
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-black text-gray-400 uppercase tracking-widest text-[9px]">Reference Link</span>
-                      <a 
-                        href={selectedAssignment.attachment} 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className="text-blue-500 font-black hover:underline inline-flex items-center gap-1"
-                      >
-                        Material URL
-                        <ChevronRight size={12} />
-                      </a>
+                      <span className="font-black text-gray-400 uppercase tracking-widest text-[9px]">Attachment</span>
+                      {typeof selectedAssignment.attachment === "string" ? (
+                        <a 
+                          href={selectedAssignment.attachment} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-blue-500 font-black hover:underline inline-flex items-center gap-1"
+                        >
+                          Material URL
+                          <ChevronRight size={12} />
+                        </a>
+                      ) : (
+                        <a 
+                          href={selectedAssignment.attachment.data} 
+                          download={selectedAssignment.attachment.fileName}
+                          className="text-blue-500 font-black hover:underline inline-flex items-center gap-1"
+                        >
+                          {selectedAssignment.attachment.fileName}
+                          <ChevronRight size={12} />
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>

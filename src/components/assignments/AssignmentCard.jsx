@@ -35,9 +35,9 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const [submissionType, setSubmissionType] = useState("text"); // "text" | "link"
-  const [textContent, setTextContent] = useState("");
-  const [linkContent, setLinkContent] = useState("");
+  const [submissionText, setSubmissionText] = useState("");
+  const [attachment, setAttachment] = useState(null);
+  const [fileError, setFileError] = useState("");
   const [comments, setComments] = useState("");
 
   const config = STATUS_CONFIG[assignment.status] || STATUS_CONFIG.PENDING;
@@ -48,15 +48,15 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
     setIsSubmitting(true);
     
     try {
-      const responseContent = submissionType === "text" ? textContent : linkContent;
       await submitAssignment(studentId, assignment.id, {
-        content: responseContent,
-        comments: comments
+        submissionText,
+        attachment,
+        comments
       });
       setIsSubmitting(false);
       setShowSubmitModal(false);
-      setTextContent("");
-      setLinkContent("");
+      setSubmissionText("");
+      setAttachment(null);
       setComments("");
       if (onStatusUpdate) {
         onStatusUpdate();
@@ -67,7 +67,7 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
     }
   };
 
-  const isFormValid = submissionType === "text" ? textContent.trim().length > 0 : linkContent.trim().startsWith("http");
+  const isFormValid = submissionText.trim().length > 0 || attachment !== null;
 
   return (
     <>
@@ -84,7 +84,7 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                     {assignment.type || "Assignment"}
                   </span>
                   <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                    {assignment.totalMarks} Marks • {assignment.subjectName}
+                    {assignment.totalMarks ?? assignment.maxMarks} Marks • {assignment.subjectName}
                   </span>
                 </div>
                 <h3 className="text-lg font-black text-[#03045e] group-hover:text-primary transition-colors line-clamp-1 leading-tight">
@@ -109,15 +109,26 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                   <span className="text-[10px] font-black uppercase tracking-widest">{assignment.dueDate}</span>
                 </div>
                 {assignment.attachment && (
-                  <a 
-                    href={assignment.attachment}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1.5 text-blue-500 hover:text-blue-700 transition-colors"
-                  >
-                    <FileText size={14} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Attachment</span>
-                  </a>
+                  typeof assignment.attachment === "string" ? (
+                    <a 
+                      href={assignment.attachment}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 text-blue-500 hover:text-blue-700 transition-colors"
+                    >
+                      <FileText size={14} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Attachment</span>
+                    </a>
+                  ) : (
+                    <a 
+                      href={assignment.attachment.data}
+                      download={assignment.attachment.fileName}
+                      className="flex items-center gap-1.5 text-blue-500 hover:text-blue-700 transition-colors"
+                    >
+                      <FileText size={14} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Download {assignment.attachment.fileName}</span>
+                    </a>
+                  )
                 )}
               </div>
               
@@ -130,11 +141,11 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1 text-[10px] font-black text-indigo-600 uppercase tracking-widest">
                     <CheckCircle2 size={13} />
-                    <span>Graded: {assignment.submissionDetails?.score ?? assignment.submissionDetails?.marksAwarded} / {assignment.totalMarks}</span>
+                    <span>Graded: {assignment.submissionDetails?.score ?? assignment.submissionDetails?.marksAwarded ?? assignment.submissionDetails?.marksObtained} / {assignment.totalMarks ?? assignment.maxMarks}</span>
                   </div>
-                  {assignment.submissionDetails?.feedback && (
+                  {(assignment.submissionDetails?.feedback || assignment.submissionDetails?.remarks) && (
                     <span className="text-[9px] font-bold text-gray-500 italic max-w-xs text-right line-clamp-1">
-                      "{assignment.submissionDetails.feedback}"
+                      "{assignment.submissionDetails.feedback || assignment.submissionDetails.remarks}"
                     </span>
                   )}
                 </div>
@@ -176,56 +187,59 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                   Upload your completed work for <span className="text-primary">{assignment.title}</span>.
                 </p>
 
-                {/* Submission Type Toggle */}
-                <div className="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-2xl mb-6">
-                  <button
-                    type="button"
-                    onClick={() => setSubmissionType("text")}
-                    className={`flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                      submissionType === "text" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    <AlignLeft size={14} />
-                    Text Response
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSubmissionType("link")}
-                    className={`flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                      submissionType === "link" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    <LinkIcon size={14} />
-                    Google Drive / Web Link
-                  </button>
-                </div>
-
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-4">
-                    {submissionType === "text" ? (
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Write your response</span>
-                        <textarea 
-                          className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
-                          placeholder="Type your complete answer or essay here..."
-                          rows={5}
-                          value={textContent}
-                          onChange={(e) => setTextContent(e.target.value)}
-                        />
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Submission URL</span>
-                        <input 
-                          type="url"
-                          className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
-                          placeholder="https://drive.google.com/..."
-                          value={linkContent}
-                          onChange={(e) => setLinkContent(e.target.value)}
-                        />
-                        <span className="text-[8px] font-bold text-gray-400 ml-1">Ensure sharing settings allow viewing.</span>
-                      </div>
-                    )}
+                    {/* Text Submission */}
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Submission Notes / Text Response</span>
+                      <textarea 
+                        className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
+                        placeholder="Type your complete answer, essay, or context here..."
+                        rows={4}
+                        value={submissionText}
+                        onChange={(e) => setSubmissionText(e.target.value)}
+                      />
+                    </div>
+
+                    {/* File Attachment */}
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Upload File (Max 10MB)</span>
+                      <input 
+                        type="file"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          if (file.size > 10 * 1024 * 1024) {
+                            setFileError("File size exceeds 10MB limit.");
+                            e.target.value = "";
+                            return;
+                          }
+                          setFileError("");
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            setAttachment({
+                              id: `ATT-${Date.now()}`,
+                              fileName: file.name,
+                              fileType: file.type,
+                              fileSize: file.size,
+                              data: event.target.result
+                            });
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-3 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
+                      />
+                      {attachment && (
+                        <p className="text-xs text-emerald-600 font-bold ml-1">
+                          Attached: {attachment.fileName} ({(attachment.fileSize / 1024 / 1024).toFixed(2)} MB)
+                        </p>
+                      )}
+                      {fileError && (
+                        <p className="text-xs text-rose-500 font-bold ml-1">
+                          {fileError}
+                        </p>
+                      )}
+                    </div>
 
                     <div className="space-y-2">
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Comments for Teacher (Optional)</span>

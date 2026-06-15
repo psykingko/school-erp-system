@@ -73,7 +73,7 @@ const SubmissionTable = ({ roster, totalMarks, onGradeStudent }) => {
                       {student.status === "GRADED" ? (
                         <div className="flex items-center justify-center gap-1 text-xs font-black text-indigo-600">
                           <Award size={13} className="text-indigo-500" />
-                          <span>{student.marksAwarded} / {totalMarks}</span>
+                          <span>{student.marksAwarded ?? student.marksObtained ?? student.score} / {totalMarks}</span>
                         </div>
                       ) : (
                         <span className="text-xs text-gray-400 font-bold">-- / {totalMarks}</span>

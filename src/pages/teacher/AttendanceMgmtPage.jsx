@@ -271,6 +271,23 @@ const AttendanceMgmtPage = () => {
         </div>
       </MainCard>
 
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-gray-50/50 rounded-2xl border border-gray-100 mt-[-1rem]">
+        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Legend:</span>
+        <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
+          <div className="w-6 h-6 rounded-lg border-2 border-[#10b981] flex items-center justify-center"><Check size={12} className="text-[#10b981]" /></div> Present
+        </div>
+        <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
+          <div className="w-6 h-6 rounded-lg border-2 border-[#ef4444] flex items-center justify-center"><X size={12} className="text-[#ef4444]" /></div> Absent
+        </div>
+        <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
+          <div className="w-6 h-6 rounded-lg border-2 border-[#0ea5e9] flex items-center justify-center"><Sunset size={12} className="text-[#0ea5e9]" /></div> On Leave
+        </div>
+        <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
+          <div className="w-6 h-6 rounded-lg border-2 border-[#f59e0b] flex items-center justify-center"><Clock size={12} className="text-[#f59e0b]" /></div> Unmarked
+        </div>
+      </div>
+
       {/* Attendance Table */}
       <div className="relative">
         <TeacherDataTable
@@ -400,10 +417,10 @@ const AttendanceMgmtPage = () => {
 
 const StatusButton = ({ active, type, onClick }) => {
   const configs = {
-    present: { color: "#10b981", icon: Check, label: "P" },
-    absent: { color: "#ef4444", icon: X, label: "A" },
-    on_leave: { color: "#0ea5e9", icon: Sunset, label: "L" },
-    unmarked: { color: "#f59e0b", icon: Clock, label: "U" },
+    present: { color: "#10b981", icon: Check, label: "Present" },
+    absent: { color: "#ef4444", icon: X, label: "Absent" },
+    on_leave: { color: "#0ea5e9", icon: Sunset, label: "On Leave" },
+    unmarked: { color: "#f59e0b", icon: Clock, label: "Unmarked" },
   };
   const config = configs[type];
   const Icon = config.icon;
@@ -411,6 +428,7 @@ const StatusButton = ({ active, type, onClick }) => {
   return (
     <button
       onClick={onClick}
+      title={config.label}
       className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all border-2 ${
         active
           ? `bg-white border-transparent shadow-md scale-110`

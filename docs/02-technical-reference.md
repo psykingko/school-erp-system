@@ -467,6 +467,12 @@ All values are stored as JSON arrays (or objects). Below is the complete key reg
   id: "asgn-{timestamp}",
   title: "Newton's Laws Problem Set",
   description: "...",
+  attachment: {                   // Base64 DTO for file uploads
+    fileName: "worksheet.pdf",
+    fileType: "application/pdf",
+    fileSize: 1048576,
+    data: "data:application/pdf;base64,..."
+  },
   subjectId: "sub-phy",           // FK → subjects.id
   classId: "class-11a",          // FK → classes.id
   teacherId: "teach-001",         // FK → teachers.id
@@ -485,10 +491,16 @@ All values are stored as JSON arrays (or objects). Below is the complete key reg
   assignmentId: "asgn-001",       // FK → assignments.id
   studentId: "stud-001",         // FK → students.id
   submittedAt: "2026-05-28T14:30:00Z",
-  content: "...",
+  content: "...",                 // Maps to submissionText
+  attachment: {                   // Base64 DTO for file uploads
+    fileName: "homework.pdf",
+    fileType: "application/pdf",
+    fileSize: 500000,
+    data: "data:application/pdf;base64,..."
+  },
   status: "submitted",            // not_submitted | submitted | graded
-  marksObtained: 17,              // null until graded
-  feedback: ""
+  marksObtained: 17,              // null until graded (also checked as marksAwarded/score)
+  feedback: ""                    // Teacher feedback (also checked as remarks)
 }
 ```
 
@@ -565,7 +577,7 @@ All values are stored as JSON arrays (or objects). Below is the complete key reg
   id: "leave-{timestamp}",
   requesterId: "stud-001",        // FK → students.id or teachers.id or employees.id
   requesterType: "student",       // student | teacher | employee
-  leaveType: "Sick",              // Sick | Casual | Maternity | Paternity | Other
+  leaveType: "Sick",              // Maps to actual available portfolio leaves
   classId: "class-11a",          // FK → classes.id (for student)
   fromDate: "2026-05-28",
   toDate: "2026-05-29",
@@ -575,7 +587,13 @@ All values are stored as JSON arrays (or objects). Below is the complete key reg
   decidedBy: null,                // FK → teachers.id | admin id
   decidedAt: null,
   adminRemarks: "",               // Required for rejection
-  attachmentUrl: null
+  attachmentUrl: null,            // Legacy URL field
+  attachment: {                   // Base64 DTO for document proofs
+    fileName: "medical_cert.pdf",
+    fileType: "application/pdf",
+    fileSize: 200000,
+    data: "data:application/pdf;base64,..."
+  }
 }
 ```
 

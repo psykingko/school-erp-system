@@ -99,6 +99,10 @@ Endpoints for assignments, exams, and question papers.
 ### `GET /api/v1/academics/assignments`
 - **Response Shape:** `AssignmentDTO[]`
 
+### `POST /api/v1/academics/assignments/:assignmentId/submissions`
+- **Request Body:** `{ submissionText: string, attachment: AttachmentDTO }`
+- **Response Shape:** `SubmissionDTO`
+
 ### `GET /api/v1/academics/exams/:examId/results/:studentId`
 - **Response Shape:** `ExamResultDTO`
 ```json
@@ -167,7 +171,7 @@ Endpoints for parent portal access.
 - **Query Params:** `?requesterId=UUID`, `?status=Pending`
 - **Response Shape:** `LeaveRequestDTO[]`
 ### `POST /api/v1/leaves`
-- **Request Body:** `{ leaveType, fromDate, toDate, reason }`
+- **Request Body:** `{ leaveType, fromDate, toDate, reason, attachment?: AttachmentDTO }`
 - **Response Shape:** `LeaveRequestDTO`
 ### `PUT /api/v1/leaves/:id`
 - **Request Body:** `{ status: "Approved" | "Rejected", adminRemarks: "String", decidedBy: "UUID" }`

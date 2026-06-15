@@ -44,6 +44,7 @@ export const applyLeave = async ({
   reason,
   fromDate,
   toDate,
+  attachmentUrl,
 }) => {
   // Validate empty reason
   if (!reason || reason.trim() === "") {
@@ -97,6 +98,7 @@ export const applyLeave = async ({
     reason: reason,
     source: "Student Portal",
     status: "Pending",
+    attachmentUrl: attachmentUrl || null,
     // Compatibility fields
     classId: classId || student.classId,
     appliedTo: classTeacherId,
@@ -430,6 +432,7 @@ export const createTeacherLeaveRequest = async ({
   reason,
   leaveTypeId,
   leaveTypeNameSnapshot,
+  attachmentUrl,
 }) => {
   if (!reason || reason.trim() === "") throw new Error("Reason cannot be empty.");
   if (!fromDate || !toDate) throw new Error("Dates are required.");
@@ -440,7 +443,8 @@ export const createTeacherLeaveRequest = async ({
   const teacher = teachers.find((t) => t.id === teacherId || t.teacherId === teacherId);
   if (!teacher) throw new Error("Teacher not found.");
 
-  const name = teacher.teacherName || `${teacher.firstName || ""} ${teacher.lastName || ""}`.trim() || "Unknown Teacher";
+  let name = teacher.teacherName || `${teacher.firstName && teacher.firstName !== "undefined" ? teacher.firstName : ""} ${teacher.lastName && teacher.lastName !== "undefined" ? teacher.lastName : ""}`.trim();
+  name = name || "Unknown Teacher";
 
   const requestedDays = calculateLeaveDays(fromDate, toDate);
   const balance = await validateLeaveBalance(teacherId, "teacher", leaveTypeId, requestedDays);
@@ -460,6 +464,7 @@ export const createTeacherLeaveRequest = async ({
     fromDate,
     toDate,
     reason,
+    attachmentUrl: attachmentUrl || null,
   };
 
   return await provider.createLeaveRequest(newRequest);
@@ -503,6 +508,7 @@ export const createEmployeeLeaveRequest = async ({
   reason,
   leaveTypeId,
   leaveTypeNameSnapshot,
+  attachmentUrl,
 }) => {
   if (!reason || reason.trim() === "") throw new Error("Reason cannot be empty.");
   if (!fromDate || !toDate) throw new Error("Dates are required.");
@@ -523,7 +529,7 @@ export const createEmployeeLeaveRequest = async ({
   const newRequest = {
     applicantType: "Employee",
     applicantId: employeeId,
-    applicantName: employee.employeeName || "Unknown Employee",
+    applicantName: employee.employeeName && employee.employeeName !== "undefined undefined" ? employee.employeeName : "Unknown Employee",
     department: departmentName,
     source: "Employee Portal",
     status: "Pending",
@@ -535,6 +541,7 @@ export const createEmployeeLeaveRequest = async ({
     fromDate,
     toDate,
     reason,
+    attachmentUrl: attachmentUrl || null,
   };
 
   return await provider.createLeaveRequest(newRequest);

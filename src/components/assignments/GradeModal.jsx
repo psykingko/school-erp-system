@@ -11,8 +11,9 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
 
   useEffect(() => {
     if (submission) {
-      setMarks(submission.marksAwarded !== null && submission.marksAwarded !== undefined ? String(submission.marksAwarded) : "");
-      setFeedback(submission.feedback || "");
+      const defaultMarks = submission.marksAwarded ?? submission.marksObtained ?? submission.score;
+      setMarks(defaultMarks !== null && defaultMarks !== undefined ? String(defaultMarks) : "");
+      setFeedback(submission.feedback || submission.remarks || "");
       setValidationError("");
     }
   }, [submission]);
@@ -37,7 +38,7 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
     setValidationError("");
 
     try {
-      await gradeSubmission(submission.submissionId, {
+      await gradeSubmission(submission.id || submission.submissionId, {
         assignmentId,
         studentId: submission.studentId,
         marksAwarded: numericMarks,
@@ -86,26 +87,45 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
                 <FileText size={12} className="text-[#0077b6]" />
                 Submitted Response
               </span>
-              <div className="p-4 bg-gray-50 border border-gray-150 rounded-2xl min-h-[80px] flex flex-col justify-center">
+              <div className="p-4 bg-gray-50 border border-gray-150 rounded-2xl min-h-[80px] flex flex-col justify-center gap-3">
                 {submission.status === "PENDING" || submission.status === "OVERDUE" ? (
                   <span className="text-xs text-rose-500 font-bold italic">No response submitted yet ( Roster Entry Grading Mode ).</span>
-                ) : submission.content?.startsWith("http") ? (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs text-gray-500 font-bold">Google Drive or External Link:</span>
-                    <a 
-                      href={submission.content}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs text-blue-600 font-black hover:underline flex items-center gap-1 w-fit bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100/60"
-                    >
-                      <ExternalLink size={12} />
-                      Open Student Link
-                    </a>
-                  </div>
                 ) : (
-                  <p className="text-xs text-gray-600 font-bold whitespace-pre-wrap leading-relaxed">
-                    {submission.content || "No text comments provided."}
-                  </p>
+                  <>
+                    {(submission.submissionText || (!submission.submissionText && !submission.attachment && submission.content)) && (
+                      <p className="text-xs text-gray-600 font-bold whitespace-pre-wrap leading-relaxed">
+                        {submission.submissionText || submission.content}
+                      </p>
+                    )}
+                    {submission.attachment && (
+                      <div className="pt-2 border-t border-gray-200">
+                        <span className="text-xs text-gray-500 font-bold block mb-1">Attached File:</span>
+                        {typeof submission.attachment === "string" ? (
+                          <a 
+                            href={submission.attachment}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-blue-600 font-black hover:underline flex items-center gap-1 w-fit bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100/60"
+                          >
+                            <ExternalLink size={12} />
+                            Open Student Link
+                          </a>
+                        ) : (
+                          <a 
+                            href={submission.attachment.data}
+                            download={submission.attachment.fileName}
+                            className="text-xs text-blue-600 font-black hover:underline flex items-center gap-1 w-fit bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100/60"
+                          >
+                            <FileText size={12} />
+                            Download {submission.attachment.fileName}
+                          </a>
+                        )}
+                      </div>
+                    )}
+                    {!submission.submissionText && !submission.attachment && !submission.content && (
+                      <span className="text-xs text-gray-500 font-bold italic">Empty submission.</span>
+                    )}
+                  </>
                 )}
               </div>
             </div>

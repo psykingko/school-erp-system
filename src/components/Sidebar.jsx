@@ -26,7 +26,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  CalendarRange
+  CalendarRange,
+  GraduationCap
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { useAuth } from "../context/AuthContext";

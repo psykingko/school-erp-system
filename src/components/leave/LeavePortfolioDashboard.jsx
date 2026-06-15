@@ -5,7 +5,7 @@ import MainCard from "../MainCard";
 import { getBalanceByUser, getBalanceSummaryByUser } from "../../services/leaveBalanceService";
 import { getLeaveTypes } from "../../services/leavePortfolioService";
 
-const LeavePortfolioDashboard = ({ userId, userType, gender }) => {
+const LeavePortfolioDashboard = ({ userId, userType, gender, refreshTrigger = 0 }) => {
   const [balances, setBalances] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [summary, setSummary] = useState({ totalAllocatedDays: 0, totalUsedDays: 0, totalRemainingDays: 0 });
@@ -20,9 +20,7 @@ const LeavePortfolioDashboard = ({ userId, userType, gender }) => {
       try {
         const fetchedBalances = await getBalanceByUser(userId, userType);
         const fetchedTypes = await getLeaveTypes();
-        const fetchedSummary = await getBalanceSummaryByUser(userId, userType);
-
-        setSummary(fetchedSummary);
+        // We will calculate summary locally after filtering for gender
 
         // Filter active leave types based on gender
         const isFemale = gender === "Female";
@@ -51,7 +49,14 @@ const LeavePortfolioDashboard = ({ userId, userType, gender }) => {
           .filter(Boolean)
           .sort((a, b) => a.sortOrder - b.sortOrder);
 
+        const calculatedSummary = {
+          totalAllocatedDays: resolvedBalances.reduce((sum, b) => sum + (Number(b.allocated) || 0), 0),
+          totalUsedDays: resolvedBalances.reduce((sum, b) => sum + (Number(b.used) || 0), 0),
+          totalRemainingDays: resolvedBalances.reduce((sum, b) => sum + (Number(b.remaining) || 0), 0)
+        };
+
         setBalances(resolvedBalances);
+        setSummary(calculatedSummary);
       } catch (err) {
         console.error("Failed to load portfolio dashboard data:", err);
       } finally {
@@ -60,7 +65,7 @@ const LeavePortfolioDashboard = ({ userId, userType, gender }) => {
     };
 
     fetchDashboardData();
-  }, [userId, userType]);
+  }, [userId, userType, gender, refreshTrigger]);
 
   const getStatusIndicator = (remaining, allocated) => {
     if (allocated === 0) return { label: "N/A", color: "text-gray-400", bg: "bg-gray-50", icon: Activity };
