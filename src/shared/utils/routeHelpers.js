@@ -166,6 +166,8 @@ export function getRouteForNavItem(id, role) {
         return "/admin/notices";
       case "admin_analytics_workload":
         return "/admin/analytics-workload";
+      case "admin_institutional_planning":
+        return "/admin/institutional-planning";
       case "admin_manage_departments":
         return "/admin/manage-departments";
       case "admin_communication_center":

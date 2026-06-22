@@ -12,12 +12,18 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@lexical/html": "^0.45.0",
+    "@lexical/list": "^0.45.0",
+    "@lexical/react": "^0.45.0",
+    "@lexical/rich-text": "^0.45.0",
     "framer-motion": "^11.0.0",
+    "lexical": "^0.45.0",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.15.1",
-    "recharts": "^3.8.1"
+    "recharts": "^3.8.1",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",

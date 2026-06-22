@@ -829,6 +829,17 @@ Every service is an `async` function that reads/writes through `MockDB`. Service
 - `getResultsForStudent(studentId)` → full result history
 - `getResultAnalytics(examId, classId)` → topper, average, weak areas
 
+### `questionPaperService.js`
+- End-to-end workflow for Question Paper management:
+  - `getQuestionPapers()` → retrieves all papers
+  - `getQuestionPapersByTeacher(teacherId)` → retrieves papers authored by specific teacher
+  - `getQuestionPaperById(id)` → retrieve a single paper
+  - `createQuestionPaper(data)` → insert new paper (Draft / Pending Approval)
+  - `updateQuestionPaper(id, updates)` → update content or status
+  - `deleteQuestionPaper(id)` → soft/hard delete
+  - `approveQuestionPaper(id, adminId, remarks)` → transition to Approved
+  - `rejectQuestionPaper(id, adminId, remarks)` → transition to Rejected
+
 ### `financeService.js`
 - `getFeeDetails(studentId)` → fee record + fee structure + invoices
 - `getPaymentHistory(studentId)` → receipts

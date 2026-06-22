@@ -1497,16 +1497,16 @@ const localProvider = {
     let departments = getItem("school_erp_departments") || [];
     if (departments.length === 0) {
       departments = [
-        { departmentId: "dept-academics", departmentName: "Academic Affairs", departmentHead: "EMP-002", status: "active" },
-        { departmentId: "dept-examination", departmentName: "Examination & Evaluation", departmentHead: "EMP-003", status: "active" },
-        { departmentId: "dept-student-affairs", departmentName: "Student Affairs", departmentHead: null, status: "active" },
-        { departmentId: "dept-administration", departmentName: "Administration", departmentHead: "EMP-010", status: "active" },
-        { departmentId: "dept-finance", departmentName: "Finance & Accounts", departmentHead: "EMP-001", status: "active" },
-        { departmentId: "dept-transport", departmentName: "Transport Services", departmentHead: "EMP-004", status: "active" },
-        { departmentId: "dept-it", departmentName: "IT Infrastructure", departmentHead: "EMP-009", status: "active" },
-        { departmentId: "dept-facilities", departmentName: "Facilities Management", departmentHead: null, status: "active" },
-        { departmentId: "dept-sports", departmentName: "Sports & Physical Education", departmentHead: null, status: "active" },
-        { departmentId: "dept-library", departmentName: "Library & Information Services", departmentHead: "EMP-008", status: "active" }
+        { departmentId: "dept-academics", departmentName: "Academic Affairs", departmentHead: "EMP-002", status: "active", requiredStaff: 12 },
+        { departmentId: "dept-examination", departmentName: "Examination & Evaluation", departmentHead: "EMP-003", status: "active", requiredStaff: 4 },
+        { departmentId: "dept-student-affairs", departmentName: "Student Affairs", departmentHead: null, status: "active", requiredStaff: 3 },
+        { departmentId: "dept-administration", departmentName: "Administration", departmentHead: "EMP-010", status: "active", requiredStaff: 8 },
+        { departmentId: "dept-finance", departmentName: "Finance & Accounts", departmentHead: "EMP-001", status: "active", requiredStaff: 5 },
+        { departmentId: "dept-transport", departmentName: "Transport Services", departmentHead: "EMP-004", status: "active", requiredStaff: 15 },
+        { departmentId: "dept-it", departmentName: "IT Infrastructure", departmentHead: "EMP-009", status: "active", requiredStaff: 3 },
+        { departmentId: "dept-facilities", departmentName: "Facilities Management", departmentHead: null, status: "active", requiredStaff: 10 },
+        { departmentId: "dept-sports", departmentName: "Sports & Physical Education", departmentHead: null, status: "active", requiredStaff: 4 },
+        { departmentId: "dept-library", departmentName: "Library & Information Services", departmentHead: "EMP-008", status: "active", requiredStaff: 2 }
       ];
       setItem("school_erp_departments", departments);
     }

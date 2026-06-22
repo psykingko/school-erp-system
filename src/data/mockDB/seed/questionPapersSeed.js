@@ -12,7 +12,7 @@ export const questionPapersSeed = [
     "examType": "Monthly Test",
     "maxMarks": 50,
     "duration": "2 Hours",
-    "content": "Sample content for Mathematics\nQ1. Example question 1?\nQ2. Example question 2?",
+    "content": "General Instructions:\n1. All questions are compulsory.\n2. The question paper consists of three sections: A, B, and C.\n3. Marks are indicated against each question.\n\nSECTION A - Short Answer Questions (2 Marks Each)\nQ1. Define what a matrix is and give an example of a 2x2 matrix.\nQ2. Solve the linear equation: 2x + 3 = 11.\n\nSECTION B - Descriptive Questions (5 Marks Each)\nQ3. State and prove the Pythagorean theorem.\nQ4. Find the roots of the quadratic equation: x^2 - 5x + 6 = 0.\n\nSECTION C - Long Answer Questions (10 Marks Each)\nQ5. A train travels 360 km at a uniform speed. If the speed had been 5 km/h more, it would have taken 1 hour less for the same journey. Find the speed of the train.\nQ6. Prove that the sum of angles in a triangle is 180 degrees.",
     "uploadedFile": {
       "fileName": "sample.pdf",
       "fileType": "application/pdf",
@@ -76,7 +76,7 @@ export const questionPapersSeed = [
     "examType": "Monthly Test",
     "maxMarks": 50,
     "duration": "2 Hours",
-    "content": "Sample content for Science\nQ1. Example question 1?\nQ2. Example question 2?",
+    "content": "General Instructions:\n1. Read the questions carefully.\n2. Draw diagrams where necessary.\n\nSECTION A - Objective Type (1 Mark Each)\nQ1. What is the chemical formula for water?\nQ2. Name the fundamental unit of life.\n\nSECTION B - Short Answer Questions (3 Marks Each)\nQ3. Explain Newton's first law of motion with an example.\nQ4. Describe the process of photosynthesis in brief.\n\nSECTION C - Long Answer Questions (8 Marks Each)\nQ5. Draw a well-labeled diagram of the human heart and explain its functioning.\nQ6. Explain the dual nature of light. Describe an experiment to support the wave nature of light.",
     "uploadedFile": {
       "fileName": "sample.pdf",
       "fileType": "application/pdf",

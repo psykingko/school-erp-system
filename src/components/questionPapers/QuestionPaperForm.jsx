@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Upload, Save, Send, FileCheck } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
+import LexicalQuestionPaperEditor from "./LexicalQuestionPaperEditor";
+import QuestionPaperPreview from "../../modules/question-papers/QuestionPaperPreview";
+import OCRImportPanel from "./OCRImportPanel";
+import { questionPaperMigrationService } from "../../services/questionPaperMigrationService";
+import { questionPaperEditorAdapter } from "../../services/questionPaperEditorAdapter";
 
 const CLASSES = ["10", "11"];
 const SUBJECTS = [
@@ -26,7 +31,8 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
     uploadedFile: null,
   });
 
-  const [inputType, setInputType] = useState("text"); // "text" or "file"
+  const [inputType, setInputType] = useState("text"); // "text", "file", or "ocr"
+  const [viewMode, setViewMode] = useState("edit"); // "edit" or "preview"
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -42,7 +48,9 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
           examType: paperToEdit.examType || "",
           maxMarks: paperToEdit.maxMarks || "",
           duration: paperToEdit.duration || "",
-          content: paperToEdit.content || "",
+          content: paperToEdit.paperContent?.blocks?.length 
+            ? questionPaperMigrationService.convertBlocksToLegacyText(paperToEdit.paperContent.blocks) 
+            : (paperToEdit.content || ""),
           uploadedFile: paperToEdit.uploadedFile || null,
         });
         setInputType(paperToEdit.uploadedFile ? "file" : "text");
@@ -87,9 +95,12 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
   const handleSave = (status) => {
     if (!validate()) return;
 
+    const generatedPaperContent = questionPaperEditorAdapter.serializeToCanonical(formData.content);
+
     const payload = {
       ...paperToEdit,
       ...formData,
+      paperContent: generatedPaperContent,
       teacherId: teacherProfile?.id,
       teacherName: teacherProfile?.name || "Teacher",
       status,
@@ -109,6 +120,24 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
         }
       }));
     }
+  };
+
+  const handleOCRInsert = (ocrText) => {
+    if (formData.content.trim()) {
+      const confirmReplace = window.confirm("This will replace the current editor content. Continue?");
+      if (!confirmReplace) return;
+    }
+
+    const generatedBlocks = questionPaperMigrationService.parseContentToBlocks(ocrText);
+    const html = questionPaperMigrationService.convertBlocksToLegacyText(generatedBlocks.blocks);
+
+    setFormData(prev => ({
+      ...prev,
+      content: html,
+      paperContent: generatedBlocks,
+      uploadedFile: null
+    }));
+    setInputType("text");
   };
 
   return (
@@ -133,22 +162,61 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
               {isReadOnly ? "View Question Paper" : paperToEdit ? "Edit Question Paper" : "Create Question Paper"}
             </h2>
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">
-              Section 1: Basic Information
+              {viewMode === "preview" ? "Preview Mode" : "Section 1: Basic Information"}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-gray-200/50 text-gray-400 transition-colors"
-          >
-            <X size={20} />
-          </button>
+          
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex bg-gray-200/50 p-1 rounded-xl">
+              <button
+                onClick={() => setViewMode("edit")}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === "edit" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setViewMode("preview")}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === "preview" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+              >
+                Preview
+              </button>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl hover:bg-gray-200/50 text-gray-400 transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-gray-50/30">
           
-          {/* Section 1: Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Mobile Toggle */}
+          <div className="sm:hidden flex bg-gray-200/50 p-1 rounded-xl w-full mb-4">
+            <button
+              onClick={() => setViewMode("edit")}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "edit" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setViewMode("preview")}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "preview" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              Preview
+            </button>
+          </div>
+
+          {viewMode === "preview" ? (
+            <div className="h-full min-h-[500px]">
+              <QuestionPaperPreview paper={formData} isTeacherView={true} />
+            </div>
+          ) : (
+            <>
+              {/* Section 1: Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 md:col-span-2">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Question Paper Title *</label>
               <input
@@ -275,18 +343,35 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
                 >
                   Upload File
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setInputType("ocr")}
+                  disabled={isReadOnly}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                    inputType === "ocr" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-400 hover:text-gray-600"
+                  }`}
+                >
+                  Import via OCR
+                </button>
               </div>
             </div>
 
             {errors.content && <div className="p-3 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">{errors.content}</div>}
             
             {inputType === "text" ? (
-              <div className="space-y-2">
-                <RichTextEditor 
+              <div className="space-y-4">
+                <LexicalQuestionPaperEditor 
                   value={formData.content} 
                   onChange={(val) => setFormData({ ...formData, content: val, uploadedFile: null })} 
                   disabled={isReadOnly} 
                 />
+                <div style={{ display: 'none' }}>
+                  <RichTextEditor value={""} onChange={() => {}} />
+                </div>
+              </div>
+            ) : inputType === "ocr" ? (
+              <div className="bg-white border border-gray-200 rounded-2xl p-6">
+                <OCRImportPanel onInsert={handleOCRInsert} />
               </div>
             ) : (
               <div className="space-y-4">
@@ -318,6 +403,8 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
               </div>
             )}
           </div>
+          </>
+          )}
         </div>
 
         {/* Footer Actions */}

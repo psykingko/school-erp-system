@@ -69,7 +69,6 @@ export const ROLE_NAVIGATION = {
     { id: "admin_admins", icon: "ShieldCheck" },
     { id: "admin_classes", icon: "School" },
     { id: "admin_subjects", icon: "BookOpen" },
-    { id: "admin_subject_alloc", icon: "ClipboardEdit" },
     { id: "admin_timetable", icon: "CalendarClock" },
     { id: "admin_exams", icon: "BookCheck" },
     { id: "admin_question_papers", icon: "FileQuestion" },
@@ -84,7 +83,7 @@ export const ROLE_NAVIGATION = {
     { id: "admin_calendar", icon: "CalendarDays" },
     { id: "admin_notices", icon: "Megaphone" },
     { id: "student_duty", icon: "BadgeCheck" },
-    { id: "admin_analytics_workload", icon: "PieChart" },
+    { id: "admin_institutional_planning", icon: "Target" },
     { id: "admin_manage_departments", icon: "Layers" },
     { id: "admin_communication_center", icon: "Send" },
     { id: "admin_leave_portfolio", icon: "Palmtree" },
@@ -150,6 +149,7 @@ export const ADMIN_SECTIONS = [
   {
     title: "Institutional",
     items: [
+      { id: "admin_institutional_planning", icon: "LayoutDashboard" },
       { id: "admin_club_management", icon: "Tent" },
       { id: "admin_manage_departments", icon: "Layers" },
       { id: "admin_communication_center", icon: "Send" },

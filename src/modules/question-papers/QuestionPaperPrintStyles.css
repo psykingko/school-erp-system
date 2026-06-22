@@ -1,0 +1,147 @@
+/* Base A4 Shell - Screen Layout */
+.qp-a4-shell {
+  background-color: #ffffff;
+  color: #000000;
+  max-width: 794px; /* A4 width at 96dpi */
+  margin: 0 auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 4px 10px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e5e7eb;
+  padding: 40px;
+  font-family: 'Times New Roman', Times, serif; /* Traditional paper font */
+  line-height: 1.6;
+}
+
+/* On very small mobile devices, remove padding to maximize space */
+@media (max-width: 600px) {
+  .qp-a4-shell {
+    padding: 20px;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+  }
+}
+
+/* Print Layout Toggle - Screen Only */
+.qp-print-layout-mode {
+  background-color: #f3f4f6; /* Gray background behind the paper */
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.qp-print-layout-mode .qp-a4-shell {
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+/* Header Styles */
+.qp-header {
+  text-align: center;
+  border-bottom: 2px solid #000;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.qp-school-name {
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.qp-exam-type {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.qp-meta-grid {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.qp-meta-left, .qp-meta-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.qp-meta-left {
+  text-align: left;
+}
+
+.qp-meta-right {
+  text-align: right;
+}
+
+/* Content Styles */
+.qp-content {
+  font-size: 14px;
+  white-space: pre-wrap; /* For plain text line breaks */
+  word-wrap: break-word;
+}
+
+/* Ensure images fit within the A4 width */
+.qp-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Print Utilities - Screen Mode */
+.qp-print-only {
+  display: none !important;
+}
+
+/* Print Media Queries */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm; /* Standard physical print margin */
+  }
+
+  /* Print Utilities */
+  .qp-no-print {
+    display: none !important;
+  }
+  
+  .qp-print-only {
+    display: flex !important; /* using flex for footer alignment */
+  }
+
+  /* Only print the shell */
+  body {
+    visibility: hidden;
+  }
+  .qp-a4-shell, .qp-a4-shell * {
+    visibility: visible;
+  }
+
+  .qp-a4-shell {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+  }
+
+  /* Basic page break avoidance for Phase 4 foundation */
+  .qp-content h1, 
+  .qp-content h2, 
+  .qp-content h3, 
+  .qp-content h4 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .qp-content img {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}

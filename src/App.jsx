@@ -92,9 +92,6 @@ const TeachersPage = lazy(() => import("./pages/admin/TeachersPage"));
 const ParentsPage = lazy(() => import("./pages/admin/ParentsPage"));
 const ClassesPage = lazy(() => import("./pages/admin/ClassesPage"));
 const SubjectsPage = lazy(() => import("./pages/admin/SubjectsPage"));
-const SubjectAllocationPage = lazy(
-  () => import("./pages/admin/SubjectAllocationPage"),
-);
 const TimetablePage = lazy(() => import("./pages/admin/TimetablePage"));
 const ExaminationsPage = lazy(() => import("./pages/admin/ExaminationsPage"));
 const QuestionPapersAdminPage = lazy(() => import("./pages/admin/QuestionPapersAdminPage"));
@@ -126,6 +123,9 @@ const AcademicPerformancePage = lazy(
 );
 const WorkloadAnalyticsPage = lazy(
   () => import("./pages/admin/WorkloadAnalyticsPage"),
+);
+const InstitutionalPlanningPage = lazy(
+  () => import("./pages/admin/InstitutionalPlanningPage"),
 );
 const AdminProfilePage = lazy(() => import("./pages/admin/AdminProfilePage"));
 const SupportManagementPage = lazy(() => import("./pages/admin/SupportManagementPage"));
@@ -964,10 +964,6 @@ function AppContent() {
           element={<LazyRoute Component={SubjectsPage} />}
         />
         <Route
-          path="subject-alloc"
-          element={<LazyRoute Component={SubjectAllocationPage} />}
-        />
-        <Route
           path="timetable"
           element={<LazyRoute Component={TimetablePage} />}
         />
@@ -1035,6 +1031,10 @@ function AppContent() {
         <Route
           path="analytics-workload"
           element={<LazyRoute Component={WorkloadAnalyticsPage} />}
+        />
+        <Route
+          path="institutional-planning"
+          element={<LazyRoute Component={InstitutionalPlanningPage} />}
         />
         <Route
           path="profile"

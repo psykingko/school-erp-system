@@ -478,3 +478,149 @@ export const studentDashboardService = {
   getStudentDashboardPayload,
   clearStudentDashboardCache,
 };
+
+export const getStudentCapacityMetrics = async () => {
+  const provider = getDataProvider();
+  const classes = await provider.getClasses();
+  const students = await provider.getStudents();
+
+  const totalCapacity = classes.reduce((sum, cls) => sum + (cls.capacity || 40), 0);
+  const totalEnrolled = students.length;
+  const availableSeats = totalCapacity - totalEnrolled;
+  const occupancyPercentage = totalCapacity > 0 ? Math.round((totalEnrolled / totalCapacity) * 100) : 0;
+
+  return {
+    totalCapacity,
+    totalEnrolled,
+    availableSeats,
+    occupancyPercentage
+  };
+};
+
+export const getClassCapacityMetrics = async (classId) => {
+  const provider = getDataProvider();
+  const classes = await provider.getClasses();
+  const students = await provider.getStudents();
+
+  const cls = classes.find(c => c.id === classId || c.classId === classId);
+  if (!cls) throw new Error("Class not found");
+
+  const capacity = cls.capacity || 40;
+  const enrolled = students.filter(s => s.classId === classId || s.className === classId).length;
+  const vacant = capacity - enrolled;
+  const occupancyPercentage = capacity > 0 ? Math.round((enrolled / capacity) * 100) : 0;
+
+  return {
+    capacity,
+    enrolled,
+    vacant,
+    occupancyPercentage
+  };
+};
+
+export const getTeacherCoverageMetrics = async () => {
+  const provider = getDataProvider();
+  const classes = await provider.getClasses();
+  const subjects = await provider.getSubjects();
+  const assignments = await provider.getTeacherSubjectAssignments();
+
+  let totalExpectedAssignments = 0;
+  let coveredAssignments = 0;
+  let coverageGaps = 0;
+  const assignedTeachers = new Set();
+
+  for (const cls of classes) {
+    const classLevel = cls.level;
+    const streamId = cls.streamId;
+    
+    const expectedSubjects = subjects.filter(sub => {
+      if (!sub.applicableClasses || !sub.applicableClasses.includes(classLevel)) return false;
+      if (["11", "12"].includes(classLevel)) {
+        if (sub.streamApplicability && sub.streamApplicability.length > 0) {
+          return sub.streamApplicability.includes(streamId);
+        }
+        return true; 
+      }
+      return true;
+    });
+
+    totalExpectedAssignments += expectedSubjects.length;
+
+    expectedSubjects.forEach(sub => {
+      const assignment = assignments.find(a => a.classId === cls.id && a.subjectId === (sub.id || sub.subjectId));
+      if (assignment && assignment.teacherId) {
+        coveredAssignments++;
+        assignedTeachers.add(assignment.teacherId);
+      } else {
+        coverageGaps++;
+      }
+    });
+  }
+
+  return {
+    totalExpectedAssignments,
+    coveredAssignments,
+    coverageGaps,
+    assignedTeachers: assignedTeachers.size
+  };
+};
+
+export const getCoverageLedger = async () => {
+  const provider = getDataProvider();
+  const classes = await provider.getClasses();
+  const subjects = await provider.getSubjects();
+  const assignments = await provider.getTeacherSubjectAssignments();
+  const teachers = await provider.getTeachers();
+
+  const ledger = [];
+
+  for (const cls of classes) {
+    const classLevel = cls.level;
+    const streamId = cls.streamId;
+    
+    const expectedSubjects = subjects.filter(sub => {
+      if (!sub.applicableClasses || !sub.applicableClasses.includes(classLevel)) return false;
+      if (["11", "12"].includes(classLevel)) {
+        if (sub.streamApplicability && sub.streamApplicability.length > 0) {
+          return sub.streamApplicability.includes(streamId);
+        }
+        return true;
+      }
+      return true;
+    });
+
+    expectedSubjects.forEach(sub => {
+      const assignment = assignments.find(a => a.classId === cls.id && a.subjectId === (sub.id || sub.subjectId));
+      let status = "Coverage Gap";
+      let teacherName = "No Teacher Assigned";
+      let department = "N/A";
+      let teacherId = null;
+
+      if (assignment && assignment.teacherId) {
+        status = "Covered";
+        teacherId = assignment.teacherId;
+        const teacher = teachers.find(t => t.id === teacherId || t.teacherId === teacherId);
+        if (teacher) {
+          teacherName = teacher.name || teacher.teacherName;
+          department = teacher.department || "General";
+        } else {
+          teacherName = "Unknown Teacher";
+        }
+      }
+
+      ledger.push({
+        classId: cls.id,
+        className: cls.name || cls.id,
+        section: cls.section,
+        subjectId: sub.id || sub.subjectId,
+        subjectName: sub.name || sub.subjectName,
+        teacherId,
+        teacherName,
+        department,
+        status
+      });
+    });
+  }
+
+  return ledger;
+};

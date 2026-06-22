@@ -1,6 +1,7 @@
 import { MockDB } from "../data/mockDB";
 import { getItem } from "../persistence/storage";
 import { STORAGE_KEYS } from "../persistence/storageKeys";
+import { questionPaperMigrationService } from "./questionPaperMigrationService";
 
 /**
  * QuestionPaperService
@@ -10,8 +11,9 @@ class QuestionPaperService {
   async getTeacherQuestionPapers(teacherId) {
     try {
       const papers = await MockDB.questionPapers.findByTeacher(teacherId);
+      const normalizedPapers = papers.map(p => questionPaperMigrationService.normalizePaperContent(p));
       // Sort by updatedAt descending
-      return papers.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      return normalizedPapers.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
     } catch (error) {
       console.error("Error fetching teacher question papers:", error);
       throw error;
@@ -21,7 +23,8 @@ class QuestionPaperService {
   async getAllQuestionPapers() {
     try {
       const papers = await MockDB.questionPapers.all();
-      return papers.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      const normalizedPapers = papers.map(p => questionPaperMigrationService.normalizePaperContent(p));
+      return normalizedPapers.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
     } catch (error) {
       console.error("Error fetching all question papers:", error);
       throw error;
@@ -31,7 +34,7 @@ class QuestionPaperService {
   async getQuestionPaperById(id) {
     try {
       const paper = await MockDB.questionPapers.findById(id);
-      return paper;
+      return paper ? questionPaperMigrationService.normalizePaperContent(paper) : null;
     } catch (error) {
       console.error("Error fetching question paper by id:", error);
       throw error;

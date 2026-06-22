@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import MainCard from "../../components/MainCard";
 import { questionPaperService } from "../../services/questionPaperService";
+import QuestionPaperPreview from "../../modules/question-papers/QuestionPaperPreview";
 import { 
   Search, 
   FileText, 
@@ -298,32 +299,10 @@ const QuestionPapersAdminPage = () => {
               {/* Content */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 
-                {/* Meta details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Exam Type</p>
-                    <p className="text-sm font-black text-[#03045e]">{viewPaper.examType}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Max Marks</p>
-                    <p className="text-sm font-black text-[#03045e]">{viewPaper.maxMarks || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Duration</p>
-                    <p className="text-sm font-black text-[#03045e]">{viewPaper.duration || "N/A"}</p>
-                  </div>
+                {/* A4 Preview Engine */}
+                <div className="min-h-[500px]">
+                  <QuestionPaperPreview paper={viewPaper} isTeacherView={false} />
                 </div>
-
-                {/* Content Viewer */}
-                {viewPaper.content && (
-                  <div className="space-y-2">
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Question Paper Content</h3>
-                    <div 
-                      className="p-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium text-[#03045e] prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: viewPaper.content }}
-                    />
-                  </div>
-                )}
 
                 {/* File Attachment Viewer (Mock) */}
                 {viewPaper.uploadedFile && (

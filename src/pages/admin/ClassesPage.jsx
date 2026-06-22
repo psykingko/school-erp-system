@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Building2,
@@ -82,8 +83,9 @@ const ClassesPage = () => {
   const [timetables, setTimetables] = useState([]);
 
   // Navigation selectors
-  const [selectedClassLevel, setSelectedClassLevel] = useState("");
-  const [selectedSection, setSelectedSection] = useState("");
+  const location = useLocation();
+  const [selectedClassLevel, setSelectedClassLevel] = useState(location.state?.selectedClassLevel || "");
+  const [selectedSection, setSelectedSection] = useState(location.state?.selectedSection || "");
 
   // Edit state
   const [editClass, setEditClass] = useState(null);
