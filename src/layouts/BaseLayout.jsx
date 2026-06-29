@@ -93,7 +93,7 @@ const BaseLayout = React.memo(({ children, navItems = [], activePage, setActiveP
         <Header
           student={user}
           notifications={notifications}
-          currentDate={currentDate || new Date().toLocaleDateString()}
+          currentDate={currentDate}
           onMenuClick={handleMenuClick}
           onNavigatePage={handleHeaderNavigate}
         />

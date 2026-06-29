@@ -7,9 +7,11 @@ import PerformanceSummaryCards from "../../components/performance/PerformanceSum
 import StudentPerformanceTable from "../../components/performance/StudentPerformanceTable";
 import StudentDetailPanel from "../../components/performance/StudentDetailPanel";
 import { AnimatePresence } from "framer-motion";
+import { useLanguage } from "../../context/LanguageContext";
 
 const StudentPerfPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const teacherId = user?.linkedEntityId || "teach-001";
 
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ const StudentPerfPage = () => {
     <div className="space-y-8 pb-12">
       <TeacherModuleHeader
         titleKey="nav.student_perf"
-        descriptionKey="Academic Progress Monitoring & Intervention Workspace"
+        descriptionKey="studentPerf.moduleDesc"
         helperContentEn="Evaluate attendance consistencies, academic results, pending submissions, and log mentor observation reports."
         helperContentHi="कक्षा के छात्रों के शैक्षणिक प्रदर्शन, उपस्थिति दरों, लंबित असाइनमेंट की समीक्षा करें और मेंटर रिमार्क्स दर्ज करें।"
       />
@@ -51,7 +53,7 @@ const StudentPerfPage = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-[300px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00b4d8] mb-2"></div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Aggregating Academic Data...</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t("studentPerf.aggregating", { fallback: "Aggregating Academic Data..." })}</p>
         </div>
       ) : error ? (
         <div className="bg-rose-50 border border-rose-100 text-rose-700 p-6 rounded-2xl text-center">
@@ -60,7 +62,7 @@ const StudentPerfPage = () => {
             onClick={fetchPerformanceData} 
             className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:bg-indigo-700 transition"
           >
-            Retry Aggregation
+            {t("studentPerf.retry", { fallback: "Retry Aggregation" })}
           </button>
         </div>
       ) : (

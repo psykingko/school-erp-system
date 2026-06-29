@@ -14,11 +14,13 @@ import {
 import { getStudentPerformanceSummary } from "../../services/studentPerformanceService";
 import { useAuth } from "../../context/AuthContext";
 import { useService } from "../../hooks/useService";
+import { useLanguage } from "../../context/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, ClipboardCheck, MessageSquare, AlertTriangle, Plus, ChevronLeft, Calendar } from "lucide-react";
 
 export default function MentorSupportPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const teacherId = user?.linkedEntityId || "teach-001";
 
   // State Management
@@ -114,7 +116,7 @@ export default function MentorSupportPage() {
     <div className="space-y-8 pb-12">
       <TeacherModuleHeader
         titleKey="nav.mentorSupport"
-        descriptionKey="Track wellbeing, behavior observations, and coordinate parent interaction guidance."
+        descriptionKey="mentorSupport.moduleDesc"
         helperContentEn="Maintain structured counseling remarks, flag risk areas (e.g. low attendance), and track follow-ups within your assigned mentorship circle."
         helperContentHi="व्यवस्थित परामर्श टिप्पणियों को बनाए रखें, जोखिम वाले क्षेत्रों (जैसे कम उपस्थिति) को चिह्नित करें, और अपने गृह कक्षा मेंटरशिप सर्कल के भीतर अनुवर्ती कार्रवाई को ट्रैक करें।"
       />
@@ -141,10 +143,10 @@ export default function MentorSupportPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                    Assigned Mentorship Circle
+                    {t("mentorSupport.assignedCircle", { fallback: "Assigned Mentorship Circle" })}
                   </h3>
                   <p className="text-[10px] font-bold text-gray-400 mt-0.5">
-                    Select a student to inspect their detailed guidance history portfolio.
+                    {t("mentorSupport.selectStudent", { fallback: "Select a student to inspect their detailed guidance history portfolio." })}
                   </p>
                 </div>
               </div>
@@ -172,7 +174,7 @@ export default function MentorSupportPage() {
                         </div>
                         <div>
                           <h4 className="text-xs font-extrabold text-[#03045e]">{selectedStudent.name}</h4>
-                          <p className="text-[9px] font-bold text-[#0077b6] uppercase tracking-wider">Active Guidance File</p>
+                          <p className="text-[9px] font-bold text-[#0077b6] uppercase tracking-wider">{t("mentorSupport.activeFile", { fallback: "Active Guidance File" })}</p>
                         </div>
                       </div>
                       <button
@@ -180,14 +182,14 @@ export default function MentorSupportPage() {
                         className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-1 text-[10px] font-black uppercase tracking-wider"
                       >
                         <ChevronLeft className="w-3.5 h-3.5" />
-                        <span>Close</span>
+                        <span>{t("common.close", { fallback: "Close" })}</span>
                       </button>
                     </div>
 
                     {/* Operational performance warning cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
-                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Attendance</span>
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">{t("common.attendance", { fallback: "Attendance" })}</span>
                         <span className={`text-xs font-black ${
                           (selectedStudent.performanceSummary?.attendancePct || 0) >= 85 ? "text-emerald-600" : "text-rose-500 font-extrabold"
                         }`}>
@@ -195,7 +197,7 @@ export default function MentorSupportPage() {
                         </span>
                       </div>
                       <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
-                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Term Average</span>
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">{t("mentorSupport.termAverage", { fallback: "Term Average" })}</span>
                         <span className="text-xs font-black text-[#03045e]">
                           {selectedStudent.performanceSummary?.averageMarksPct || 0}%
                         </span>
@@ -209,14 +211,14 @@ export default function MentorSupportPage() {
                         className="flex-1 py-3 bg-[#03045e] hover:bg-[#0077b6] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>Add Observation</span>
+                        <span>{t("mentorSupport.addObservation", { fallback: "Add Observation" })}</span>
                       </button>
                     </div>
 
                     {/* Observation Chronology */}
                     <div className="space-y-4 pt-2">
                       <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        Guidance Observation Timeline
+                        {t("mentorSupport.timeline", { fallback: "Guidance Observation Timeline" })}
                       </h4>
                       <MentorshipTimeline
                         remarks={history}

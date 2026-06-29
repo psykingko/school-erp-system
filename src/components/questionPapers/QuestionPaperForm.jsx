@@ -7,6 +7,7 @@ import QuestionPaperPreview from "../../modules/question-papers/QuestionPaperPre
 import OCRImportPanel from "./OCRImportPanel";
 import { questionPaperMigrationService } from "../../services/questionPaperMigrationService";
 import { questionPaperEditorAdapter } from "../../services/questionPaperEditorAdapter";
+import { useLanguage } from "../../context/LanguageContext";
 
 const CLASSES = ["10", "11"];
 const SUBJECTS = [
@@ -34,6 +35,7 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
   const [inputType, setInputType] = useState("text"); // "text", "file", or "ocr"
   const [viewMode, setViewMode] = useState("edit"); // "edit" or "preview"
   const [errors, setErrors] = useState({});
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (isOpen) {
@@ -49,8 +51,10 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
           maxMarks: paperToEdit.maxMarks || "",
           duration: paperToEdit.duration || "",
           content: paperToEdit.paperContent?.blocks?.length 
-            ? questionPaperMigrationService.convertBlocksToLegacyText(paperToEdit.paperContent.blocks) 
-            : (paperToEdit.content || ""),
+            ? questionPaperEditorAdapter.deserializeFromCanonical(paperToEdit.paperContent.blocks) 
+            : (paperToEdit.content 
+                 ? questionPaperEditorAdapter.deserializeFromCanonical(questionPaperMigrationService.parseContentToBlocks(paperToEdit.content).blocks)
+                 : ""),
           uploadedFile: paperToEdit.uploadedFile || null,
         });
         setInputType(paperToEdit.uploadedFile ? "file" : "text");
@@ -95,11 +99,15 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
   const handleSave = (status) => {
     if (!validate()) return;
 
-    const generatedPaperContent = questionPaperEditorAdapter.serializeToCanonical(formData.content);
+    const isLexicalState = typeof formData.content === "object" && formData.content !== null;
+    const generatedPaperContent = isLexicalState 
+      ? questionPaperEditorAdapter.serializeToCanonical(formData.content)
+      : (formData.paperContent || null);
 
     const payload = {
       ...paperToEdit,
       ...formData,
+      content: isLexicalState ? "" : formData.content, // Clear legacy content if using Lexical
       paperContent: generatedPaperContent,
       teacherId: teacherProfile?.id,
       teacherName: teacherProfile?.name || "Teacher",
@@ -123,17 +131,25 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
   };
 
   const handleOCRInsert = (ocrText) => {
-    if (formData.content.trim()) {
-      const confirmReplace = window.confirm("This will replace the current editor content. Continue?");
+    let hasContent = false;
+    if (typeof formData.content === "object" && formData.content !== null) {
+      const canonical = questionPaperEditorAdapter.serializeToCanonical(formData.content);
+      hasContent = canonical.blocks && canonical.blocks.length > 0;
+    } else if (typeof formData.content === "string") {
+      hasContent = formData.content.trim().length > 0;
+    }
+
+    if (hasContent) {
+      const confirmReplace = window.confirm(t("questionPapers.confirmReplace", { fallback: "This will replace the current editor content. Continue?" }));
       if (!confirmReplace) return;
     }
 
     const generatedBlocks = questionPaperMigrationService.parseContentToBlocks(ocrText);
-    const html = questionPaperMigrationService.convertBlocksToLegacyText(generatedBlocks.blocks);
+    const lexicalJSON = questionPaperEditorAdapter.deserializeFromCanonical(generatedBlocks.blocks);
 
     setFormData(prev => ({
       ...prev,
-      content: html,
+      content: lexicalJSON,
       paperContent: generatedBlocks,
       uploadedFile: null
     }));
@@ -159,10 +175,10 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
         <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
           <div>
             <h2 className="text-xl font-black text-[#03045e]">
-              {isReadOnly ? "View Question Paper" : paperToEdit ? "Edit Question Paper" : "Create Question Paper"}
+              {isReadOnly ? t("questionPapers.viewPaper", { fallback: "View Question Paper" }) : paperToEdit ? t("questionPapers.editPaper", { fallback: "Edit Question Paper" }) : t("questionPapers.createPaper", { fallback: "Create Question Paper" })}
             </h2>
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">
-              {viewMode === "preview" ? "Preview Mode" : "Section 1: Basic Information"}
+              {viewMode === "preview" ? t("questionPapers.previewMode", { fallback: "Preview Mode" }) : t("questionPapers.section1", { fallback: "Section 1: Basic Information" })}
             </p>
           </div>
           
@@ -172,13 +188,13 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
                 onClick={() => setViewMode("edit")}
                 className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === "edit" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
               >
-                Edit
+                {t("common.edit", { fallback: "Edit" })}
               </button>
               <button
                 onClick={() => setViewMode("preview")}
                 className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === "preview" ? "bg-white text-[#03045e] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
               >
-                Preview
+                {t("common.preview", { fallback: "Preview" })}
               </button>
             </div>
             <button
@@ -211,7 +227,16 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
 
           {viewMode === "preview" ? (
             <div className="h-full min-h-[500px]">
-              <QuestionPaperPreview paper={formData} isTeacherView={true} />
+              <QuestionPaperPreview 
+                paper={{
+                  ...formData,
+                  content: typeof formData.content === "object" && formData.content !== null ? "" : formData.content,
+                  paperContent: typeof formData.content === "object" && formData.content !== null
+                    ? questionPaperEditorAdapter.serializeToCanonical(formData.content)
+                    : formData.paperContent
+                }} 
+                isTeacherView={true} 
+              />
             </div>
           ) : (
             <>
@@ -429,7 +454,7 @@ const QuestionPaperForm = ({ isOpen, onClose, paperToEdit, onSaved, teacherProfi
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#03045e] text-white hover:bg-[#03045e]/90 shadow-lg text-[10px] font-black uppercase tracking-widest transition-colors"
               >
                 <Send size={14} />
-                Submit For Approval
+                {t("questionPapers.submitApproval", { fallback: "Submit For Approval" })}
               </button>
             </>
           )}

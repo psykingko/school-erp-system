@@ -7,8 +7,6 @@ import React, {
   useEffect,
 } from "react";
 import { translations } from "../translations";
-import { useAuth } from "./AuthContext";
-import { ROLES } from "../auth/roles";
 import { getItem, setItem } from "../persistence/storage";
 
 const LanguageContext = createContext();
@@ -16,47 +14,33 @@ const LanguageContext = createContext();
 const LANG_STORAGE_KEY = "edudash_lang_pref";
 
 export function LanguageProvider({ children }) {
-  const { role } = useAuth();
+  // Initialize state directly from storage or default to English
+  const [lang, setLang] = useState(() => {
+    return getItem(LANG_STORAGE_KEY) || "en";
+  });
 
-  // Initialize state
-  const [lang, setLang] = useState("en");
-
-  // 1. Force English for non-parent roles, Restore for parents
+  // Persist language preference whenever it changes
   useEffect(() => {
-    if (role) {
-      if (role !== ROLES.PARENT) {
-        if (lang !== "en") setLang("en");
-      } else {
-        // Restore parent's saved preference on role switch/init
-        const saved = getItem(LANG_STORAGE_KEY);
-        if (saved && saved !== lang) {
-          setLang(saved);
-        }
-      }
-    }
-  }, [role]);
+    setItem(LANG_STORAGE_KEY, lang);
+  }, [lang]);
 
-  // 2. Persist parent preference only
-  useEffect(() => {
-    if (role === ROLES.PARENT) {
-      setItem("edudash_lang_pref", lang);
-    }
-  }, [lang, role]);
-
-  const handleSetLang = useCallback(
-    (newLang) => {
-      if (role === ROLES.PARENT) {
-        setLang(newLang);
-      }
-    },
-    [role],
-  );
+  const handleSetLang = useCallback((newLang) => {
+    setLang(newLang);
+  }, []);
 
   const t = useCallback(
     (key, params = {}) => {
       if (!key) return "";
 
-      let text = translations[lang]?.[key] || key;
+      let text = translations[lang]?.[key];
+
+      // Missing key handling policy
+      if (text === undefined) {
+        if (process.env.NODE_ENV === "development") {
+          console.warn(`Missing translation for key: "${key}" in lang: "${lang}"`);
+        }
+        text = key; // Fallback to key
+      }
 
       // Ensure text is a string before calling replace
       if (typeof text !== "string") text = String(text);

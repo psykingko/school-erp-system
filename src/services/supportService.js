@@ -1,32 +1,35 @@
-import localProvider from "../data/providers/localProvider";
+import { getDataProvider } from "../data/providers/providerFactory";
 
 export const getMySupportRequests = async (requesterId) => {
-  const requests = await localProvider.getSupportRequests();
+  const provider = getDataProvider();
+  const requests = await provider.getSupportRequests();
   return requests.filter(r => r.requesterId === requesterId);
 };
 
 export const getSupportRequestById = async (id) => {
-  const requests = await localProvider.getSupportRequests();
+  const provider = getDataProvider();
+  const requests = await provider.getSupportRequests();
   return requests.find(r => r.id === id) || null;
 };
 
 const resolveRequesterName = async (requesterType, requesterId) => {
   try {
+    const provider = getDataProvider();
     switch (requesterType) {
       case "Student": {
-        const student = await localProvider.getStudentById(requesterId);
+        const student = await provider.getStudentById(requesterId);
         return student ? student.name : "Unknown Student";
       }
       case "Teacher": {
-        const teacher = await localProvider.getTeacherById(requesterId);
+        const teacher = await provider.getTeacherById(requesterId);
         return teacher ? (teacher.name || teacher.teacherName) : "Unknown Teacher";
       }
       case "Parent": {
-        const parent = await localProvider.getParentById(requesterId);
+        const parent = await provider.getParentById(requesterId);
         return parent ? parent.name : "Unknown Parent";
       }
       case "Employee": {
-        const employees = await localProvider.getEmployees();
+        const employees = await provider.getEmployees();
         const employee = employees.find(e => e.employeeId === requesterId || e.id === requesterId);
         return employee ? (employee.employeeName || employee.name) : "Unknown Employee";
       }
@@ -48,12 +51,14 @@ export const createSupportRequest = async (data) => {
     requesterName
   };
 
-  return await localProvider.createSupportRequest(payload);
+  const provider = getDataProvider();
+  return await provider.createSupportRequest(payload);
 };
 
 // === ADMIN METHODS ===
 export const getAllSupportRequests = async () => {
-  return await localProvider.getSupportRequests();
+  const provider = getDataProvider();
+  return await provider.getSupportRequests();
 };
 
 export const updateSupportRequestStatus = async (id, status) => {
@@ -61,7 +66,8 @@ export const updateSupportRequestStatus = async (id, status) => {
   if (!allowedStatuses.includes(status)) {
     throw new Error("Invalid status update");
   }
-  return await localProvider.updateSupportRequest(id, { status });
+  const provider = getDataProvider();
+  return await provider.updateSupportRequest(id, { status });
 };
 
 export const addSupportRemark = async (id, message, createdBy) => {
@@ -69,14 +75,16 @@ export const addSupportRemark = async (id, message, createdBy) => {
     message,
     createdBy
   };
-  return await localProvider.addSupportRemark(id, remark);
+  const provider = getDataProvider();
+  return await provider.addSupportRemark(id, remark);
 };
 
 export const getSupportHandler = async () => {
-  const settings = await localProvider.getSupportSettings();
+  const provider = getDataProvider();
+  const settings = await provider.getSupportSettings();
   if (!settings || !settings.handlerEmployeeId) return null;
   
-  const employees = await localProvider.getEmployees();
+  const employees = await provider.getEmployees();
   const employee = employees.find(e => e.employeeId === settings.handlerEmployeeId);
   return employee ? { name: employee.employeeName || employee.name, designation: employee.designation } : null;
 };

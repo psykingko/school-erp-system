@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import TeacherModuleHeader from "../../components/teacher/TeacherModuleHeader";
 import MainCard from "../../components/MainCard";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { useService } from "../../hooks/useService";
 import { 
   getAssignmentsByTeacher, 
@@ -33,6 +34,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const AssignmentsManagementPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const teacherProfile = user?.profile;
   const teacherId = teacherProfile?.id;
 
@@ -113,7 +115,7 @@ const AssignmentsManagementPage = () => {
   }, [assignments]);
 
   const handleDeleteAssignment = async (id) => {
-    if (window.confirm("Are you sure you want to delete this assignment? All student submissions and grades for it will be lost.")) {
+    if (window.confirm(t("assignments.deleteConfirm", { fallback: "Are you sure you want to delete this assignment? All student submissions and grades for it will be lost." }))) {
       try {
         await deleteAssignment(id);
         setSelectedAssignment(null);
@@ -147,13 +149,15 @@ const AssignmentsManagementPage = () => {
             className="flex items-center gap-2 text-xs font-black text-primary hover:text-[#03045e] transition-colors w-fit bg-primary/5 px-4 py-2.5 rounded-xl uppercase tracking-widest border border-primary/10 shadow-sm"
           >
             <ArrowLeft size={14} strokeWidth={2.5} />
-            Back to Dashboard
+            {t("assignments.backToDashboard", { fallback: "Back to Dashboard" })}
           </button>
         )}
 
         <TeacherModuleHeader 
-          titleKey={selectedAssignment ? selectedAssignment.title : "Assignments Operations Center"}
-          descriptionKey={selectedAssignment ? `Class: ${selectedAssignment.classDisplayName} • Subject: ${selectedAssignment.subjectName}` : "Design assignments, review student submissions, and manage grading sheets."}
+          titleKey={!selectedAssignment ? "assignments.moduleTitle" : undefined}
+          title={selectedAssignment ? selectedAssignment.title : undefined}
+          descriptionKey={!selectedAssignment ? "assignments.moduleDesc" : undefined}
+          description={selectedAssignment ? `${t("assignments.class", { fallback: "Class:" })} ${selectedAssignment.classDisplayName} • ${t("assignments.subject", { fallback: "Subject:" })} ${selectedAssignment.subjectName}` : undefined}
           helperContentEn="The assignment workflow module supports structured task creation, relational class roster generation, text/link grading reviews, and dynamic status propagation."
           helperContentHi="असाइनमेंट वर्कफ़्लो मॉड्यूल संरचित कार्य निर्माण, संबंधपरक वर्ग रोस्टर निर्माण, पाठ/लिंक ग्रेडिंग समीक्षाओं और गतिशील स्थिति प्रसार का समर्थन करता है।"
         />
@@ -174,7 +178,7 @@ const AssignmentsManagementPage = () => {
               <MainCard className="p-6 border-l-4 border-l-[#03045e]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Assignments</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t("assignments.totalAssignments", { fallback: "Total Assignments" })}</p>
                     <p className="text-3xl font-black text-[#03045e]">{stats.total}</p>
                   </div>
                   <div className="p-3 rounded-2xl bg-blue-50 text-[#03045e]">
@@ -186,7 +190,7 @@ const AssignmentsManagementPage = () => {
               <MainCard className="p-6 border-l-4 border-l-amber-500">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pending Reviews</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t("assignments.pendingReviews", { fallback: "Pending Reviews" })}</p>
                     <p className="text-3xl font-black text-[#03045e]">{stats.pendingReview}</p>
                   </div>
                   <div className="p-3 rounded-2xl bg-amber-50 text-amber-600">
@@ -198,7 +202,7 @@ const AssignmentsManagementPage = () => {
               <MainCard className="p-6 border-l-4 border-l-emerald-500">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Grading Progress</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t("assignments.gradingProgress", { fallback: "Grading Progress" })}</p>
                     <p className="text-3xl font-black text-[#03045e]">{stats.completion}%</p>
                   </div>
                   <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
@@ -216,7 +220,7 @@ const AssignmentsManagementPage = () => {
                   <Search size={15} className="text-gray-400" />
                   <input 
                     type="text" 
-                    placeholder="Search by title, description or class..."
+                    placeholder={t("assignments.searchPlaceholder", { fallback: "Search by title, description or class..." })}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full text-[11px] font-bold bg-transparent outline-none text-[#03045e] placeholder-gray-400"
@@ -235,7 +239,7 @@ const AssignmentsManagementPage = () => {
                         activeTab === tab ? "bg-[#03045e] text-white shadow-sm" : "text-gray-400 hover:text-gray-600"
                       }`}
                     >
-                      {tab}
+                      {tab === "active" ? t("assignments.tabActive", { fallback: "active" }) : t("assignments.tabAll", { fallback: "all" })}
                     </button>
                   ))}
                 </div>
@@ -249,7 +253,7 @@ const AssignmentsManagementPage = () => {
                   className="bg-[#03045e] text-white px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] shadow-xl shadow-[#03045e]/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"
                 >
                   <Plus size={14} />
-                  New Assignment
+                  {t("assignments.newAssignment", { fallback: "New Assignment" })}
                 </button>
               </div>
             </div>
@@ -270,10 +274,10 @@ const AssignmentsManagementPage = () => {
                             {asgn.subjectName}
                           </span>
                           <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                            Class: {asgn.classDisplayName}
+                            {t("assignments.class", { fallback: "Class:" })} {asgn.classDisplayName}
                           </span>
                           <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-auto lg:ml-0">
-                            • Max: {asgn.totalMarks} Marks
+                            • {t("assignments.max", { fallback: "Max:" })} {asgn.maxMarks || asgn.totalMarks} {t("assignments.marks", { fallback: "Marks" })}
                           </span>
                         </div>
                         <h3 className="text-lg font-black text-[#03045e] group-hover:text-primary transition-colors line-clamp-1">
@@ -282,18 +286,18 @@ const AssignmentsManagementPage = () => {
                         <div className="flex flex-wrap items-center gap-6 pt-1.5">
                           <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                             <Calendar size={13} className="text-amber-500" />
-                            Due: {asgn.dueDate}
+                            {t("assignments.due", { fallback: "Due:" })} {asgn.dueDate}
                           </div>
                           <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                             <Users size={13} className="text-[#00b4d8]" />
-                            Roster Submitted: {asgn.submissionsCount} / {asgn.totalStudents}
+                            {t("assignments.rosterSubmitted", { fallback: "Roster Submitted:" })} {asgn.submissionsCount} / {asgn.totalStudents}
                           </div>
                         </div>
                       </div>
 
                       <div className="w-full lg:w-48 shrink-0">
                         <div className="flex justify-between items-end mb-2">
-                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Grading Progress</span>
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t("assignments.gradingProgress", { fallback: "Grading Progress" })}</span>
                           <span className="text-xs font-black text-[#03045e]">{asgn.gradingProgress}%</span>
                         </div>
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -322,9 +326,9 @@ const AssignmentsManagementPage = () => {
                   <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 mb-4">
                     <Search size={24} />
                   </div>
-                  <h3 className="text-sm font-black text-[#03045e] mb-1.5">No assignments found</h3>
+                  <h3 className="text-sm font-black text-[#03045e] mb-1.5">{t("assignments.noAssignmentsFound", { fallback: "No assignments found" })}</h3>
                   <p className="text-xs text-gray-400 font-bold max-w-sm">
-                    Try altering your search query, selecting another subject filter, or check the "all" tab for past deadlines.
+                    {t("assignments.noAssignmentsHelp", { fallback: 'Try altering your search query, selecting another subject filter, or check the "all" tab for past deadlines.' })}
                   </p>
                 </MainCard>
               )}
@@ -348,7 +352,7 @@ const AssignmentsManagementPage = () => {
                       {selectedAssignment.subjectName}
                     </span>
                     <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[9px] font-black uppercase tracking-tighter">
-                      Class: {selectedAssignment.classDisplayName}
+                      {t("assignments.class", { fallback: "Class:" })} {selectedAssignment.classDisplayName}
                     </span>
                   </div>
                   <h3 className="text-lg font-black text-[#03045e] leading-tight">
@@ -361,14 +365,14 @@ const AssignmentsManagementPage = () => {
 
                 <div className="pt-4 border-t border-gray-100 space-y-3.5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-black text-gray-400 uppercase tracking-widest text-[9px]">Max Marks</span>
+                    <span className="font-black text-gray-400 uppercase tracking-widest text-[9px]">{t("assignments.maxMarks", { fallback: "Max Marks" })}</span>
                     <span className="font-black text-[#03045e] flex items-center gap-1">
                       <Award size={13} className="text-amber-500" />
-                      {selectedAssignment.totalMarks} Marks
+                      {selectedAssignment.maxMarks || selectedAssignment.totalMarks} {t("assignments.marks", { fallback: "Marks" })}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-black text-gray-400 uppercase tracking-widest text-[9px]">Due Date</span>
+                    <span className="font-black text-gray-400 uppercase tracking-widest text-[9px]">{t("assignments.dueDate", { fallback: "Due Date" })}</span>
                     <span className="font-black text-[#03045e] flex items-center gap-1">
                       <Calendar size={13} className="text-[#00b4d8]" />
                       {selectedAssignment.dueDate}
@@ -376,17 +380,17 @@ const AssignmentsManagementPage = () => {
                   </div>
                   {selectedAssignment.attachment && (
                     <div className="pt-2">
-                      <span className="font-black text-gray-400 uppercase tracking-widest text-[9px] mb-2 block">Attachment</span>
+                      <span className="font-black text-gray-400 uppercase tracking-widest text-[9px] mb-2 block">{t("assignments.attachment", { fallback: "Attachment" })}</span>
                       <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-150 rounded-xl w-full">
                          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
                            <FileText size={16} />
                          </div>
                          <div className="flex-1 min-w-0">
                            <p className="text-xs font-black text-[#03045e] truncate block w-full">
-                             {typeof selectedAssignment.attachment === "string" ? "Material Link" : selectedAssignment.attachment.fileName}
+                             {typeof selectedAssignment.attachment === "string" ? t("assignments.materialLink", { fallback: "Material Link" }) : selectedAssignment.attachment.fileName}
                            </p>
                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                             {typeof selectedAssignment.attachment === "string" ? "External Resource" : "Uploaded File"}
+                             {typeof selectedAssignment.attachment === "string" ? t("assignments.externalResource", { fallback: "External Resource" }) : t("assignments.uploadedFile", { fallback: "Uploaded File" })}
                            </p>
                          </div>
                          <a 
@@ -413,14 +417,14 @@ const AssignmentsManagementPage = () => {
                     className="flex items-center justify-center gap-2 py-3.5 rounded-xl border border-gray-250 text-[#03045e] hover:bg-gray-50 text-[10px] font-black uppercase tracking-wider transition-all"
                   >
                     <Edit size={13} />
-                    Edit
+                    {t("common.edit", { fallback: "Edit" })}
                   </button>
                   <button
                     onClick={() => handleDeleteAssignment(selectedAssignment.id)}
                     className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-[10px] font-black uppercase tracking-wider transition-all border border-rose-100"
                   >
                     <Trash2 size={13} />
-                    Delete
+                    {t("common.delete", { fallback: "Delete" })}
                   </button>
                 </div>
               </MainCard>
@@ -436,12 +440,12 @@ const AssignmentsManagementPage = () => {
                 <div className="space-y-4">
                   <h3 className="text-xs font-extrabold text-[#03045e] uppercase tracking-wider flex items-center gap-2">
                     <Users size={15} className="text-[#0077b6]" />
-                    Student Submission Roster ({rosterSubmissions?.length || 0} enrolled)
+                    {t("assignments.studentRoster", { fallback: "Student Submission Roster (" })}{rosterSubmissions?.length || 0} {t("assignments.enrolled", { fallback: "enrolled)" })}
                   </h3>
 
                   <SubmissionTable 
                     roster={rosterSubmissions || []} 
-                    totalMarks={selectedAssignment.totalMarks}
+                    totalMarks={selectedAssignment.maxMarks || selectedAssignment.totalMarks}
                     onGradeStudent={handleGradeStudent}
                   />
                 </div>
@@ -481,7 +485,7 @@ const AssignmentsManagementPage = () => {
           setSubmissionToGrade(null);
         }}
         submission={submissionToGrade}
-        totalMarks={selectedAssignment?.totalMarks || 20}
+        totalMarks={selectedAssignment?.maxMarks || selectedAssignment?.totalMarks || 20}
         assignmentId={selectedAssignment?.id}
         onGradeSaved={async () => {
           // Refresh both roster submissions and main list analytics

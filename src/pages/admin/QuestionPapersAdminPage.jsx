@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import MainCard from "../../components/MainCard";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 import { questionPaperService } from "../../services/questionPaperService";
 import QuestionPaperPreview from "../../modules/question-papers/QuestionPaperPreview";
 import { 
@@ -119,6 +121,8 @@ const QuestionPapersAdminPage = () => {
         description="Review and manage academic question papers submitted by the faculty."
         icon={FileCheck}
       />
+      
+      <PageAuthorityBanner moduleId="admin_question_papers" moduleName="Question Papers" />
 
       {/* Analytics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -348,20 +352,24 @@ const QuestionPapersAdminPage = () => {
                 </button>
                 {viewPaper.status === "Submitted" && (
                   <>
-                    <button
-                      onClick={() => handleAction("Rejected")}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 text-[10px] font-black uppercase tracking-widest transition-colors"
-                    >
-                      <XCircle size={14} />
-                      Reject
-                    </button>
-                    <button
-                      onClick={() => handleAction("Approved")}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#03045e] text-white hover:bg-[#03045e]/90 shadow-lg text-[10px] font-black uppercase tracking-widest transition-colors"
-                    >
-                      <Check size={14} />
-                      Approve Paper
-                    </button>
+                    <PermissionGate moduleId="admin_question_papers" permission="approve" mode="hidden">
+                      <button
+                        onClick={() => handleAction("Rejected")}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 text-[10px] font-black uppercase tracking-widest transition-colors"
+                      >
+                        <XCircle size={14} />
+                        Reject
+                      </button>
+                    </PermissionGate>
+                    <PermissionGate moduleId="admin_question_papers" permission="approve" mode="hidden">
+                      <button
+                        onClick={() => handleAction("Approved")}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#03045e] text-white hover:bg-[#03045e]/90 shadow-lg text-[10px] font-black uppercase tracking-widest transition-colors"
+                      >
+                        <Check size={14} />
+                        Approve Paper
+                      </button>
+                    </PermissionGate>
                   </>
                 )}
               </div>

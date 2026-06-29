@@ -11,6 +11,8 @@ import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import AdminStatCard from "../../components/admin/AdminStatCard";
 import MainCard from "../../components/MainCard";
 import AudienceSelector from "../../components/shared/AudienceSelector";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 
 // ─── School Structure ─────────────────────────────────────────────────────────
 
@@ -287,17 +289,21 @@ const CommunicationCenterPage = () => {
               <LayoutGrid size={15} />
               Templates
             </button>
-            <button
-              type="button"
-              onClick={() => setActiveSection("composer")}
-              className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#03045e] text-white px-5 py-2.5 rounded-2xl shadow-lg shadow-[#0077b6]/20 text-xs font-black transition-all"
-            >
-              <Plus size={15} />
-              New Campaign
-            </button>
+            <PermissionGate moduleId="admin_communications" permission="create" mode="hidden">
+              <button
+                type="button"
+                onClick={() => setActiveSection("composer")}
+                className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#03045e] text-white px-5 py-2.5 rounded-2xl shadow-lg shadow-[#0077b6]/20 text-xs font-black transition-all"
+              >
+                <Plus size={15} />
+                New Campaign
+              </button>
+            </PermissionGate>
           </div>
         }
       />
+      
+      <PageAuthorityBanner moduleId="admin_communications" moduleName="Communication Center" />
 
       {/* ── Stat Cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -514,16 +520,18 @@ const CommunicationCenterPage = () => {
                   )}
 
                   <div className="flex items-center gap-3 flex-wrap">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      type="button"
-                      onClick={handleSendCampaign}
-                      className="flex items-center gap-2 px-6 py-3 bg-[#0077b6] hover:bg-[#03045e] text-white rounded-2xl text-xs font-black shadow-lg shadow-[#0077b6]/25 transition-all"
-                    >
-                      <Send size={14} />
-                      {sendTiming === "now" ? "Send Campaign" : sendTiming === "schedule" ? "Schedule Campaign" : "Save Draft"}
-                    </motion.button>
+                    <PermissionGate moduleId="admin_communications" permission="create" mode="disabled">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
+                        type="button"
+                        onClick={handleSendCampaign}
+                        className="flex items-center gap-2 px-6 py-3 bg-[#0077b6] hover:bg-[#03045e] text-white rounded-2xl text-xs font-black shadow-lg shadow-[#0077b6]/25 transition-all"
+                      >
+                        <Send size={14} />
+                        {sendTiming === "now" ? "Send Campaign" : sendTiming === "schedule" ? "Schedule Campaign" : "Save Draft"}
+                      </motion.button>
+                    </PermissionGate>
                     <p className="text-[9px] text-gray-400 font-bold">
                       {Object.values(audienceObj).some(arr => arr.length > 0)
                         ? "Audience selected."
@@ -623,8 +631,12 @@ const CommunicationCenterPage = () => {
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1">
                               <button type="button" onClick={() => setPreviewCampaign(camp)} className="p-1.5 rounded-lg bg-[#caf0f8]/20 text-[#0077b6] hover:bg-[#0077b6] hover:text-white transition-colors" title="Preview"><Eye size={13} /></button>
-                              <button type="button" onClick={() => handleDuplicate(camp)} className="p-1.5 rounded-lg bg-[#caf0f8]/20 text-[#0077b6] hover:bg-[#0077b6] hover:text-white transition-colors" title="Duplicate"><Copy size={13} /></button>
-                              <button type="button" onClick={() => handleArchive(camp.id)} className="p-1.5 rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-500 hover:text-white transition-colors" title="Archive"><Archive size={13} /></button>
+                              <PermissionGate moduleId="admin_communications" permission="create" mode="hidden">
+                                <button type="button" onClick={() => handleDuplicate(camp)} className="p-1.5 rounded-lg bg-[#caf0f8]/20 text-[#0077b6] hover:bg-[#0077b6] hover:text-white transition-colors" title="Duplicate"><Copy size={13} /></button>
+                              </PermissionGate>
+                              <PermissionGate moduleId="admin_communications" permission="delete" mode="hidden">
+                                <button type="button" onClick={() => handleArchive(camp.id)} className="p-1.5 rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-500 hover:text-white transition-colors" title="Archive"><Archive size={13} /></button>
+                              </PermissionGate>
                             </div>
                           </td>
                         </motion.tr>
@@ -666,13 +678,15 @@ const CommunicationCenterPage = () => {
                         <span key={tag} className="px-2 py-0.5 rounded-full bg-[#caf0f8]/40 text-[#0077b6] text-[8px] font-black uppercase tracking-wider">{tag}</span>
                       ))}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleLoadTemplate(tpl)}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#caf0f8]/30 border border-[#caf0f8] text-[#0077b6] text-[10px] font-black hover:bg-[#0077b6] hover:text-white hover:border-[#0077b6] group-hover:bg-[#0077b6] group-hover:text-white group-hover:border-[#0077b6] transition-all"
-                    >
-                      <ChevronRight size={13} />Use Template
-                    </button>
+                    <PermissionGate moduleId="admin_communications" permission="create" mode="hidden">
+                      <button
+                        type="button"
+                        onClick={() => handleLoadTemplate(tpl)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#caf0f8]/30 border border-[#caf0f8] text-[#0077b6] text-[10px] font-black hover:bg-[#0077b6] hover:text-white hover:border-[#0077b6] group-hover:bg-[#0077b6] group-hover:text-white group-hover:border-[#0077b6] transition-all"
+                      >
+                        <ChevronRight size={13} />Use Template
+                      </button>
+                    </PermissionGate>
                   </MainCard>
                 </motion.div>
               ))}

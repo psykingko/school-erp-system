@@ -124,7 +124,7 @@ const ProfileDropdown = React.memo(function ProfileDropdown({ student, t, onNavi
             {student?.name || student?.fullName || t("common.student")}
           </p>
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            {student?.admissionNumber || student?.admissionNo || "Student"}
+            {student?.admissionNumber || student?.admissionNo || t("common.student")}
           </p>
         </div>
       </div>
@@ -223,8 +223,8 @@ const Header = React.memo(function Header({ student, notifications = [], current
             </div>
           )}
 
-          {/* Language Toggle - Only visible for Parents */}
-          {role === ROLES.PARENT && (
+          {/* Language Toggle - Visible for Parents and Teachers */}
+          {(role === ROLES.PARENT || role === ROLES.TEACHER) && (
             <LanguageToggle lang={lang} setLang={setLang} />
           )}
 
@@ -246,7 +246,7 @@ const Header = React.memo(function Header({ student, notifications = [], current
             }}
           >
             <RotateCcw size={15} className="transition-transform duration-500" />
-            <span className="hidden sm:inline">RESET ERP</span>
+            <span className="hidden sm:inline">{t("header.resetErp")}</span>
           </motion.button>
 
           {/* Notification bell */}

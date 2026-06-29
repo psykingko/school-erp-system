@@ -1,8 +1,10 @@
 import React from "react";
 import { ChevronRight, ShieldAlert, Award, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function StudentMentorshipTable({ studentsData, onSelectStudent }) {
+  const { t } = useLanguage();
   // Styles for Academic Status
   const STATUS_STYLES = {
     Excellent: "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -23,20 +25,20 @@ export default function StudentMentorshipTable({ studentsData, onSelectStudent }
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50/50">
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest pl-6">Student Info</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Class Section</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Attendance</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Academic Status</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Wellbeing Indicators</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Follow-ups</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest pr-6 text-right">Actions</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest pl-6">{t("common.studentInfo", { fallback: "Student Info" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("common.classSection", { fallback: "Class Section" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t("common.attendance", { fallback: "Attendance" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t("mentorSupport.academicStatus", { fallback: "Academic Status" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("mentorSupport.wellbeingIndicators", { fallback: "Wellbeing Indicators" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t("mentorSupport.followUps", { fallback: "Follow-ups" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest pr-6 text-right">{t("common.actions", { fallback: "Actions" })}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {studentsData.length === 0 ? (
               <tr>
                 <td colSpan="7" className="p-8 text-center text-xs font-bold text-gray-400 italic">
-                   No students currently mapped to your mentorship circle.
+                   {t("mentorSupport.noStudents", { fallback: "No students currently mapped to your mentorship circle." })}
                 </td>
               </tr>
             ) : (
@@ -69,7 +71,7 @@ export default function StudentMentorshipTable({ studentsData, onSelectStudent }
                     {/* Homeroom section */}
                     <td className="p-4">
                       <span className="text-xs font-extrabold text-gray-600 bg-gray-50 border px-2.5 py-1 rounded-xl">
-                        Class {student.className || "11"}
+                        {t("common.class", { fallback: "Class" })} {student.className || "11"}
                       </span>
                     </td>
 
@@ -95,7 +97,7 @@ export default function StudentMentorshipTable({ studentsData, onSelectStudent }
                         {wellbeing.length === 0 ? (
                           <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
                             <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                            <span>Healthy</span>
+                            <span>{t("mentorSupport.healthy", { fallback: "Healthy" })}</span>
                           </span>
                         ) : (
                           wellbeing.map((flag, fIdx) => (
@@ -115,7 +117,7 @@ export default function StudentMentorshipTable({ studentsData, onSelectStudent }
                     <td className="p-4 text-center">
                       {followUpsCount > 0 ? (
                         <span className="inline-block text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-lg animate-pulse">
-                          {followUpsCount} Pending
+                          {followUpsCount} {t("mentorSupport.pending", { fallback: "Pending" })}
                         </span>
                       ) : (
                         <span className="text-xs font-bold text-gray-300">-</span>
@@ -128,7 +130,7 @@ export default function StudentMentorshipTable({ studentsData, onSelectStudent }
                         onClick={() => onSelectStudent(student)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#03045e] hover:bg-[#0077b6] text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm"
                       >
-                        <span>Guidance File</span>
+                        <span>{t("mentorSupport.guidanceFile", { fallback: "Guidance File" })}</span>
                         <ChevronRight className="w-3 h-3" />
                       </button>
                     </td>

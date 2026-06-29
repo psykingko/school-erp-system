@@ -6,6 +6,7 @@ import {
 } from "./teacherService";
 import { getAssignmentsByTeacher } from "./assignmentService";
 import { getUpdatesForTeacher } from "./classUpdatesService";
+import { getLeavesForTeacherApproval } from "./leaveService";
 
 // ── Inlined from teacherActionCenterService ─────────────────────────────────
 const actionItemsCache = new Map();
@@ -361,9 +362,116 @@ export const clearTeacherDashboardCache = (teacherId) => {
   }
 };
 
+/**
+ * getTeacherAnalytics
+ *
+ * Provides analytical data for ReportsAnalyticsPage without localStorage usage.
+ */
+export const getTeacherAnalytics = async (teacherId) => {
+  const tId = teacherId || "teach-001";
+  const provider = getDataProvider();
+
+  const [
+    workload,
+    assignmentList,
+    leaveList,
+    allAttendance,
+    allResults,
+    allExams
+  ] = await Promise.all([
+    teacherScheduleService.getClassTeacherResponsibilities(tId), // actually teacherService.getTeacherWorkload(tId), but let's use provider
+    getAssignmentsByTeacher(tId),
+    getLeavesForTeacherApproval(tId),
+    provider.getDailyAttendance(),
+    provider.getResults(),
+    provider.getExams()
+  ]);
+
+  const homeroomClass = workload?.classId ? { id: workload.classId } : null;
+
+  // ─── Attendance Analytics ────────────────────────────────────
+  let attendanceRate = 0;
+  let totalStudents = 0;
+  let presentToday = 0;
+  let weeklyRate = 0;
+
+  if (homeroomClass) {
+    const studentList = await provider.getStudentsByClass(homeroomClass.id);
+    totalStudents = studentList.length;
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    const classAttendance = allAttendance.filter(
+      (a) => a.classId === homeroomClass.id
+    );
+
+    const todayRecords = classAttendance.filter((a) => a.date === todayStr);
+    presentToday = todayRecords.filter((a) => a.status === "PRESENT").length;
+
+    // Weekly rate (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const weeklyRecords = classAttendance.filter((a) => {
+      const d = new Date(a.date);
+      return d >= sevenDaysAgo && (a.status === "PRESENT" || a.status === "ABSENT");
+    });
+    const weeklyPresent = weeklyRecords.filter((a) => a.status === "PRESENT").length;
+    weeklyRate = weeklyRecords.length > 0
+      ? Math.round((weeklyPresent / weeklyRecords.length) * 100)
+      : 0;
+
+    attendanceRate = totalStudents > 0 && todayRecords.length > 0
+      ? Math.round((presentToday / totalStudents) * 100)
+      : weeklyRate;
+  }
+
+  // ─── Assignment Analytics ─────────────────────────────────────
+  const totalAssignments = assignmentList.length;
+  let submittedAssignments = 0;
+  let gradedAssignments = 0;
+
+  assignmentList.forEach((a) => {
+    submittedAssignments += a.submissionsCount || 0;
+    gradedAssignments += a.gradedCount || 0;
+  });
+
+  const gradingCoverage =
+    submittedAssignments > 0
+      ? Math.round((gradedAssignments / submittedAssignments) * 100)
+      : 0;
+
+  // ─── Leave Analytics ──────────────────────────────────────────
+  const pendingLeaves = leaveList.filter((l) => l.status === "PENDING").length;
+  const approvedLeaves = leaveList.filter((l) => l.status === "APPROVED").length;
+  const rejectedLeaves = leaveList.filter((l) => l.status === "REJECTED").length;
+
+  // ─── Marks Coverage ───────────────────────────────────────────
+  const teacherResults = allResults.filter((r) => r.teacherId === tId);
+  const examsWithMarks = new Set(teacherResults.map((r) => r.examId)).size;
+
+  return {
+    attendanceRate,
+    totalStudents,
+    presentToday,
+    weeklyRate,
+    totalAssignments,
+    submittedAssignments,
+    gradedAssignments,
+    gradingCoverage,
+    pendingLeaves,
+    approvedLeaves,
+    rejectedLeaves,
+    totalMarksEntries: teacherResults.length,
+    examsWithMarks,
+    totalExams: allExams.length,
+    assignments: assignmentList.slice(0, 5),
+    leaves: leaveList.filter((l) => l.status === "PENDING").slice(0, 5),
+  };
+};
+
 export const teacherDashboardService = {
   getCriticalTeacherDashboardData,
   getDeferredTeacherDashboardData,
   getTeacherDashboardData,
   clearTeacherDashboardCache,
+  getTeacherAnalytics,
 };

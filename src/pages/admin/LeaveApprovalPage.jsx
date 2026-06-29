@@ -15,8 +15,7 @@ import {
 import MainCard from "../../components/MainCard";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import OperationsStatCard from "../../components/admin/operations/OperationsStatCard";
-import { getAllLeaveRequests, updateLeaveStatus } from "../../services/leaveService";
-import { getDataProvider } from "../../data/providers/providerFactory";
+import { getAllLeaveRequests, updateLeaveStatus, getLeaveApproverInfo } from "../../services/leaveService";
 
 const LeaveApprovalPage = () => {
   const [leaves, setLeaves] = useState([]);
@@ -42,24 +41,10 @@ const LeaveApprovalPage = () => {
       const data = await getAllLeaveRequests();
       setLeaves(data);
 
-      // 2. Fetch Approver Info (Display Only)
-      const provider = getDataProvider();
-      const settings = await provider.getApprovalSettings();
-      const leaveSetting = settings?.find(s => s.moduleName === "Leave Management" || s.module === "leave_management");
-      
-      if (leaveSetting && leaveSetting.approverEmployeeId) {
-        const empId = leaveSetting.approverEmployeeId;
-        const allEmp = await provider.getEmployees();
-        const approver = allEmp.find(e => e.employeeId === empId);
-        if (approver) {
-          setApproverInfo({
-            id: approver.employeeId,
-            name: approver.employeeName,
-            designation: approver.designation || "HR Manager"
-          });
-        } else {
-          setApproverInfo({ id: empId, name: "Unknown Approver", designation: "HR" });
-        }
+      // 2. Fetch Approver Info
+      const approver = await getLeaveApproverInfo();
+      if (approver) {
+        setApproverInfo(approver);
       }
     } catch (err) {
       console.error(err);

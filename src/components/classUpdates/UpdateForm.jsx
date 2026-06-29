@@ -3,8 +3,10 @@ import { getItem } from "../../persistence/storage";
 import { STORAGE_KEYS } from "../../persistence/storageKeys";
 import { createClassUpdate } from "../../services/classUpdatesService";
 import { Send, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
+  const { t } = useLanguage();
   const teacherId = teacherProfile?.id || "teach-001";
 
   // Form Fields
@@ -157,10 +159,10 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-[2rem] border border-indigo-100 shadow-sm space-y-5">
       <div className="border-b pb-2">
         <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-          Publish Class Academic Update
+          {t("updates.publishUpdate", { fallback: "Publish Class Academic Update" })}
         </h3>
         <p className="text-[10px] font-bold text-gray-400 mt-0.5">
-          Academic notices are sent directly to the targeted student and parent feeds.
+          {t("updates.academicNoticesHelp", { fallback: "Academic notices are sent directly to the targeted student and parent feeds." })}
         </p>
       </div>
 
@@ -181,7 +183,7 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
       <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-4">
         {/* Class Selection */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Target Class</label>
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("updates.targetClass", { fallback: "Target Class" })}</label>
           <select
             value={selectedClass}
             onChange={(e) => handleClassChange(e.target.value)}
@@ -198,7 +200,7 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
 
         {/* Subject Selection */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Subject</label>
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("updates.subject", { fallback: "Subject" })}</label>
           <select
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
@@ -213,42 +215,42 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
 
         {/* Category Selector */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</label>
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("updates.category", { fallback: "Category" })}</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="w-full p-2.5 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold text-xs focus:outline-none appearance-none cursor-pointer"
           >
-            <option value="HOMEWORK">Homework Reminder</option>
-            <option value="EXAM">Exam / Assessment Notice</option>
-            <option value="REMINDER">General Reminder</option>
-            <option value="MENTOR">Mentor support Alert</option>
-            <option value="CLASS_NOTICE">Classroom Announcement</option>
-            <option value="PARENT_MEETING">Parent Meeting Circular</option>
+            <option value="HOMEWORK">{t("updates.catHomework", { fallback: "Homework Reminder" })}</option>
+            <option value="EXAM">{t("updates.catExam", { fallback: "Exam / Assessment Notice" })}</option>
+            <option value="REMINDER">{t("updates.catReminder", { fallback: "General Reminder" })}</option>
+            <option value="MENTOR">{t("updates.catMentor", { fallback: "Mentor support Alert" })}</option>
+            <option value="CLASS_NOTICE">{t("updates.catClassNotice", { fallback: "Classroom Announcement" })}</option>
+            <option value="PARENT_MEETING">{t("updates.catParentMeeting", { fallback: "Parent Meeting Circular" })}</option>
           </select>
         </div>
 
         {/* Priority Level */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Priority</label>
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("updates.priority", { fallback: "Priority" })}</label>
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
             className="w-full p-2.5 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold text-xs focus:outline-none appearance-none cursor-pointer"
           >
-            <option value="LOW">Low</option>
-            <option value="NORMAL">Normal</option>
-            <option value="IMPORTANT">Important</option>
+            <option value="LOW">{t("updates.priorityLow", { fallback: "Low" })}</option>
+            <option value="NORMAL">{t("updates.priorityNormal", { fallback: "Normal" })}</option>
+            <option value="IMPORTANT">{t("updates.priorityImportant", { fallback: "Important" })}</option>
           </select>
         </div>
       </div>
 
       {/* Title input */}
       <div className="space-y-1.5">
-        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Update Title</label>
+        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("updates.updateTitle", { fallback: "Update Title" })}</label>
         <input
           type="text"
-          placeholder="Enter a brief summary (e.g., Homework Ch 4, Lab Guidelines...)"
+          placeholder={t("updates.titlePlaceholder", { fallback: "Enter a brief summary (e.g., Homework Ch 4, Lab Guidelines...)" })}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="w-full p-2.5 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold text-xs focus:outline-none focus:border-indigo-100 transition-colors"
@@ -259,10 +261,10 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
 
       {/* Message textarea */}
       <div className="space-y-1.5">
-        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Academic Message</label>
+        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("updates.academicMessage", { fallback: "Academic Message" })}</label>
         <textarea
           rows="3"
-          placeholder="Compose detailed operational information..."
+          placeholder={t("updates.messagePlaceholder", { fallback: "Compose detailed operational information..." })}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="w-full p-3 rounded-2xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold text-xs focus:outline-none focus:border-indigo-100 transition-colors resize-none"
@@ -273,7 +275,7 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
       {/* Visibility Scope & Submit */}
       <div className="flex flex-col gap-4 pt-4 border-t border-gray-100">
         <div className="flex items-center gap-4">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Visibility Scope:</span>
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("updates.visibilityScope", { fallback: "Visibility Scope:" })}</span>
           
           <label className="flex items-center gap-1.5 cursor-pointer select-none">
             <input
@@ -282,7 +284,7 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
               onChange={(e) => setVisibleToStudents(e.target.checked)}
               className="rounded text-indigo-600 focus:ring-indigo-200 border-gray-200 cursor-pointer w-4 h-4"
             />
-            <span className="text-xs font-bold text-[#03045e]">Students</span>
+            <span className="text-xs font-bold text-[#03045e]">{t("updates.students", { fallback: "Students" })}</span>
           </label>
 
           <label className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -292,7 +294,7 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
               onChange={(e) => setVisibleToParents(e.target.checked)}
               className="rounded text-indigo-600 focus:ring-indigo-200 border-gray-200 cursor-pointer w-4 h-4"
             />
-            <span className="text-xs font-bold text-[#03045e]">Parents</span>
+            <span className="text-xs font-bold text-[#03045e]">{t("updates.parents", { fallback: "Parents" })}</span>
           </label>
         </div>
 
@@ -301,7 +303,7 @@ export default function UpdateForm({ teacherProfile, onPublishSuccess }) {
           disabled={loading || !title.trim() || !message.trim()}
           className="w-full py-3 bg-[#03045e] hover:bg-indigo-900 text-white rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-md shadow-indigo-100/50"
         >
-          {loading ? "Publishing..." : "Publish Circular"}
+          {loading ? t("updates.publishing", { fallback: "Publishing..." }) : t("updates.publishCircular", { fallback: "Publish Circular" })}
           <Send className="w-3.5 h-3.5" />
         </button>
       </div>

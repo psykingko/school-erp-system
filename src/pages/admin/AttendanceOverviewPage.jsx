@@ -10,6 +10,8 @@ import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
 import AdminDataTable from "../../components/admin/AdminDataTable";
 import attendanceGovernanceService from "../../services/attendanceGovernanceService";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 
 const AttendanceOverviewPage = () => {
   const navigate = useNavigate();
@@ -174,6 +176,8 @@ const AttendanceOverviewPage = () => {
         breadcrumbs={["Admin Portal", "Operations", "Attendance Overview"]}
       />
 
+      <PageAuthorityBanner moduleId="admin_attendance" moduleName="Attendance Governance" />
+
       {successBanner && (
         <motion.div 
           initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -231,14 +235,16 @@ const AttendanceOverviewPage = () => {
                     <option value="appreciation">&gt;= {data.settings.appreciationThreshold}% (Appreciation Candidate)</option>
                   </select>
 
-                  <button
-                    onClick={handleSendNotification}
-                    disabled={selectedStudentIds.length === 0}
-                    className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] disabled:bg-gray-300 text-white px-4 py-2 rounded-xl shadow-sm text-xs font-black transition-colors"
-                  >
-                    <Send size={14} />
-                    <span>Send Notification ({selectedStudentIds.length})</span>
-                  </button>
+                  <PermissionGate moduleId="admin_attendance" permission="publish" mode="disabled">
+                    <button
+                      onClick={handleSendNotification}
+                      disabled={selectedStudentIds.length === 0}
+                      className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] disabled:bg-gray-300 text-white px-4 py-2 rounded-xl shadow-sm text-xs font-black transition-colors"
+                    >
+                      <Send size={14} />
+                      <span>Send Notification ({selectedStudentIds.length})</span>
+                    </button>
+                  </PermissionGate>
                 </div>
               </div>
               
@@ -317,13 +323,15 @@ const AttendanceOverviewPage = () => {
                   <Settings className="text-[#03045e]" size={20} />
                   <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">Intervention Rules Configuration</h3>
                 </div>
-                <button
-                  onClick={handleSaveSettings}
-                  className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] text-white px-4 py-2 rounded-xl shadow-sm text-xs font-black transition-colors"
-                >
-                  <Save size={14} />
-                  <span>Save Rules</span>
-                </button>
+                <PermissionGate moduleId="admin_attendance" permission="edit" mode="disabled">
+                  <button
+                    onClick={handleSaveSettings}
+                    className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] text-white px-4 py-2 rounded-xl shadow-sm text-xs font-black transition-colors"
+                  >
+                    <Save size={14} />
+                    <span>Save Rules</span>
+                  </button>
+                </PermissionGate>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">

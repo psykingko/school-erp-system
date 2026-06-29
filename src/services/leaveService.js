@@ -591,4 +591,24 @@ export const updateLeaveStatus = async (leaveId, newStatus, approverEmployeeId) 
   });
 };
 
-
+export const getLeaveApproverInfo = async () => {
+  const provider = getDataProvider();
+  const settings = await provider.getApprovalSettings();
+  const leaveSetting = settings?.find(s => s.moduleName === "Leave Management" || s.module === "leave_management");
+  
+  if (leaveSetting && leaveSetting.approverEmployeeId) {
+    const empId = leaveSetting.approverEmployeeId;
+    const allEmp = await provider.getEmployees();
+    const approver = allEmp.find(e => e.employeeId === empId);
+    if (approver) {
+      return {
+        id: approver.employeeId,
+        name: approver.employeeName,
+        designation: approver.designation || "HR Manager"
+      };
+    } else {
+      return { id: empId, name: "Unknown Approver", designation: "HR" };
+    }
+  }
+  return null;
+};

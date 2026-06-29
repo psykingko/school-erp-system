@@ -13,6 +13,7 @@ import MainCard from "../../components/MainCard";
 import TeacherDataTable from "../../components/teacher/TeacherDataTable";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Save, AlertCircle, X } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 /**
  * MarksExamsPage
@@ -22,6 +23,7 @@ import { CheckCircle, Save, AlertCircle, X } from "lucide-react";
  */
 const MarksExamsPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   // Selection State
   const [selectedClass, setSelectedClass] = useState("");
@@ -186,7 +188,7 @@ const MarksExamsPage = () => {
       setPublishedAt(new Date());
     } catch (err) {
       console.error("Failed to save marks:", err);
-      setError("Failed to publish marks. Please try again.");
+      setError(t("marksExams.publishFailed", { fallback: "Failed to publish marks. Please try again." }));
     } finally {
       setSubmitting(false);
     }
@@ -194,17 +196,17 @@ const MarksExamsPage = () => {
 
   const columns = [
     {
-      header: "Adm No.",
+      header: t("marksExams.admNo", { fallback: "Adm No." }),
       accessor: "admissionNo",
       className: "w-24",
     },
     {
-      header: "Student Name",
+      header: t("marksExams.studentName", { fallback: "Student Name" }),
       accessor: "name",
       className: "w-64",
     },
     {
-      header: "Theory Marks (100)",
+      header: t("marksExams.theoryMarks", { fallback: "Theory Marks (100)" }),
       render: (row) => (
         <input
           type="number"
@@ -220,7 +222,7 @@ const MarksExamsPage = () => {
       className: "w-32",
     },
     {
-      header: "Practical Marks (30)",
+      header: t("marksExams.practicalMarks", { fallback: "Practical Marks (30)" }),
       render: (row) => (
         <input
           type="number"
@@ -236,7 +238,7 @@ const MarksExamsPage = () => {
       className: "w-32",
     },
     {
-      header: "Mark Absent",
+      header: t("marksExams.markAbsent", { fallback: "Mark Absent" }),
       render: (row) => (
         <label className="flex items-center gap-1.5 cursor-pointer">
           <input
@@ -246,20 +248,20 @@ const MarksExamsPage = () => {
             onChange={(e) => handleMarkChange(row.id, "isAbsent", e.target.checked)}
             className="w-4 h-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500 cursor-pointer"
           />
-          <span className="text-[10px] uppercase font-black text-rose-500">Absent</span>
+          <span className="text-[10px] uppercase font-black text-rose-500">{t("marksExams.absent", { fallback: "Absent" })}</span>
         </label>
       ),
       className: "w-28",
     },
     {
-      header: "Academic Remarks",
+      header: t("marksExams.academicRemarks", { fallback: "Academic Remarks" }),
       render: (row) => (
         <input
           type="text"
           disabled={!isEvaluationActive}
           value={marks[row.id]?.remarks || ""}
           onChange={(e) => handleMarkChange(row.id, "remarks", e.target.value)}
-          placeholder="e.g. Excellent progress"
+          placeholder={t("marksExams.remarksPlaceholder", { fallback: "e.g. Excellent progress" })}
           className="w-full px-3 py-2 bg-[#f8fdff] border border-[#caf0f8] rounded-lg text-[#03045e] font-medium focus:outline-none focus:ring-2 focus:ring-[#00b4d8]/20 transition-all placeholder:text-[#90e0ef] disabled:bg-gray-50 disabled:text-gray-400"
         />
       ),
@@ -270,7 +272,7 @@ const MarksExamsPage = () => {
     <div className="space-y-8 pb-12">
       <TeacherModuleHeader
         titleKey="nav.marks_exams"
-        descriptionKey="Enterprise examination management and mark entry terminal."
+        descriptionKey="marksExams.moduleDesc"
         helperContentEn="Select your class and subject to enter examination marks. All data is saved to the central ERP repository in real-time."
         helperContentHi="परीक्षा के अंक दर्ज करने के लिए अपनी कक्षा और विषय चुनें। सभी डेटा वास्तविक समय में केंद्रीय ERP रिपॉजिटरी में सहेजा जाता है।"
       />
@@ -281,14 +283,14 @@ const MarksExamsPage = () => {
           {/* Class Selector */}
           <div className="space-y-2">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              Target Class
+              {t("marksExams.targetClass", { fallback: "Target Class" })}
             </label>
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
               className="w-full p-3 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all cursor-pointer"
             >
-              <option value="">Select Class</option>
+              <option value="">{t("marksExams.selectClass", { fallback: "Select Class" })}</option>
               {Array.from(new Map(workload?.assignedSubjects?.map(a => [a.classId, { id: a.classId, displayName: a.displayName }])).values()).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.displayName}
@@ -300,14 +302,14 @@ const MarksExamsPage = () => {
           {/* Subject Selector */}
           <div className="space-y-2">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              Subject Terminal
+              {t("marksExams.subjectTerminal", { fallback: "Subject Terminal" })}
             </label>
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
               className="w-full p-3 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all cursor-pointer"
             >
-              <option value="">Select Subject</option>
+              <option value="">{t("marksExams.selectSubject", { fallback: "Select Subject" })}</option>
               {workload?.assignedSubjects?.filter(a => a.classId === selectedClass).map((sub) => (
                 <option key={sub.subjectId} value={sub.subjectId}>
                   {sub.subjectName || sub.subjectId}
@@ -319,14 +321,14 @@ const MarksExamsPage = () => {
           {/* Exam Selector */}
           <div className="space-y-2">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              Examination Type
+              {t("marksExams.examType", { fallback: "Examination Type" })}
             </label>
             <select
               value={selectedExam}
               onChange={(e) => setSelectedExam(e.target.value)}
               className="w-full p-3 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all cursor-pointer"
             >
-              <option value="">Select Examination</option>
+              <option value="">{t("marksExams.selectExam", { fallback: "Select Examination" })}</option>
               {exams.map((ex) => (
                 <option key={ex.id} value={ex.id}>
                   {ex.name}
@@ -349,10 +351,10 @@ const MarksExamsPage = () => {
             <div className="flex justify-between items-center px-2">
               <div>
                 <h3 className="text-xl font-black text-[#03045e]">
-                  Academic Scoreboard
+                  {t("marksExams.scoreboard", { fallback: "Academic Scoreboard" })}
                 </h3>
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                  Entry terminal for {students.length} students
+                  {t("marksExams.entryTerminalFor", { fallback: "Entry terminal for" })} {students.length} {t("marksExams.students", { fallback: "students" })}
                 </p>
               </div>
 
@@ -368,16 +370,16 @@ const MarksExamsPage = () => {
                 }`}
               >
                 {submitting ? (
-                  "Publishing..."
+                  t("marksExams.publishing", { fallback: "Publishing..." })
                 ) : publishedAt ? (
                   <>
                     <CheckCircle className="w-4 h-4" />
-                    Published to ERP
+                    {t("marksExams.published", { fallback: "Published to ERP" })}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    Publish to ERP
+                    {t("marksExams.publish", { fallback: "Publish to ERP" })}
                   </>
                 )}
               </button>
@@ -392,7 +394,7 @@ const MarksExamsPage = () => {
               >
                 <AlertCircle className="shrink-0 w-5 h-5 text-amber-500" />
                 <span>
-                  <strong>Marks Entry Closed:</strong> Marks entry is locked because the selected exam cycle is not active.
+                  <strong>{t("marksExams.entryClosedTitle", { fallback: "Marks Entry Closed:" })}</strong> {t("marksExams.entryClosedMsg", { fallback: "Marks entry is locked because the selected exam cycle is not active." })}
                 </span>
               </motion.div>
             )}
@@ -406,14 +408,14 @@ const MarksExamsPage = () => {
               >
                 <CheckCircle className="shrink-0 w-5 h-5" />
                 <span>
-                  Marks published to ERP at{" "}
+                  {t("marksExams.publishedAt", { fallback: "Marks published to ERP at" })}{" "}
                   <strong>
                     {publishedAt.toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </strong>
-                  . Student portals will reflect these marks on next refresh.
+                  {t("marksExams.publishedMsg", { fallback: ". Student portals will reflect these marks on next refresh." })}
                 </span>
               </motion.div>
             )}
@@ -440,7 +442,7 @@ const MarksExamsPage = () => {
               columns={columns}
               data={students}
               loading={loading}
-              emptyMessage="Select class criteria to load students."
+              emptyMessage={t("marksExams.emptyMessage", { fallback: "Select class criteria to load students." })}
             />
           </motion.div>
         )}

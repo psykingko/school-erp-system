@@ -11,6 +11,7 @@ import {
   updateLeaveType, deactivateLeaveType, reactivateLeaveType 
 } from "../../services/leavePortfolioService";
 import { formatDate } from "../../shared/utils/attendanceHelpers";
+import PermissionGate from "../../components/admin/PermissionGate";
 
 const LeavePortfolioPage = () => {
   const [portfolios, setPortfolios] = useState([]);
@@ -206,13 +207,15 @@ const LeavePortfolioPage = () => {
             </select>
           </div>
           
-          <button
-            onClick={() => handleOpenForm()}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 px-6 py-2.5 bg-[#0077b6] text-white rounded-xl text-sm font-bold hover:bg-[#03045e] transition-colors shadow-lg shadow-[#0077b6]/20"
-          >
-            <Plus size={18} />
-            Create Leave Type
-          </button>
+          <PermissionGate moduleId="admin_leave_management" permission="create" mode="hidden">
+            <button
+              onClick={() => handleOpenForm()}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 px-6 py-2.5 bg-[#0077b6] text-white rounded-xl text-sm font-bold hover:bg-[#03045e] transition-colors shadow-lg shadow-[#0077b6]/20"
+            >
+              <Plus size={18} />
+              Create Leave Type
+            </button>
+          </PermissionGate>
         </div>
 
         <div className="overflow-x-auto">
@@ -272,26 +275,30 @@ const LeavePortfolioPage = () => {
                     </span>
                   </td>
                   <td className="py-4 px-6">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleOpenForm(p); }}
-                        className="p-2 text-gray-400 hover:text-[#0077b6] hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit Leave Type"
-                      >
-                        <Edit2 size={16} />
-                      </button>
+                    <div className="flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
+                      <PermissionGate moduleId="admin_leave_management" permission="edit" mode="hidden">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleOpenForm(p); }}
+                          className="p-2 text-gray-400 hover:text-[#0077b6] hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit Leave Type"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      </PermissionGate>
                       
-                      <button 
-                        onClick={(e) => handleToggleActive(e, p)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          p.isActive 
-                            ? 'text-gray-400 hover:text-rose-500 hover:bg-rose-50' 
-                            : 'text-gray-400 hover:text-emerald-500 hover:bg-emerald-50'
-                        }`}
-                        title={p.isActive ? "Deactivate" : "Reactivate"}
-                      >
-                        {p.isActive ? <PowerOff size={16} /> : <Power size={16} />}
-                      </button>
+                      <PermissionGate moduleId="admin_leave_management" permission="edit" mode="hidden">
+                        <button 
+                          onClick={(e) => handleToggleActive(e, p)}
+                          className={`p-2 rounded-lg transition-colors ${
+                            p.isActive 
+                              ? 'text-gray-400 hover:text-rose-500 hover:bg-rose-50' 
+                              : 'text-gray-400 hover:text-emerald-500 hover:bg-emerald-50'
+                          }`}
+                          title={p.isActive ? "Deactivate" : "Reactivate"}
+                        >
+                          {p.isActive ? <PowerOff size={16} /> : <Power size={16} />}
+                        </button>
+                      </PermissionGate>
                     </div>
                   </td>
                 </tr>
@@ -509,15 +516,17 @@ const LeavePortfolioPage = () => {
               </div>
               
               <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-between">
-                 <button
-                  onClick={() => {
-                    setShowDetailModal(false);
-                    handleOpenForm(activePortfolio);
-                  }}
-                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-[#03045e] hover:bg-[#0077b6] transition-colors"
-                >
-                  Edit Configuration
-                </button>
+                 <PermissionGate moduleId="admin_leave_management" permission="edit" mode="hidden">
+                   <button
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      handleOpenForm(activePortfolio);
+                    }}
+                    className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-[#03045e] hover:bg-[#0077b6] transition-colors"
+                  >
+                    Edit Configuration
+                  </button>
+                 </PermissionGate>
                 <button
                   onClick={() => setShowDetailModal(false)}
                   className="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-100 transition-colors"

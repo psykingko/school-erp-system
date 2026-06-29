@@ -64,9 +64,7 @@ export const ROLE_NAVIGATION = {
     { id: "admin_students", icon: "Users" },
     { id: "admin_teachers", icon: "Presentation" },
     { id: "admin_employees", icon: "UserCog" },
-    { id: "admin_employee_leaves", icon: "Palmtree" },
     { id: "admin_parents", icon: "HeartHandshake" },
-    { id: "admin_admins", icon: "ShieldCheck" },
     { id: "admin_classes", icon: "School" },
     { id: "admin_subjects", icon: "BookOpen" },
     { id: "admin_timetable", icon: "CalendarClock" },
@@ -74,20 +72,22 @@ export const ROLE_NAVIGATION = {
     { id: "admin_question_papers", icon: "FileQuestion" },
     { id: "admin_academic_performance", icon: "LineChart" },
     { id: "admin_attendance", icon: "CheckSquare" },
-    { id: "admin_leave_approval", icon: "CheckSquare" },
+    { id: "admin_leave_management", icon: "CalendarRange" },
     { id: "admin_transport", icon: "Bus" },
     { id: "admin_fees", icon: "WalletCards" },
     { id: "admin_documents", icon: "FolderOpen" },
+    { id: "student_duty", icon: "BadgeCheck" },
     { id: "admin_clubs", icon: "Palette" },
     { id: "admin_achievements", icon: "Trophy" },
     { id: "admin_calendar", icon: "CalendarDays" },
     { id: "admin_notices", icon: "Megaphone" },
-    { id: "student_duty", icon: "BadgeCheck" },
     { id: "admin_institutional_planning", icon: "Target" },
+    { id: "admin_club_management", icon: "Tent" },
     { id: "admin_manage_departments", icon: "Layers" },
     { id: "admin_communication_center", icon: "Send" },
-    { id: "admin_leave_portfolio", icon: "Palmtree" },
-    { id: "admin_leave_allocations", icon: "CalendarRange" },
+    { id: "admin_support_management", icon: "Headset" },
+    { id: "support_center", icon: "LifeBuoy" },
+    { id: "admin_employee_leaves", icon: "Palmtree" },
     { id: "admin_profile", icon: "UserCircle" },
     { id: "admin_access_control", icon: "ShieldCheck" },
     { id: "admin_school_settings", icon: "Settings" },
@@ -100,11 +100,11 @@ export const ROLE_NAVIGATION = {
  */
 export const ADMIN_SECTIONS = [
   {
-    title: "Dashboard",
+    titleKey: "nav.section.dashboard",
     items: [{ id: "admin_home", icon: "LayoutDashboard" }],
   },
   {
-    title: "User Management",
+    titleKey: "nav.section.userManagement",
     items: [
       { id: "admin_students", icon: "Users" },
       { id: "admin_teachers", icon: "Presentation" },
@@ -113,9 +113,10 @@ export const ADMIN_SECTIONS = [
     ],
   },
   {
-    title: "Academic Management",
+    titleKey: "nav.section.academic",
     items: [
       { id: "admin_classes", icon: "School" },
+      { id: "admin_subjects", icon: "BookOpen" },
       { id: "admin_timetable", icon: "CalendarClock" },
       { id: "admin_exams", icon: "BookCheck" },
       { id: "admin_question_papers", icon: "FileQuestion" },
@@ -123,7 +124,7 @@ export const ADMIN_SECTIONS = [
     ],
   },
   {
-    title: "Operations",
+    titleKey: "nav.section.operations",
     items: [
       { id: "admin_attendance", icon: "CheckSquare" },
       { id: "admin_leave_management", icon: "CalendarRange" },
@@ -134,7 +135,7 @@ export const ADMIN_SECTIONS = [
     ],
   },
   {
-    title: "Institutional Activities",
+    titleKey: "nav.section.activities",
     items: [
       { id: "admin_clubs", icon: "Palette" },
       { id: "admin_achievements", icon: "Trophy" },
@@ -143,11 +144,11 @@ export const ADMIN_SECTIONS = [
     ],
   },
   {
-    title: "Analytics",
+    titleKey: "nav.section.analytics",
     items: [{ id: "admin_analytics_workload", icon: "PieChart" }],
   },
   {
-    title: "Institutional",
+    titleKey: "nav.section.institutional",
     items: [
       { id: "admin_institutional_planning", icon: "LayoutDashboard" },
       { id: "admin_club_management", icon: "Tent" },
@@ -158,7 +159,7 @@ export const ADMIN_SECTIONS = [
     ],
   },
   {
-    title: "Settings",
+    titleKey: "nav.section.settings",
     items: [
       { id: "admin_profile", icon: "UserCircle" },
       { id: "admin_employee_leaves", icon: "Palmtree" },

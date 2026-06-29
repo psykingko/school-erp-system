@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import TeacherModuleHeader from "../../components/teacher/TeacherModuleHeader";
 import MainCard from "../../components/MainCard";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { questionPaperService } from "../../services/questionPaperService";
 import QuestionPaperForm from "../../components/questionPapers/QuestionPaperForm";
 import { 
@@ -31,15 +32,17 @@ const StatusBadge = ({ status }) => {
     Rejected: "bg-rose-50 text-rose-600 border-rose-200",
   };
   
+  const { t } = useLanguage();
   return (
     <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${styles[status] || styles.Draft}`}>
-      {status === 'Submitted' ? 'Pending Approval' : status}
+      {status === 'Submitted' ? t("questionPapers.pendingApproval", { fallback: 'Pending Approval' }) : t(`questionPapers.status${status}`, { fallback: status })}
     </span>
   );
 };
 
 const QuestionPapersPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const teacherProfile = user?.profile;
   const teacherId = teacherProfile?.id;
 
@@ -99,7 +102,7 @@ const QuestionPapersPage = () => {
 
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this question paper?")) {
+    if (window.confirm(t("questionPapers.deleteConfirm", { fallback: "Are you sure you want to delete this question paper?" }))) {
       await questionPaperService.deleteQuestionPaper(id);
       fetchPapers();
     }
@@ -122,8 +125,8 @@ const QuestionPapersPage = () => {
   return (
     <div className="space-y-8 pb-12 w-full max-w-7xl mx-auto">
       <TeacherModuleHeader 
-        titleKey="Question Paper Management"
-        descriptionKey="Design, upload, and submit your question papers for approval."
+        titleKey="nav.question_papers"
+        descriptionKey="questionPapers.moduleDesc"
         helperContentEn="The Question Paper module lets you draft textual papers or upload formatted PDF/Images, submitting them directly to the administration for review."
         helperContentHi="प्रश्न पत्र मॉड्यूल आपको प्रश्न पत्र का मसौदा तैयार करने या स्वरूपित पीडीएफ / चित्र अपलोड करने की अनुमति देता है, उन्हें समीक्षा के लिए सीधे प्रशासन को प्रस्तुत करता है।"
       />
@@ -133,7 +136,7 @@ const QuestionPapersPage = () => {
         <MainCard className="p-5 border-l-4 border-l-[#03045e]">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Papers</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t("questionPapers.totalPapers", { fallback: "Total Papers" })}</p>
               <p className="text-3xl font-black text-[#03045e]">{stats.total}</p>
             </div>
             <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-600"><Layers size={20} /></div>
@@ -142,7 +145,7 @@ const QuestionPapersPage = () => {
         <MainCard className="p-5 border-l-4 border-l-gray-400">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Drafts</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t("questionPapers.drafts", { fallback: "Drafts" })}</p>
               <p className="text-3xl font-black text-[#03045e]">{stats.draft}</p>
             </div>
             <div className="p-2.5 rounded-2xl bg-gray-50 text-gray-500"><Edit size={20} /></div>
@@ -151,7 +154,7 @@ const QuestionPapersPage = () => {
         <MainCard className="p-5 border-l-4 border-l-blue-400">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pending Approval</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t("questionPapers.pendingApproval", { fallback: "Pending Approval" })}</p>
               <p className="text-3xl font-black text-[#03045e]">{stats.submitted}</p>
             </div>
             <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-500"><Clock size={20} /></div>
@@ -160,7 +163,7 @@ const QuestionPapersPage = () => {
         <MainCard className="p-5 border-l-4 border-l-emerald-400">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Approved</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t("questionPapers.approved", { fallback: "Approved" })}</p>
               <p className="text-3xl font-black text-[#03045e]">{stats.approved}</p>
             </div>
             <div className="p-2.5 rounded-2xl bg-emerald-50 text-emerald-500"><CheckCircle size={20} /></div>
@@ -176,7 +179,7 @@ const QuestionPapersPage = () => {
           <Search size={15} className="text-gray-400" />
           <input 
             type="text" 
-            placeholder="Search papers..."
+            placeholder={t("questionPapers.searchPlaceholder", { fallback: "Search papers..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full text-[11px] font-bold bg-transparent outline-none text-[#03045e] placeholder-gray-400"
@@ -193,7 +196,7 @@ const QuestionPapersPage = () => {
                   activeTab === tab ? "bg-[#03045e] text-white shadow-sm" : "text-gray-400 hover:text-gray-600"
                 }`}
               >
-                {tab === 'Submitted' ? 'Pending Approval' : tab}
+                {tab === 'Submitted' ? t("questionPapers.pendingApproval", { fallback: 'Pending Approval' }) : t(`questionPapers.status${tab}`, { fallback: tab })}
               </button>
             ))}
           </div>
@@ -206,7 +209,7 @@ const QuestionPapersPage = () => {
             className="bg-[#03045e] text-white px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] shadow-xl shadow-[#03045e]/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all whitespace-nowrap"
           >
             <Plus size={14} />
-            Create New
+            {t("questionPapers.createNew", { fallback: "Create New" })}
           </button>
         </div>
       </div>
@@ -217,12 +220,12 @@ const QuestionPapersPage = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/80 border-b border-gray-100">
-                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">Paper Details</th>
-                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">Class & Subject</th>
-                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">Type</th>
-                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">Format</th>
-                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">Status</th>
-                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
+                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{t("questionPapers.paperDetails", { fallback: "Paper Details" })}</th>
+                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{t("questionPapers.classAndSubject", { fallback: "Class & Subject" })}</th>
+                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{t("questionPapers.type", { fallback: "Type" })}</th>
+                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{t("questionPapers.format", { fallback: "Format" })}</th>
+                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{t("questionPapers.status", { fallback: "Status" })}</th>
+                <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap text-right">{t("common.actions", { fallback: "Actions" })}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -236,13 +239,13 @@ const QuestionPapersPage = () => {
                         </div>
                         <div>
                           <p className="text-sm font-black text-[#03045e] group-hover:text-[#00b4d8] transition-colors">{paper.title}</p>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">ID: {paper.id}</p>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{t("questionPapers.id", { fallback: "ID:" })} {paper.id}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-5">
                       <p className="text-xs font-black text-[#03045e]">{paper.subjectName}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Class {paper.className}</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{t("questionPapers.class", { fallback: "Class" })} {paper.className}</p>
                     </td>
                     <td className="py-4 px-5">
                       <span className="px-2 py-1 bg-purple-50 text-purple-600 rounded-lg text-[9px] font-black uppercase tracking-widest">
@@ -252,9 +255,9 @@ const QuestionPapersPage = () => {
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
                         {paper.uploadedFile ? (
-                          <><Upload size={14} className="text-[#00b4d8]" /> File</>
+                          <><Upload size={14} className="text-[#00b4d8]" /> {t("questionPapers.file", { fallback: "File" })}</>
                         ) : (
-                          <><FileText size={14} className="text-emerald-500" /> Text</>
+                          <><FileText size={14} className="text-emerald-500" /> {t("questionPapers.text", { fallback: "Text" })}</>
                         )}
                       </div>
                     </td>
@@ -303,8 +306,8 @@ const QuestionPapersPage = () => {
                   <td colSpan="6" className="py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <FileText size={32} className="mb-3 opacity-20" />
-                      <p className="text-sm font-black text-[#03045e]">No question papers found</p>
-                      <p className="text-xs font-bold mt-1">Create a new paper or adjust your filters.</p>
+                      <p className="text-sm font-black text-[#03045e]">{t("questionPapers.noPapers", { fallback: "No question papers found" })}</p>
+                      <p className="text-xs font-bold mt-1">{t("questionPapers.noPapersHelp", { fallback: "Create a new paper or adjust your filters." })}</p>
                     </div>
                   </td>
                 </tr>

@@ -1,10 +1,10 @@
-import localProvider from "../data/providers/localProvider";
+import { getDataProvider } from "../data/providers/providerFactory";
 
 const departmentService = {
-  getDepartments: () => localProvider.getDepartments(),
-  createDepartment: (data) => localProvider.createDepartment(data),
-  updateDepartment: (id, data) => localProvider.updateDepartment(id, data),
-  deleteDepartment: (id) => localProvider.deleteDepartment(id),
+  getDepartments: () => getDataProvider().getDepartments(),
+  createDepartment: (data) => getDataProvider().createDepartment(data),
+  updateDepartment: (id, data) => getDataProvider().updateDepartment(id, data),
+  deleteDepartment: (id) => getDataProvider().deleteDepartment(id),
 };
 
 export default departmentService;

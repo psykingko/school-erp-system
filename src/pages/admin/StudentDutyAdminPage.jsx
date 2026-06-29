@@ -6,6 +6,8 @@ import { ClipboardCheck, CheckCircle, XCircle, Eye, Clock, ClipboardList, Users,
 
 const CATEGORIES = ["Sports", "Assembly", "Competition", "Academic", "Administrative"];
 
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
+
 export default function StudentDutyAdminPage() {
   const [requests, setRequests] = useState([]);
   const [stats, setStats] = useState(null);
@@ -113,6 +115,8 @@ export default function StudentDutyAdminPage() {
         <h1 className="text-2xl font-black text-[#03045e] tracking-tight">Student Duty Management</h1>
         <p className="text-gray-500 font-medium mt-1">Monitor and review student duty requests across the institution.</p>
       </div>
+
+      <PageAuthorityBanner moduleId="admin_student_duty" moduleName="Student Duty Management" />
 
       {/* Stats Cards */}
       {stats && (

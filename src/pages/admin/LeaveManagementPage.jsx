@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ClipboardCheck, Library } from "lucide-react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 import LeaveApprovalsPage from "./LeaveApprovalsPage";
 import LeavePortfolioPage from "./LeavePortfolioPage";
 
@@ -15,6 +16,8 @@ const LeaveManagementPage = () => {
         description="Centralized command center for managing leave approvals and institutional leave policies."
         breadcrumbs={["Admin Portal", "Operations", "Leave Management"]}
       />
+
+      <PageAuthorityBanner moduleId="admin_leave_management" moduleName="Leave Management" />
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200">

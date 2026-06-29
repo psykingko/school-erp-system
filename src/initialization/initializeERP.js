@@ -29,6 +29,7 @@ import { ROLES } from "../auth/roles";
 import { generateMissingMockData } from "./generateMockData";
 import { runGenderMigration } from "../services/profileMigrationService";
 import { runLeavePortfolioMigration } from "../services/leavePortfolioMigrationService";
+import { runTeacherMigrationIfNeeded } from "../services/teacherMigrationService";
 
 
 /**
@@ -56,7 +57,8 @@ export const initializeERP = () => {
     // ── Leave Portfolio Migration (Phase 2) ─────────────────────────────────────
     runLeavePortfolioMigration();
 
-
+    // ── Teacher Profile Migration (Phase 12.5) ──────────────────────────────────
+    runTeacherMigrationIfNeeded();
 
     // ── Schema Version Check (Phase 9: Student normalization) ──────────────────
     // If student records are from schema v1 (missing id/classId/streamId fields),
@@ -133,15 +135,19 @@ export const initializeERP = () => {
     if (!existingAuthUsers || existingAuthUsers.length === 0) {
       const authUsers = [];
 
-      // Admin user
-      authUsers.push({
-        id: "auth-admin-001",
-        username: "admin",
-        password: "admin123",
-        role: ROLES.ADMIN,
-        linkedEntityId: "EMP-010",
-        active: true,
-      });
+      // Admin users (Department Heads)
+      const nowStr = new Date().toISOString();
+      const adminAccounts = [
+        { id: "auth-admin-001", username: "deepak.joshi", password: "password123", role: ROLES.ADMIN, employeeId: "EMP-001", isSuperAdmin: true, status: "ACTIVE", manualOverrides: [], createdAt: nowStr, updatedAt: nowStr },
+        { id: "auth-admin-002", username: "amit.verma", password: "password123", role: ROLES.ADMIN, employeeId: "EMP-002", isSuperAdmin: false, status: "ACTIVE", manualOverrides: [], createdAt: nowStr, updatedAt: nowStr },
+        { id: "auth-admin-003", username: "neha.sharma", password: "password123", role: ROLES.ADMIN, employeeId: "EMP-003", isSuperAdmin: false, status: "ACTIVE", manualOverrides: [], createdAt: nowStr, updatedAt: nowStr },
+        { id: "auth-admin-004", username: "vijay.patel", password: "password123", role: ROLES.ADMIN, employeeId: "EMP-004", isSuperAdmin: false, status: "ACTIVE", manualOverrides: [], createdAt: nowStr, updatedAt: nowStr },
+        { id: "auth-admin-007", username: "priya.gupta", password: "password123", role: ROLES.ADMIN, employeeId: "EMP-007", isSuperAdmin: false, status: "ACTIVE", manualOverrides: [], createdAt: nowStr, updatedAt: nowStr },
+        { id: "auth-admin-008", username: "lakshmi.mehta", password: "password123", role: ROLES.ADMIN, employeeId: "EMP-008", isSuperAdmin: false, status: "ACTIVE", manualOverrides: [], createdAt: nowStr, updatedAt: nowStr },
+        { id: "auth-admin-009", username: "krishna.reddy", password: "password123", role: ROLES.ADMIN, employeeId: "EMP-009", isSuperAdmin: true, status: "ACTIVE", manualOverrides: [], createdAt: nowStr, updatedAt: nowStr },
+        { id: "auth-admin-010", username: "admin", password: "admin123", role: ROLES.ADMIN, employeeId: "EMP-010", isSuperAdmin: true, status: "ACTIVE", manualOverrides: [], createdAt: nowStr, updatedAt: nowStr },
+      ];
+      authUsers.push(...adminAccounts);
 
       // Student auth users (16 students)
       studentsSeed.forEach((student, index) => {

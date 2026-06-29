@@ -96,6 +96,7 @@ const Toast = ({ message, type = "success", onClose }) => (
 
 const ProfileSettingsPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const teacherId = user?.linkedEntityId || "teach-001";
 
   // State Management
@@ -226,7 +227,7 @@ const ProfileSettingsPage = () => {
       {/* ── Title & Context ── */}
       <TeacherModuleHeader 
         titleKey="nav.profile_settings"
-        descriptionKey="Manage your professional profile, contact details, and institutional allocations."
+        descriptionKey="profile.description"
         helperContentEn="Keep your official contact records, specialized subjects, and qualifications up to date."
         helperContentHi="अपने आधिकारिक संपर्क रिकॉर्ड, विशिष्ट विषयों और योग्यताओं को अद्यतित रखें।"
       />
@@ -274,7 +275,7 @@ const ProfileSettingsPage = () => {
                 className="flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-[#03045e] text-white hover:bg-[#0077b6] transition-all shadow-lg shadow-[#03045e]/20 group"
               >
                 <Edit3 size={18} />
-                <span className="text-[11px] font-black uppercase tracking-widest">Update Data</span>
+                <span className="text-[11px] font-black uppercase tracking-widest">{t("profile.updateData", { fallback: "Update Data" })}</span>
               </button>
             ) : (
               <div className="flex items-center gap-3 w-full md:w-auto">
@@ -284,7 +285,7 @@ const ProfileSettingsPage = () => {
                   className="flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-300 transition-all shadow-lg shadow-emerald-600/20 group"
                 >
                   <Save size={18} />
-                  <span className="text-[11px] font-black uppercase tracking-widest">{saving ? "Saving..." : "Save Changes"}</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest">{saving ? t("duty.saving", { fallback: "Saving..." }) : t("profile.saveChanges", { fallback: "Save Changes" })}</span>
                 </button>
                 <button 
                   disabled={saving}
@@ -292,7 +293,7 @@ const ProfileSettingsPage = () => {
                   className="flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-white border border-gray-150 text-gray-500 hover:border-gray-300 transition-all shadow-sm group"
                 >
                   <X size={18} />
-                  <span className="text-[11px] font-black uppercase tracking-widest">Cancel</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest">{t("common.cancel", { fallback: "Cancel" })}</span>
                 </button>
               </div>
             )}
@@ -315,21 +316,21 @@ const ProfileSettingsPage = () => {
         <div className="lg:col-span-8 flex flex-col gap-8 md:gap-10">
           
           {/* 1. Contact & Personal Info */}
-          <ProfileSection icon={User} title="Personal Information">
+          <ProfileSection icon={User} title={t("profile.personalInfo", { fallback: "Personal Information" })}>
             <MainCard borderColor="#00b4d8" className="p-6 md:p-8">
               {!isEditing ? (
                 <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
-                  <InfoField label="Primary Mobile Phone" value={profileData.phoneNumber} icon={Smartphone} />
-                  <InfoField label="School Email Address" value={profileData.email} icon={Mail} />
-                  <InfoField label="Emergency Contact Person / No." value={profileData.emergencyContact} icon={Phone} />
-                  <InfoField label="Correspondence Address" value={profileData.address} icon={MapPin} fullWidth />
-                  <InfoField label="Date of Birth" value={profileData.dob} icon={Calendar} />
-                  <InfoField label="Gender" value={profileData.gender} icon={User} />
+                  <InfoField label={t("profile.mobilePhone", { fallback: "Primary Mobile Phone" })} value={profileData.phoneNumber} icon={Smartphone} />
+                  <InfoField label={t("profile.email", { fallback: "School Email Address" })} value={profileData.email} icon={Mail} />
+                  <InfoField label={t("profile.emergencyContact", { fallback: "Emergency Contact Person / No." })} value={profileData.emergencyContact} icon={Phone} />
+                  <InfoField label={t("profile.correspondenceAddress", { fallback: "Correspondence Address" })} value={profileData.address} icon={MapPin} fullWidth />
+                  <InfoField label={t("profile.dob", { fallback: "Date of Birth" })} value={profileData.dob} icon={Calendar} />
+                  <InfoField label={t("profile.gender", { fallback: "Gender" })} value={profileData.gender} icon={User} />
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-6 text-xs font-bold text-[#03045e]">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Primary Mobile Phone</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.mobilePhone", { fallback: "Primary Mobile Phone" })}</label>
                     <input 
                       type="text"
                       value={forms.phoneNumber}
@@ -340,7 +341,7 @@ const ProfileSettingsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">School Email Address</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.email", { fallback: "School Email Address" })}</label>
                     <input 
                       type="email"
                       value={forms.email}
@@ -351,7 +352,7 @@ const ProfileSettingsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Emergency Contact Person / No.</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.emergencyContact", { fallback: "Emergency Contact Person / No." })}</label>
                     <input 
                       type="text"
                       value={forms.emergencyContact}
@@ -362,7 +363,7 @@ const ProfileSettingsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Date of Birth</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.dob", { fallback: "Date of Birth" })}</label>
                     <input 
                       type="date"
                       value={forms.dob}
@@ -372,7 +373,7 @@ const ProfileSettingsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gender</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.gender", { fallback: "Gender" })}</label>
                     <select 
                       value={forms.gender}
                       onChange={(e) => setForms(prev => ({ ...prev, gender: e.target.value }))}
@@ -386,7 +387,7 @@ const ProfileSettingsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Correspondence Address</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.correspondenceAddress", { fallback: "Correspondence Address" })}</label>
                     <textarea 
                       rows={2}
                       value={forms.address}
@@ -401,19 +402,19 @@ const ProfileSettingsPage = () => {
           </ProfileSection>
 
           {/* 2. Professional Credentials */}
-          <ProfileSection icon={GraduationCap} title="Professional Profile">
+          <ProfileSection icon={GraduationCap} title={t("profile.professionalProfile", { fallback: "Professional Profile" })}>
             <MainCard borderColor="#00b4d8" className="p-6 md:p-8">
               {!isEditing ? (
                 <div className="space-y-8">
                   <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
-                    <InfoField label="Highest Qualification" value={profileData.qualification} icon={GraduationCap} />
-                    <InfoField label="Teaching Experience" value={profileData.experience} icon={Briefcase} />
-                    <InfoField label="Subject Specialization" value={profileData.subjectSpecialization} icon={Sparkles} fullWidth />
+                    <InfoField label={t("profile.highestQualification", { fallback: "Highest Qualification" })} value={profileData.qualification} icon={GraduationCap} />
+                    <InfoField label={t("profile.teachingExperience", { fallback: "Teaching Experience" })} value={profileData.experience} icon={Briefcase} />
+                    <InfoField label={t("profile.subjectSpecialization", { fallback: "Subject Specialization" })} value={profileData.subjectSpecialization} icon={Sparkles} fullWidth />
                   </div>
                   
                   <div className="pt-6 border-t border-gray-100">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4 flex items-center gap-2">
-                      <Award size={13} className="text-[#00b4d8]" /> Official Certifications & Accomplishments
+                      <Award size={13} className="text-[#00b4d8]" /> {t("profile.certifications", { fallback: "Official Certifications & Accomplishments" })}
                     </span>
                     <p className="text-xs font-bold text-[#03045e] bg-gray-50/50 p-4 rounded-2xl border border-gray-100 leading-relaxed uppercase tracking-tight">
                       {profileData.certifications || "No special certifications registered."}
@@ -423,7 +424,7 @@ const ProfileSettingsPage = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-6 text-xs font-bold text-[#03045e]">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Highest Qualification Details</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.highestQualification", { fallback: "Highest Qualification" })}</label>
                     <input 
                       type="text"
                       value={forms.qualification}
@@ -434,7 +435,7 @@ const ProfileSettingsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Teaching Experience</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.teachingExperience", { fallback: "Teaching Experience" })}</label>
                     <input 
                       type="text"
                       value={forms.experience}
@@ -445,7 +446,7 @@ const ProfileSettingsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Subject Specialization Fields</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.subjectSpecialization", { fallback: "Subject Specialization" })}</label>
                     <input 
                       type="text"
                       value={forms.subjectSpecialization}
@@ -456,7 +457,7 @@ const ProfileSettingsPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Official Certifications & Achievements</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("profile.certifications", { fallback: "Official Certifications & Accomplishments" })}</label>
                     <textarea 
                       rows={3}
                       value={forms.certifications}
@@ -470,59 +471,13 @@ const ProfileSettingsPage = () => {
             </MainCard>
           </ProfileSection>
 
-          {/* 3. Relational Timetable Duties */}
-          <ProfileSection icon={ClipboardList} title="Relational Timetable & Workload">
-            <MainCard borderColor="#00b4d8" className="p-6 md:p-8">
-              <div className="space-y-6">
-                <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 flex gap-3 items-start text-xs font-bold text-blue-700 uppercase tracking-tight">
-                  <ShieldCheck size={16} className="text-blue-500 shrink-0 mt-0.5" />
-                  <div>
-                    <span>Institutional Allocation Data is Read-Only</span>
-                    <p className="text-[9px] text-gray-500 lowercase font-medium mt-0.5">Please contact the School Administrative Office or Academic Head to request updates to these assignments.</p>
-                  </div>
-                </div>
-
-                {profileData.assignedSubjects && profileData.assignedSubjects.length > 0 ? (
-                  <div className="overflow-x-auto rounded-2xl border border-gray-100">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="bg-gray-50 text-gray-400 font-black uppercase tracking-widest border-b border-gray-100 text-[9px]">
-                          <th className="p-4">Class Section</th>
-                          <th className="p-4">Subject Name</th>
-                          <th className="p-4">Subject Code</th>
-                          <th className="p-4">Scheduled Slot</th>
-                          <th className="p-4">Room No.</th>
-                        </tr>
-                      </thead>
-                      <tbody className="font-bold text-[#03045e] divide-y divide-gray-50">
-                        {profileData.assignedSubjects.map((sub, idx) => (
-                          <tr key={idx} className="hover:bg-gray-50/30 transition-all">
-                            <td className="p-4">{sub.displayName || sub.className}</td>
-                            <td className="p-4 text-cyan-600">{sub.subjectName}</td>
-                            <td className="p-4 text-gray-400 font-mono text-[10px]">{sub.subjectCode}</td>
-                            <td className="p-4">{sub.schedule}</td>
-                            <td className="p-4 text-[#03045e]">{sub.room}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-400 italic text-xs text-center">
-                    No active subject assignments mapped to this profile.
-                  </div>
-                )}
-              </div>
-            </MainCard>
-          </ProfileSection>
-
         </div>
 
         {/* ── RIGHT COLUMN (35% approx - Department Contacts & Workload summary) ── */}
         <div className="lg:col-span-4 flex flex-col gap-8 md:gap-10">
           
           {/* 1. Support & Contacts */}
-          <ProfileSection icon={MessageSquare} title="Department Support">
+          <ProfileSection icon={MessageSquare} title={t("profile.departmentSupport", { fallback: "Department Support" })}>
             <MainCard borderColor="#00b4d8" className="p-5">
               <div className="space-y-4">
                 {/* Principal */}
@@ -532,7 +487,7 @@ const ProfileSettingsPage = () => {
                       <User size={18} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Principal Office</p>
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{t("profile.principalOffice", { fallback: "Principal Office" })}</p>
                       <p className="text-sm font-black text-[#03045e] truncate leading-tight">Rev. Brother Joseph</p>
                     </div>
                   </div>
@@ -550,7 +505,7 @@ const ProfileSettingsPage = () => {
                       <Building2 size={18} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Academic Head</p>
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{t("profile.academicHead", { fallback: "Academic Head" })}</p>
                       <p className="text-sm font-black text-[#03045e] truncate leading-tight">Administration support</p>
                     </div>
                   </div>
@@ -563,23 +518,23 @@ const ProfileSettingsPage = () => {
           </ProfileSection>
 
           {/* 2. Institutional Overview (Workload Stats - Styled exactly like Student Medical Card) */}
-          <ProfileSection icon={Briefcase} title="Workload Registry">
+          <ProfileSection icon={Briefcase} title={t("profile.workloadRegistry", { fallback: "Workload Registry" })}>
             <MainCard borderColor="#00b4d8" className="p-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center font-black text-lg">
                     {profileData.assignedSubjects?.length || 0}
                   </div>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Assigned Courses</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t("profile.assignedCourses", { fallback: "Assigned Courses" })}</span>
                 </div>
-                <InfoField label="Mentee Students" value={`${profileData.mentorshipCount || 0} active`} density="compact" />
-                <InfoField label="Ownership Class" value={profileData.isClassTeacher ? (profileData.homeroomClass?.displayName || profileData.homeroomClass?.name) : "None"} density="compact" />
-                <InfoField label="Focus Field" value={profileData.department} density="compact" />
+                <InfoField label={t("profile.menteeStudents", { fallback: "Mentee Students" })} value={`${profileData.mentorshipCount || 0} active`} density="compact" />
+                <InfoField label={t("profile.ownershipClass", { fallback: "Ownership Class" })} value={profileData.isClassTeacher ? (profileData.homeroomClass?.displayName || profileData.homeroomClass?.name) : "None"} density="compact" />
+                <InfoField label={t("profile.focusField", { fallback: "Focus Field" })} value={profileData.department} density="compact" />
               </div>
               
               <div className="space-y-5 pt-5 border-t border-gray-100">
                 <div>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2.5">Committee Allocations</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2.5">{t("profile.committeeAllocations", { fallback: "Committee Allocations" })}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {(profileData.committeeMembership || "General Faculty Committee").split(", ").map((item, i) => (
                       <span key={i} className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-500 text-[9px] font-black uppercase border border-rose-100">
@@ -600,12 +555,12 @@ const ProfileSettingsPage = () => {
           </ProfileSection>
 
           {/* 3. Address Detail Card */}
-          <ProfileSection icon={MapPin} title="Residency & Base">
+          <ProfileSection icon={MapPin} title={t("profile.residencyBase", { fallback: "Residency & Base" })}>
             <MainCard borderColor="#00b4d8" className="p-5">
               <div className="space-y-6">
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-black text-cyan-600 uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-600" /> Correspondence Address
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-600" /> {t("profile.correspondenceAddress", { fallback: "Correspondence Address" })}
                   </h4>
                   <p className="text-sm font-bold text-[#03045e] leading-relaxed">
                     {profileData.address || "No address provided."}
@@ -614,7 +569,7 @@ const ProfileSettingsPage = () => {
 
                 <div className="pt-6 border-t border-gray-100 space-y-3 opacity-60">
                   <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400" /> Permanent Address
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400" /> {t("profile.permanentAddress", { fallback: "Permanent Address" })}
                   </h4>
                   <p className="text-xs font-bold text-gray-500 leading-relaxed italic">
                     Same as correspondence address

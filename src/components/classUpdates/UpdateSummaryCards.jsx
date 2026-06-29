@@ -1,8 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, AlertCircle, ClipboardList, ShieldAlert } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function UpdateSummaryCards({ updates }) {
+  const { t } = useLanguage();
   const totalActive = updates.length;
   const highPriority = updates.filter(u => u.priority === "IMPORTANT").length;
   const homeworkReminders = updates.filter(u => u.category === "HOMEWORK").length;
@@ -10,31 +12,31 @@ export default function UpdateSummaryCards({ updates }) {
 
   const cards = [
     {
-      title: "Total Published",
+      title: t("updates.totalPublished", { fallback: "Total Published" }),
       value: totalActive,
-      subtext: "Active announcements",
+      subtext: t("updates.activeAnnouncements", { fallback: "Active announcements" }),
       icon: <MessageSquare className="w-5 h-5 text-indigo-500" />,
       color: "bg-indigo-50/60 border-indigo-100/50 text-indigo-900"
     },
     {
-      title: "Urgent Alerts",
+      title: t("updates.urgentAlerts", { fallback: "Urgent Alerts" }),
       value: highPriority,
-      subtext: "High priority flags",
+      subtext: t("updates.highPriorityFlags", { fallback: "High priority flags" }),
       icon: <AlertCircle className="w-5 h-5 text-rose-500" />,
       color: "bg-rose-50/60 border-rose-100/50 text-rose-900",
       alert: highPriority > 0
     },
     {
-      title: "Homework Tasks",
+      title: t("updates.homeworkTasks", { fallback: "Homework Tasks" }),
       value: homeworkReminders,
-      subtext: "Notebooks & worksheets",
+      subtext: t("updates.notebooksWorksheets", { fallback: "Notebooks & worksheets" }),
       icon: <ClipboardList className="w-5 h-5 text-emerald-500" />,
       color: "bg-emerald-50/60 border-emerald-100/50 text-emerald-900"
     },
     {
-      title: "Parent Communications",
+      title: t("updates.parentCommunications", { fallback: "Parent Communications" }),
       value: parentAlerts,
-      subtext: "Visible to guardians",
+      subtext: t("updates.visibleToGuardians", { fallback: "Visible to guardians" }),
       icon: <ShieldAlert className="w-5 h-5 text-amber-500" />,
       color: "bg-amber-50/60 border-amber-100/50 text-amber-900"
     }

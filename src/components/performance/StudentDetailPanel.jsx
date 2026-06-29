@@ -325,9 +325,9 @@ export default function StudentDetailPanel({ studentId, teacherId, teacherName, 
                                 }`}>
                                   {asgn.status}
                                 </span>
-                                {asgn.submissionDetails && (asgn.submissionDetails.score !== undefined || asgn.submissionDetails.marksAwarded !== null) && (
+                                {asgn.submissionDetails && (asgn.submissionDetails.score !== undefined || asgn.submissionDetails.marksAwarded != null || asgn.submissionDetails.marksObtained != null) && (
                                   <span className="text-xs font-black text-[#03045e] bg-white px-2 py-1 rounded-lg border">
-                                    Grade: {asgn.submissionDetails.score || asgn.submissionDetails.marksAwarded} / {asgn.totalMarks}
+                                    Grade: {asgn.submissionDetails.marksObtained ?? asgn.submissionDetails.score ?? asgn.submissionDetails.marksAwarded} / {asgn.maxMarks || asgn.totalMarks}
                                   </span>
                                 )}
                               </div>

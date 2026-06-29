@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { getTeacherWorkload } from "../../services/teacherService";
 import { getUpdatesForTeacher, deleteClassUpdate } from "../../services/classUpdatesService";
 import TeacherModuleHeader from "../../components/teacher/TeacherModuleHeader";
@@ -9,6 +10,7 @@ import UpdateFeed from "../../components/classUpdates/UpdateFeed";
 
 const AnnouncementsPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const teacherId = user?.linkedEntityId || "teach-001";
 
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ const AnnouncementsPage = () => {
     <div className="space-y-8 pb-12">
       <TeacherModuleHeader 
         titleKey="nav.announcements"
-        descriptionKey="Targeted Academic Communication Workspace"
+        descriptionKey="announcements.subtitle"
         helperContentEn="Publish class-scoped announcements, homework assignments alerts, parent-teacher reminders, and examine visibility targets."
         helperContentHi="कक्षा-विशिष्ट घोषणाएं, गृहकार्य अनुस्मारक, अभिभावक-शिक्षक बैठक सूचनाएं प्रकाशित करें और उनकी दृश्यता लक्ष्यों का प्रबंधन करें।"
       />
@@ -60,7 +62,7 @@ const AnnouncementsPage = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-[300px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00b4d8] mb-2"></div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Compiling Workspace Data...</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t("announcements.compiling", { fallback: "Compiling Workspace Data..." })}</p>
         </div>
       ) : error ? (
         <div className="bg-rose-50 border border-rose-100 text-rose-700 p-6 rounded-2xl text-center">
@@ -91,10 +93,10 @@ const AnnouncementsPage = () => {
             <div className="lg:col-span-2 space-y-4">
               <div className="border-b pb-2 flex justify-between items-center">
                 <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-                  Active Notice Board Feed
+                  {t("announcements.activeNoticeBoard", { fallback: "Active Notice Board Feed" })}
                 </h3>
                 <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded border uppercase">
-                  Class scoped
+                  {t("announcements.classScoped", { fallback: "Class scoped" })}
                 </span>
               </div>
               <UpdateFeed 

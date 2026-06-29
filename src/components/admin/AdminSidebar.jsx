@@ -44,6 +44,7 @@ import {
 import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
 import { ADMIN_SECTIONS } from "../../auth/navigation";
+import permissionService from "../../services/permissionService";
 
 // Redux mock block fallback just in case or React.memo
 const iconMap = {
@@ -205,7 +206,7 @@ const SidebarContent = React.memo(function SidebarContent({
                 EduDash
               </h1>
               <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider whitespace-nowrap mt-1">
-                Admin Center
+                {t("admin.center")}
               </p>
             </motion.div>
           )}
@@ -235,14 +236,14 @@ const SidebarContent = React.memo(function SidebarContent({
       {/* Grouped Sidebar Navigation */}
       <nav
         className="flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10"
-        aria-label="Admin Navigation"
+        aria-label={t("admin.nav")}
       >
         {sections.map((section, idx) => (
-          <div key={section.title} className="space-y-1.5 px-3">
+          <div key={section.titleKey || section.title} className="space-y-1.5 px-3">
             {/* Section Heading */}
             {!isCollapsed ? (
               <h3 className="text-[10px] uppercase font-black tracking-widest text-white/40 px-3 pt-2 pb-1">
-                {section.title}
+                {section.titleKey ? t(section.titleKey) : section.title}
               </h3>
             ) : (
               idx > 0 && <div className="border-t border-white/5 my-2 mx-1" />
@@ -276,7 +277,7 @@ function AdminSidebar({
 }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -300,9 +301,21 @@ function AdminSidebar({
     if (onCollapse) onCollapse(next);
   };
 
-  // Maps flat active indicator over sections items
+  // 1. Filter sections dynamically based on user permissions
+  const filteredSections = React.useMemo(() => {
+    return sections
+      .map((sect) => ({
+        ...sect,
+        items: sect.items.filter((item) => {
+          return permissionService.canAccessModule(user, item.id);
+        }),
+      }))
+      .filter((sect) => sect.items.length > 0);
+  }, [sections, user]);
+
+  // 2. Maps flat active indicator over filtered sections items
   const sectionsWithActive = React.useMemo(() => {
-    return sections.map((sect) => ({
+    return filteredSections.map((sect) => ({
       ...sect,
       items: sect.items.map((item) => ({
         ...item,
@@ -311,7 +324,7 @@ function AdminSidebar({
           (item.id === "admin_home" && activePath === "home"),
       })),
     }));
-  }, [sections, activePath]);
+  }, [filteredSections, activePath]);
 
   return (
     <>
@@ -321,7 +334,7 @@ function AdminSidebar({
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="hidden md:flex flex-col flex-shrink-0 fixed left-0 top-0 h-full z-30 shadow-xl overflow-hidden"
         style={{ backgroundColor: "#03045e" }}
-        aria-label="Admin Sidebar"
+        aria-label={t("admin.sidebar")}
       >
         <SidebarContent
           sections={sectionsWithActive}

@@ -8,6 +8,8 @@ import RouteOverviewCard from "../../components/admin/operations/RouteOverviewCa
 import OperationsFilterBar from "../../components/admin/operations/OperationsFilterBar";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
 import AdminDataTable from "../../components/admin/AdminDataTable";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 import RouteDetailsModal from "../../components/admin/transport/RouteDetailsModal";
 import { DriverModal, VehicleModal, RouteModal, StopModal, AllocateStudentModal } from "../../components/admin/transport/TransportCRUDModals";
 import {
@@ -121,6 +123,8 @@ const TransportManagementPage = () => {
           </button>
         }
       />
+      
+      <PageAuthorityBanner moduleId="admin_transport" moduleName="Transport Management" />
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -139,12 +143,14 @@ const TransportManagementPage = () => {
               Visible on Student &amp; Parent Portals
             </span>
           </div>
-          <button
-            onClick={() => setAlertModalOpen(true)}
-            className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-black transition-colors"
-          >
-            <Plus size={13} /> Push Alert
-          </button>
+          <PermissionGate moduleId="admin_transport" permission="create" mode="hidden">
+            <button
+              onClick={() => setAlertModalOpen(true)}
+              className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-black transition-colors"
+            >
+              <Plus size={13} /> Push Alert
+            </button>
+          </PermissionGate>
         </div>
         {alerts.length === 0 ? (
           <p className="text-xs text-gray-400 font-bold italic">No active alerts. Use &ldquo;Push Alert&rdquo; to broadcast to student/parent portals.</p>
@@ -166,13 +172,15 @@ const TransportManagementPage = () => {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDismissAlert(al.alertId)}
-                  className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
-                  title="Dismiss alert"
-                >
-                  <Trash2 size={12} />
-                </button>
+                <PermissionGate moduleId="admin_transport" permission="delete" mode="hidden">
+                  <button
+                    onClick={() => handleDismissAlert(al.alertId)}
+                    className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    title="Dismiss alert"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </PermissionGate>
               </div>
             ))}
           </div>
@@ -197,9 +205,15 @@ const TransportManagementPage = () => {
       {activeTab === "routes" && (
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
-            <button onClick={() => setRouteModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white border border-[#caf0f8] hover:border-[#00b4d8] text-[#03045e] px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Add Route</button>
-            <button onClick={() => setVehicleModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white border border-[#caf0f8] hover:border-[#00b4d8] text-[#03045e] px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Add Vehicle</button>
-            <button onClick={() => setDriverModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white border border-[#caf0f8] hover:border-[#00b4d8] text-[#03045e] px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Add Driver</button>
+            <PermissionGate moduleId="admin_transport" permission="create" mode="hidden">
+              <button onClick={() => setRouteModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white border border-[#caf0f8] hover:border-[#00b4d8] text-[#03045e] px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Add Route</button>
+            </PermissionGate>
+            <PermissionGate moduleId="admin_transport" permission="create" mode="hidden">
+              <button onClick={() => setVehicleModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white border border-[#caf0f8] hover:border-[#00b4d8] text-[#03045e] px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Add Vehicle</button>
+            </PermissionGate>
+            <PermissionGate moduleId="admin_transport" permission="create" mode="hidden">
+              <button onClick={() => setDriverModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white border border-[#caf0f8] hover:border-[#00b4d8] text-[#03045e] px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Add Driver</button>
+            </PermissionGate>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -249,7 +263,9 @@ const TransportManagementPage = () => {
       {activeTab === "stops" && (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <button onClick={() => setStopModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#03045e] hover:bg-[#0077b6] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Add Stop</button>
+            <PermissionGate moduleId="admin_transport" permission="create" mode="hidden">
+              <button onClick={() => setStopModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#03045e] hover:bg-[#0077b6] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Add Stop</button>
+            </PermissionGate>
             <select value={stopRouteFilter} onChange={e => setStopRouteFilter(e.target.value)} className="border border-[#caf0f8] hover:border-[#00b4d8] px-4 py-2.5 rounded-2xl text-xs font-bold text-[#03045e] bg-white outline-none cursor-pointer">
               <option value="">All Routes</option>
               {routes.map(r => <option key={r.id} value={r.id}>{r.routeNo} — {r.zone}</option>)}
@@ -272,9 +288,11 @@ const TransportManagementPage = () => {
                     </td>
                     <td className="py-4 px-3">
                       {!s.isSchool && (
-                        <button onClick={() => handleDeleteStop(s.stopId)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                          <Trash2 size={12} />
-                        </button>
+                        <PermissionGate moduleId="admin_transport" permission="delete" mode="hidden">
+                          <button onClick={() => handleDeleteStop(s.stopId)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                            <Trash2 size={12} />
+                          </button>
+                        </PermissionGate>
                       )}
                     </td>
                   </tr>
@@ -289,7 +307,9 @@ const TransportManagementPage = () => {
       {activeTab === "allocation" && (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <button onClick={() => setAllocModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#03045e] hover:bg-[#0077b6] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Allocate Student</button>
+            <PermissionGate moduleId="admin_transport" permission="create" mode="hidden">
+              <button onClick={() => setAllocModalOpen(true)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#03045e] hover:bg-[#0077b6] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors"><Plus size={14} /> Allocate Student</button>
+            </PermissionGate>
             <select value={allocRouteFilter} onChange={e => setAllocRouteFilter(e.target.value)} className="border border-[#caf0f8] hover:border-[#00b4d8] px-4 py-2.5 rounded-2xl text-xs font-bold text-[#03045e] bg-white outline-none cursor-pointer">
               <option value="">All Routes</option>
               {routes.map(r => <option key={r.id} value={r.id}>{r.routeNo} — {r.zone}</option>)}
@@ -315,7 +335,9 @@ const TransportManagementPage = () => {
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${a.status === "ACTIVE" ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-400"}`}>{a.status}</span>
                     </td>
                     <td className="py-4 px-3">
-                      <button onClick={() => handleDeleteAllocation(a.allocationId)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={12} /></button>
+                      <PermissionGate moduleId="admin_transport" permission="delete" mode="hidden">
+                        <button onClick={() => handleDeleteAllocation(a.allocationId)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={12} /></button>
+                      </PermissionGate>
                     </td>
                   </tr>
                 );

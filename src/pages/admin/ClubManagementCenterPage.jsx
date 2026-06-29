@@ -6,6 +6,8 @@ import {
   Building2, Users, FileText, Plus, Edit, Power, 
   PowerOff, Search, Filter, ShieldCheck, Activity, Award
 } from "lucide-react";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 
 const ClubManagementCenterPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -162,12 +164,14 @@ const ClubManagementCenterPage = () => {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h2 className="text-lg font-black text-[#03045e]">Institutional Clubs</h2>
-          <button 
-            onClick={openCreateModal}
-            className="px-4 py-2 bg-[#03045e] text-white text-sm font-bold rounded-xl flex items-center gap-2 hover:bg-[#023e8a] transition-colors"
-          >
-            <Plus size={16} /> Create Club
-          </button>
+          <PermissionGate moduleId="admin_clubs" permission="create" mode="hidden">
+            <button 
+              onClick={openCreateModal}
+              className="px-4 py-2 bg-[#03045e] text-white text-sm font-bold rounded-xl flex items-center gap-2 hover:bg-[#023e8a] transition-colors"
+            >
+              <Plus size={16} /> Create Club
+            </button>
+          </PermissionGate>
         </div>
         
         <div className="overflow-x-auto">
@@ -211,30 +215,34 @@ const ClubManagementCenterPage = () => {
                     </span>
                   </td>
                   <td className="p-4 text-right space-x-2">
-                    <button 
-                      onClick={() => openEditModal(club)}
-                      className="p-1.5 text-gray-500 hover:text-[#0077b6] hover:bg-[#caf0f8]/50 rounded-lg transition-colors inline-block"
-                      title="Edit Club"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    {club.status === "Active" ? (
+                    <PermissionGate moduleId="admin_clubs" permission="edit" mode="hidden">
                       <button 
-                        onClick={() => handleDeactivate(club.id)}
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors inline-block"
-                        title="Deactivate Club"
+                        onClick={() => openEditModal(club)}
+                        className="p-1.5 text-gray-500 hover:text-[#0077b6] hover:bg-[#caf0f8]/50 rounded-lg transition-colors inline-block"
+                        title="Edit Club"
                       >
-                        <PowerOff size={16} />
+                        <Edit size={16} />
                       </button>
-                    ) : (
-                      <button 
-                        onClick={() => handleActivate(club.id)}
-                        className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors inline-block"
-                        title="Activate Club"
-                      >
-                        <Power size={16} />
-                      </button>
-                    )}
+                    </PermissionGate>
+                    <PermissionGate moduleId="admin_clubs" permission="delete" mode="hidden">
+                      {club.status === "Active" ? (
+                        <button 
+                          onClick={() => handleDeactivate(club.id)}
+                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors inline-block"
+                          title="Deactivate Club"
+                        >
+                          <PowerOff size={16} />
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleActivate(club.id)}
+                          className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors inline-block"
+                          title="Activate Club"
+                        >
+                          <Power size={16} />
+                        </button>
+                      )}
+                    </PermissionGate>
                   </td>
                 </tr>
               ))}
@@ -370,6 +378,8 @@ const ClubManagementCenterPage = () => {
           </div>
         </div>
       </div>
+      
+      <PageAuthorityBanner moduleId="admin_clubs" moduleName="Club Management Center" />
 
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 border-b border-gray-200">

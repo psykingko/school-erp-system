@@ -152,6 +152,8 @@ export const DataProviderInterface = {
   getAchievements: async () => [],
   getAchievementsByStudent: async (_studentId) => [],
   createAchievement: async (_achievementData) => null,
+  updateAchievement: async (_id, _data) => null,
+  deleteAchievement: async (_id) => false,
 
   // === TEACHER-SUBJECT ASSIGNMENTS ===
   getTeacherSubjectAssignments: async () => [],
@@ -204,6 +206,17 @@ export const DataProviderInterface = {
   deleteNotice: async (_noticeId) => false,
   markNoticeRead: async (_noticeId, _userId) => null,
   createEvent: async (_eventData) => null,
+
+  // === STUDENT DUTY DATA ===
+  getStudentDutyRequests: async () => [],
+  getStudentDutyRequestById: async (_id) => null,
+  createStudentDutyRequest: async (_data) => null,
+  updateStudentDutyRequest: async (_id, _data) => null,
+  cancelStudentDutyRequest: async (_id) => false,
+  completeStudentDutyRequest: async (_id) => false,
+
+  // === ADMIN / SYSTEM ===
+  resetSeedData: async () => false,
 };
 /* eslint-enable no-unused-vars */
 

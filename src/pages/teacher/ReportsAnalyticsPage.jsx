@@ -2,11 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
 import TeacherModuleHeader from "../../components/teacher/TeacherModuleHeader";
 import MainCard from "../../components/MainCard";
-import { getTeacherWorkload, getStudentsInClass } from "../../services/teacherService";
-import { getAssignmentsByTeacher } from "../../services/assignmentService";
-import { getLeavesForTeacherApproval } from "../../services/leaveService";
-import { getItem } from "../../persistence/storage";
-import { STORAGE_KEYS } from "../../persistence/storageKeys";
+import { getTeacherAnalytics } from "../../services/teacherDashboardService";
 import { motion } from "framer-motion";
 import {
   BarChart2,
@@ -57,91 +53,8 @@ const ReportsAnalyticsPage = () => {
   const loadReports = useCallback(async () => {
     setLoading(true);
     try {
-      const workload = await getTeacherWorkload(teacherId);
-      const homeroomClass = workload?.homeroomClass;
-
-      // ─── Attendance Analytics ────────────────────────────────────
-      let attendanceRate = 0;
-      let totalStudents = 0;
-      let presentToday = 0;
-      let weeklyRate = 0;
-
-      if (homeroomClass) {
-        const studentList = await getStudentsInClass(homeroomClass.id);
-        totalStudents = studentList.length;
-
-        const todayStr = new Date().toISOString().split("T")[0];
-        const allAttendance = getItem(STORAGE_KEYS.DAILY_ATTENDANCE) || [];
-        const classAttendance = allAttendance.filter(
-          (a) => a.classId === homeroomClass.id
-        );
-
-        const todayRecords = classAttendance.filter((a) => a.date === todayStr);
-        presentToday = todayRecords.filter((a) => a.status === "PRESENT").length;
-
-        // Weekly rate (last 7 days)
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const weeklyRecords = classAttendance.filter((a) => {
-          const d = new Date(a.date);
-          return d >= sevenDaysAgo && (a.status === "PRESENT" || a.status === "ABSENT");
-        });
-        const weeklyPresent = weeklyRecords.filter((a) => a.status === "PRESENT").length;
-        weeklyRate = weeklyRecords.length > 0
-          ? Math.round((weeklyPresent / weeklyRecords.length) * 100)
-          : 0;
-
-        attendanceRate = totalStudents > 0 && todayRecords.length > 0
-          ? Math.round((presentToday / totalStudents) * 100)
-          : weeklyRate;
-      }
-
-      // ─── Assignment Analytics ─────────────────────────────────────
-      const assignmentList = await getAssignmentsByTeacher(teacherId);
-      const totalAssignments = assignmentList.length;
-      let submittedAssignments = 0;
-      let gradedAssignments = 0;
-
-      assignmentList.forEach((a) => {
-        submittedAssignments += a.submissionsCount || 0;
-        gradedAssignments += a.gradedCount || 0;
-      });
-
-      const gradingCoverage =
-        submittedAssignments > 0
-          ? Math.round((gradedAssignments / submittedAssignments) * 100)
-          : 0;
-
-      // ─── Leave Analytics ──────────────────────────────────────────
-      const leaveList = await getLeavesForTeacherApproval(teacherId);
-      const pendingLeaves = leaveList.filter((l) => l.status === "PENDING").length;
-      const approvedLeaves = leaveList.filter((l) => l.status === "APPROVED").length;
-      const rejectedLeaves = leaveList.filter((l) => l.status === "REJECTED").length;
-
-      // ─── Marks Coverage ───────────────────────────────────────────
-      const allResults = getItem(STORAGE_KEYS.RESULTS) || [];
-      const teacherResults = allResults.filter((r) => r.teacherId === teacherId);
-      const allExams = getItem(STORAGE_KEYS.EXAMS) || [];
-      const examsWithMarks = new Set(teacherResults.map((r) => r.examId)).size;
-
-      setStats({
-        attendanceRate,
-        totalStudents,
-        presentToday,
-        weeklyRate,
-        totalAssignments,
-        submittedAssignments,
-        gradedAssignments,
-        gradingCoverage,
-        pendingLeaves,
-        approvedLeaves,
-        rejectedLeaves,
-        totalMarksEntries: teacherResults.length,
-        examsWithMarks,
-        totalExams: allExams.length,
-        assignments: assignmentList.slice(0, 5),
-        leaves: leaveList.filter((l) => l.status === "PENDING").slice(0, 5),
-      });
+      const analytics = await getTeacherAnalytics(teacherId);
+      setStats(analytics);
     } catch (err) {
       console.error("[ReportsAnalyticsPage] Failed to load report data:", err);
     } finally {

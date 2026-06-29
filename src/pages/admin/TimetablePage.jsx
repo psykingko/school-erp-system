@@ -13,8 +13,6 @@ import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import TimetableGrid from "../../components/admin/academic/TimetableGrid";
 import TimetableOverrideManager from "../../components/admin/academic/TimetableOverrideManager";
 import MainCard from "../../components/MainCard";
-import { getItem } from "../../persistence/storage";
-import { STORAGE_KEYS } from "../../persistence/storageKeys";
 import {
   adminTimetableService,
   teacherTimetableService,
@@ -28,6 +26,7 @@ const {
   clearTimetableSlot,
   publishTimetables,
   SUBJECT_DEFAULT_ROOMS,
+  getTimetableDependencies,
 } = adminTimetableService;
 
 // ── Period labels for the edit modal ────────────────────────────────────────
@@ -435,19 +434,12 @@ const TimetablePage = () => {
 
   useEffect(() => {
     const bootstrap = async () => {
-      const allClasses = getItem(STORAGE_KEYS.CLASSES, []);
-      const allTeachers = getItem(STORAGE_KEYS.TEACHERS, []);
-      const allSubjects = getItem(STORAGE_KEYS.SUBJECTS, []);
+      const deps = await getTimetableDependencies();
 
-      const allTsAssignments = getItem(
-        STORAGE_KEYS.TEACHER_SUBJECT_ASSIGNMENTS,
-        [],
-      );
-
-      setClasses(allClasses || []);
-      setTeachers(allTeachers || []);
-      setSubjects(allSubjects || []);
-      setDbTsAssignments(allTsAssignments || []);
+      setClasses(deps.classes || []);
+      setTeachers(deps.teachers || []);
+      setSubjects(deps.subjects || []);
+      setDbTsAssignments(deps.tsAssignments || []);
 
       // Auto-initialize the timetable layout map if it is empty in storage
       await initializeTimetables();

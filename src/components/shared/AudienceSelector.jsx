@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Users, BookOpen, GraduationCap, User, Tag, Calculator, Check, X } from "lucide-react";
-import getDataProvider from "../../data/providers/providerFactory";
+import { getAllStudents } from "../../services/studentService";
+import { getAllTeachers } from "../../services/teacherService";
 
 const BROAD_GROUPS = ["Students", "Parents", "Teachers", "Admins"];
 const CLASSES = [
@@ -61,10 +62,9 @@ const AudienceSelector = ({ value, onChange }) => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const provider = getDataProvider();
         const [students, teachers] = await Promise.all([
-          provider.getStudents(),
-          provider.getTeachers()
+          getAllStudents(),
+          getAllTeachers()
         ]);
         
         setAllStudents(students || []);

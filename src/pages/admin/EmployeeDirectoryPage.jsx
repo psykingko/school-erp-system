@@ -24,6 +24,7 @@ import { GENDER_OPTIONS, DEFAULT_GENDER } from "../../constants/genderConstants"
 
 // We import the seeds to cross-reference roles since they aren't fully in localProvider yet
 import { ROLE_NAVIGATION } from "../../auth/navigation";
+import StaffOnboardingEngine from "../../components/admin/staff/StaffOnboardingEngine";
 const MOCK_ROLES = [
   { id: "role-vice-principal", name: "Vice Principal" },
   { id: "role-academic-coordinator", name: "Academic Coordinator" },
@@ -45,6 +46,7 @@ const EmployeeDirectoryPage = () => {
   
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   const [editingEmp, setEditingEmp] = useState(null);
   const [activeEmp, setActiveEmp] = useState(null);
@@ -98,38 +100,27 @@ const EmployeeDirectoryPage = () => {
     });
   }, [employees, searchTerm, statusFilter]);
 
-  const handleOpenModal = (emp = null) => {
-    if (emp) {
-      setEditingEmp(emp);
-      setFormData({
-        employeeName: emp.employeeName,
-        departmentId: emp.departmentId || "",
-        roleId: emp.roleId || "",
-        designation: emp.designation || "",
-        phone: emp.phone || "",
-        email: emp.email || "",
-        gender: emp.gender || DEFAULT_GENDER,
-        joiningDate: emp.joiningDate || new Date().toISOString().split("T")[0],
-        status: emp.status || "active",
-        systemAccess: emp.systemAccess || false,
-        linkedAuthUserId: emp.linkedAuthUserId || ""
-      });
-    } else {
-      setEditingEmp(null);
-      setFormData({
-        employeeName: "",
-        departmentId: "",
-        roleId: "",
-        designation: "",
-        phone: "",
-        email: "",
-        gender: DEFAULT_GENDER,
-        joiningDate: new Date().toISOString().split("T")[0],
-        status: "active",
-        systemAccess: false,
-        linkedAuthUserId: ""
-      });
+  const handleOpenModal = async (emp = null) => {
+    if (!emp) {
+      console.warn("handleOpenModal is now restricted to Edit mode only. Use Onboard Staff engine for creation.");
+      return;
     }
+    
+    setFormData({
+      employeeName: emp.employeeName,
+      departmentId: emp.departmentId || "",
+      roleId: emp.roleId || "",
+      designation: emp.designation || "",
+      phone: emp.phone || "",
+      email: emp.email || "",
+      gender: emp.gender || DEFAULT_GENDER,
+      joiningDate: emp.joiningDate || new Date().toISOString().split("T")[0],
+      status: emp.status || "active",
+      systemAccess: emp.systemAccess || false,
+      linkedAuthUserId: emp.linkedAuthUserId || "",
+      portalAccess: emp.portalAccess !== undefined ? emp.portalAccess : true,
+    });
+    setEditingEmp(emp);
     setShowModal(true);
   };
 
@@ -215,11 +206,11 @@ const EmployeeDirectoryPage = () => {
         breadcrumbs={["Admin Portal", "User Management", "Employees"]}
         actionButton={
           <button
-            onClick={() => handleOpenModal()}
+            onClick={() => setShowOnboarding(true)}
             className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#03045e] text-white px-5 py-2.5 rounded-2xl shadow-lg shadow-[#0077b6]/20 text-xs font-black transition-all"
           >
             <Plus size={16} />
-            <span>Add Employee</span>
+            <span>Onboard Staff</span>
           </button>
         }
       />
@@ -604,6 +595,17 @@ const EmployeeDirectoryPage = () => {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* Staff Onboarding Engine */}
+      {showOnboarding && (
+        <StaffOnboardingEngine 
+          onClose={() => setShowOnboarding(false)} 
+          onComplete={() => {
+            setShowOnboarding(false);
+            fetchData();
+          }}
+        />
       )}
     </motion.div>
   );

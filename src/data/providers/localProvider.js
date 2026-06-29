@@ -788,42 +788,79 @@ const localProvider = {
     );
   },
 
+  getAuthUserByEmployeeId: async (employeeId) => {
+    const authUsers = getItem(STORAGE_KEYS.AUTH_USERS) || [];
+    return authUsers.find((u) => u.employeeId === employeeId) || null;
+  },
+
+  createAuthUser: async (authUserData) => {
+    const authUsers = getItem(STORAGE_KEYS.AUTH_USERS) || [];
+    const newAuthUser = {
+      ...authUserData,
+      id: authUserData.id || `AUTH-${Date.now()}`
+    };
+    authUsers.push(newAuthUser);
+    setItem(STORAGE_KEYS.AUTH_USERS, authUsers);
+    return newAuthUser;
+  },
+
+  updateAuthUser: async (authUserId, updates) => {
+    const authUsers = getItem(STORAGE_KEYS.AUTH_USERS) || [];
+    const idx = authUsers.findIndex((u) => u.id === authUserId);
+    if (idx === -1) throw new Error("Auth user not found");
+    authUsers[idx] = { ...authUsers[idx], ...updates };
+    setItem(STORAGE_KEYS.AUTH_USERS, authUsers);
+    return authUsers[idx];
+  },
+
+  deleteAuthUser: async (authUserId) => {
+    const authUsers = getItem(STORAGE_KEYS.AUTH_USERS) || [];
+    const filtered = authUsers.filter((u) => u.id !== authUserId);
+    if (filtered.length === authUsers.length) return false;
+    setItem(STORAGE_KEYS.AUTH_USERS, filtered);
+    return true;
+  },
+
   // === APPROVAL SETTINGS DATA ===
   getApprovalSettings: async () => {
     let settings = getItem(STORAGE_KEYS.APPROVAL_SETTINGS);
+    
     const defaultModules = [
-      "Leave Management", 
-      "Resource Booking", 
-      "Club Proposals",
-      "Question Paper Approval",
-      "Fee Concession Requests",
-      "Transport Route Change",
-      "Inventory Requisitions",
-      "Disciplinary Actions",
-      "Event Organization",
-      "Staff Expense Claims",
-      "Certificate Issuance",
-      "Notice Broadcasts",
-      "Achievement Validation",
-      "Student Duty Swaps",
-      "Attendance Corrections"
+      "Leave Management",
+      "Support Center",
+      "Clubs & Committees",
+      "Examinations",
+      "Fee Management",
+      "Transport",
+      "Students",
+      "Calendar & Events",
+      "Documents",
+      "Notices & Announcements",
+      "Achievements",
+      "Student Duty",
+      "Attendance"
     ];
     
     if (!settings || !Array.isArray(settings)) {
       settings = [];
     }
 
+    // Check if we need to migrate (if old keys exist like "Transport Route Change")
+    const hasOldKeys = settings.some(s => s.moduleName === "Transport Route Change" || s.moduleName === "Fee Concession Requests");
+    if (hasOldKeys) {
+      settings = []; // Clean wipe for migration
+    }
+
     // Ensure all default modules exist with the correct key `moduleName`
     const normalizedSettings = defaultModules.map(moduleName => {
-      // Find existing setting by moduleName or fallback to legacy `module` key if it existed
-      const existing = settings.find(s => s.moduleName === moduleName || s.module === moduleName) || {};
-      return {
-        moduleName,
-        approverEmployeeId: existing.approverEmployeeId || null
-      };
+      const existing = settings.find(s => s.moduleName === moduleName);
+      return existing || { moduleName, approverEmployeeId: null, requiredApprovals: 1 };
     });
 
-    setItem(STORAGE_KEYS.APPROVAL_SETTINGS, normalizedSettings);
+    if (hasOldKeys || settings.length !== normalizedSettings.length) {
+      setItem(STORAGE_KEYS.APPROVAL_SETTINGS, normalizedSettings);
+    }
+
     return normalizedSettings;
   },
 
@@ -1001,12 +1038,34 @@ const localProvider = {
   createAchievement: async (achievementData) => {
     const newAch = {
       id: `ach-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      scope: "student", // default if not provided
       ...achievementData,
     };
     const achs = getItem(STORAGE_KEYS.ACHIEVEMENTS) || [];
     achs.push(newAch);
     setItem(STORAGE_KEYS.ACHIEVEMENTS, achs);
     return newAch;
+  },
+
+  updateAchievement: async (id, updatedData) => {
+    const achs = getItem(STORAGE_KEYS.ACHIEVEMENTS) || [];
+    const idx = achs.findIndex(a => a.id === id);
+    if (idx !== -1) {
+      achs[idx] = { ...achs[idx], ...updatedData };
+      setItem(STORAGE_KEYS.ACHIEVEMENTS, achs);
+      return achs[idx];
+    }
+    return null;
+  },
+
+  deleteAchievement: async (id) => {
+    const achs = getItem(STORAGE_KEYS.ACHIEVEMENTS) || [];
+    const filtered = achs.filter(a => a.id !== id);
+    if (filtered.length !== achs.length) {
+      setItem(STORAGE_KEYS.ACHIEVEMENTS, filtered);
+      return true;
+    }
+    return false;
   },
 
   // === TEACHER-SUBJECT ASSIGNMENTS ===
@@ -1497,20 +1556,21 @@ const localProvider = {
     let departments = getItem("school_erp_departments") || [];
     if (departments.length === 0) {
       departments = [
-        { departmentId: "dept-academics", departmentName: "Academic Affairs", departmentHead: "EMP-002", status: "active", requiredStaff: 12 },
-        { departmentId: "dept-examination", departmentName: "Examination & Evaluation", departmentHead: "EMP-003", status: "active", requiredStaff: 4 },
-        { departmentId: "dept-student-affairs", departmentName: "Student Affairs", departmentHead: null, status: "active", requiredStaff: 3 },
-        { departmentId: "dept-administration", departmentName: "Administration", departmentHead: "EMP-010", status: "active", requiredStaff: 8 },
-        { departmentId: "dept-finance", departmentName: "Finance & Accounts", departmentHead: "EMP-001", status: "active", requiredStaff: 5 },
-        { departmentId: "dept-transport", departmentName: "Transport Services", departmentHead: "EMP-004", status: "active", requiredStaff: 15 },
-        { departmentId: "dept-it", departmentName: "IT Infrastructure", departmentHead: "EMP-009", status: "active", requiredStaff: 3 },
-        { departmentId: "dept-facilities", departmentName: "Facilities Management", departmentHead: null, status: "active", requiredStaff: 10 },
-        { departmentId: "dept-sports", departmentName: "Sports & Physical Education", departmentHead: null, status: "active", requiredStaff: 4 },
-        { departmentId: "dept-library", departmentName: "Library & Information Services", departmentHead: "EMP-008", status: "active", requiredStaff: 2 }
+        { departmentId: "dept-academics", departmentName: "Academic Affairs", departmentHead: "EMP-002", memberIds: [], status: "active", requiredStaff: 12, ownedModules: ["admin_students", "admin_calendar"] },
+        { departmentId: "dept-examination", departmentName: "Examination & Evaluation", departmentHead: "EMP-003", memberIds: [], status: "active", requiredStaff: 4, ownedModules: ["admin_question_papers"] },
+        { departmentId: "dept-student-affairs", departmentName: "Student Affairs", departmentHead: null, memberIds: [], status: "active", requiredStaff: 3, ownedModules: ["admin_club_management", "admin_achievements", "student_duty", "admin_attendance"] },
+        { departmentId: "dept-administration", departmentName: "Administration", departmentHead: "EMP-010", memberIds: [], status: "active", requiredStaff: 8, ownedModules: ["admin_leave_management", "admin_support_management", "admin_documents", "admin_notices"] },
+        { departmentId: "dept-finance", departmentName: "Finance & Accounts", departmentHead: "EMP-001", memberIds: [], status: "active", requiredStaff: 5, ownedModules: ["admin_fees"] },
+        { departmentId: "dept-transport", departmentName: "Transport Services", departmentHead: "EMP-004", memberIds: [], status: "active", requiredStaff: 15, ownedModules: ["admin_transport"] },
+        { departmentId: "dept-it", departmentName: "IT Infrastructure", departmentHead: "EMP-009", memberIds: [], status: "active", requiredStaff: 3, ownedModules: [] },
+        { departmentId: "dept-facilities", departmentName: "Facilities Management", departmentHead: null, memberIds: [], status: "active", requiredStaff: 10, ownedModules: [] },
+        { departmentId: "dept-sports", departmentName: "Sports & Physical Education", departmentHead: null, memberIds: [], status: "active", requiredStaff: 4, ownedModules: [] },
+        { departmentId: "dept-library", departmentName: "Library & Information Services", departmentHead: "EMP-008", memberIds: [], status: "active", requiredStaff: 2, ownedModules: [] }
       ];
       setItem("school_erp_departments", departments);
     }
-    return departments;
+    // Ensure all departments have memberIds
+    return departments.map(d => ({ ...d, memberIds: d.memberIds || [] }));
   },
 
   updateDepartment: async (departmentId, updates) => {
@@ -1526,7 +1586,8 @@ const localProvider = {
     const departments = await localProvider.getDepartments();
     const newDept = {
       ...departmentData,
-      departmentId: departmentData.departmentId || `dept-${Date.now()}`
+      departmentId: departmentData.departmentId || `dept-${Date.now()}`,
+      memberIds: departmentData.memberIds || []
     };
     departments.push(newDept);
     setItem("school_erp_departments", departments);
@@ -1546,29 +1607,44 @@ const localProvider = {
     let employees = getItem(STORAGE_KEYS.EMPLOYEES) || [];
     if (employees.length === 0) {
       employees = [
-        { employeeId: "EMP-001", employeeName: "Deepak Joshi", departmentId: "dept-finance", accessLevel: "Super Admin", designation: "HR Manager", phone: "+91-9876543210", email: "deepak.joshi@school.edu", joiningDate: "2023-01-15", status: "active" },
-        { employeeId: "EMP-002", employeeName: "Amit Verma", departmentId: "dept-academics", accessLevel: "Administrator", designation: "Academic Coordinator", phone: "+91-9876543211", email: "amit.verma@school.edu", joiningDate: "2023-02-01", status: "active" },
-        { employeeId: "EMP-003", employeeName: "Neha Sharma", departmentId: "dept-examination", accessLevel: "Administrator", designation: "Exam Officer", phone: "+91-9876543212", email: "neha.sharma@school.edu", joiningDate: "2023-03-10", status: "active" },
-        { employeeId: "EMP-004", employeeName: "Vijay Patel", departmentId: "dept-transport", accessLevel: "Transport Admin", designation: "Transport Coordinator", phone: "+91-9876543213", email: "vijay.patel@school.edu", joiningDate: "2023-04-15", status: "active" },
-        { employeeId: "EMP-005", employeeName: "Rajesh Kumar", departmentId: "dept-finance", accessLevel: "Finance Admin", designation: "Finance Executive", phone: "+91-9876543214", email: "rajesh.kumar@school.edu", joiningDate: "2023-05-20", status: "active" },
-        { employeeId: "EMP-006", employeeName: "Sunita Singh", departmentId: "dept-finance", accessLevel: "Finance Admin", designation: "Accountant", phone: "+91-9876543215", email: "sunita.singh@school.edu", joiningDate: "2023-06-01", status: "active" },
-        { employeeId: "EMP-007", employeeName: "Priya Gupta", departmentId: "dept-administration", accessLevel: "Standard Employee", designation: "Receptionist", phone: "+91-9876543216", email: "priya.gupta@school.edu", joiningDate: "2023-07-10", status: "active" },
-        { employeeId: "EMP-008", employeeName: "Lakshmi Mehta", departmentId: "dept-library", accessLevel: "Standard Employee", designation: "Library Officer", phone: "+91-9876543217", email: "lakshmi.mehta@school.edu", joiningDate: "2023-08-05", status: "active" },
-        { employeeId: "EMP-009", employeeName: "Krishna Reddy", departmentId: "dept-it", accessLevel: "Super Admin", designation: "IT Support", phone: "+91-9876543218", email: "krishna.reddy@school.edu", joiningDate: "2023-09-12", status: "active", systemAccess: true },
-        { employeeId: "EMP-010", employeeName: "Suresh Kumar", departmentId: "dept-administration", accessLevel: "Administrator", designation: "Administrative Executive", phone: "+91-9876543219", email: "suresh.kumar@school.edu", joiningDate: "2023-10-01", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-001" },
-        { employeeId: "EMP-011", employeeName: "Ramesh Chand", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543220", email: "ramesh.chand@school.edu", joiningDate: "2021-04-10", status: "active" },
-        { employeeId: "EMP-012", employeeName: "Sunita Devi", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543221", email: "sunita.devi@school.edu", joiningDate: "2021-05-15", status: "active" },
-        { employeeId: "EMP-013", employeeName: "Mohammad Ali", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543222", email: "mohammad.ali@school.edu", joiningDate: "2022-01-20", status: "active" },
-        { employeeId: "EMP-014", employeeName: "Karan Singh", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543223", email: "karan.singh@school.edu", joiningDate: "2022-03-05", status: "active" },
-        { employeeId: "EMP-015", employeeName: "Vikram Yadav", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543224", email: "vikram.yadav@school.edu", joiningDate: "2022-06-11", status: "active" },
-        { employeeId: "EMP-016", employeeName: "Rajendra Prasad", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543225", email: "rajendra.prasad@school.edu", joiningDate: "2022-08-14", status: "active" },
-        { employeeId: "EMP-017", employeeName: "Sanjay Gupta", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543226", email: "sanjay.gupta@school.edu", joiningDate: "2023-01-10", status: "active" },
-        { employeeId: "EMP-018", employeeName: "Manoj Tiwari", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543227", email: "manoj.tiwari@school.edu", joiningDate: "2023-02-18", status: "active" },
-        { employeeId: "EMP-019", employeeName: "Balram Jat", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543228", email: "balram.jat@school.edu", joiningDate: "2023-05-22", status: "active" },
-        { employeeId: "EMP-020", employeeName: "Deepak Chaurasia", departmentId: "dept-transport", accessLevel: "Standard Employee", designation: "Driver", phone: "+91-9876543229", email: "deepak.c@school.edu", joiningDate: "2023-07-30", status: "active" },
+        { employeeId: "EMP-001", employeeName: "Deepak Joshi", departmentId: "dept-finance", accessLevel: "Super Admin", designation: "HR Manager", phone: "+91-9876543210", email: "deepak.joshi@school.edu", joiningDate: "2023-01-15", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-001", portalAccess: true },
+        { employeeId: "EMP-002", employeeName: "Amit Verma", departmentId: "dept-academics", accessLevel: "Admin", designation: "Academic Coordinator", phone: "+91-9876543211", email: "amit.verma@school.edu", joiningDate: "2023-02-01", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-002", portalAccess: true },
+        { employeeId: "EMP-003", employeeName: "Neha Sharma", departmentId: "dept-examination", accessLevel: "Admin", designation: "Exam Officer", phone: "+91-9876543212", email: "neha.sharma@school.edu", joiningDate: "2023-03-10", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-003", portalAccess: true },
+        { employeeId: "EMP-004", employeeName: "Vijay Patel", departmentId: "dept-transport", accessLevel: "Admin", designation: "Transport Coordinator", phone: "+91-9876543213", email: "vijay.patel@school.edu", joiningDate: "2023-04-15", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-004", portalAccess: true },
+        { employeeId: "EMP-005", employeeName: "Rajesh Kumar", departmentId: "dept-finance", accessLevel: "Admin", designation: "Finance Executive", phone: "+91-9876543214", email: "rajesh.kumar@school.edu", joiningDate: "2023-05-20", status: "active", portalAccess: true },
+        { employeeId: "EMP-006", employeeName: "Sunita Singh", departmentId: "dept-finance", accessLevel: "Admin", designation: "Accountant", phone: "+91-9876543215", email: "sunita.singh@school.edu", joiningDate: "2023-06-01", status: "active", portalAccess: true },
+        { employeeId: "EMP-007", employeeName: "Priya Gupta", departmentId: "dept-administration", accessLevel: "Admin", designation: "Receptionist", phone: "+91-9876543216", email: "priya.gupta@school.edu", joiningDate: "2023-07-10", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-007", portalAccess: true },
+        { employeeId: "EMP-008", employeeName: "Lakshmi Mehta", departmentId: "dept-library", accessLevel: "Admin", designation: "Library Officer", phone: "+91-9876543217", email: "lakshmi.mehta@school.edu", joiningDate: "2023-08-05", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-008", portalAccess: true },
+        { employeeId: "EMP-009", employeeName: "Krishna Reddy", departmentId: "dept-it", accessLevel: "Super Admin", designation: "IT Support", phone: "+91-9876543218", email: "krishna.reddy@school.edu", joiningDate: "2023-09-12", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-009", portalAccess: true },
+        { employeeId: "EMP-010", employeeName: "Suresh Kumar", departmentId: "dept-administration", accessLevel: "Admin", designation: "Administrative Executive", phone: "+91-9876543219", email: "suresh.kumar@school.edu", joiningDate: "2023-10-01", status: "active", systemAccess: true, linkedAuthUserId: "auth-admin-010", portalAccess: true },
+        { employeeId: "EMP-011", employeeName: "Ramesh Chand", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543220", email: "ramesh.chand@school.edu", joiningDate: "2021-04-10", status: "active", portalAccess: false },
+        { employeeId: "EMP-012", employeeName: "Sunita Devi", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543221", email: "sunita.devi@school.edu", joiningDate: "2021-05-15", status: "active", portalAccess: false },
+        { employeeId: "EMP-013", employeeName: "Mohammad Ali", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543222", email: "mohammad.ali@school.edu", joiningDate: "2022-01-20", status: "active", portalAccess: false },
+        { employeeId: "EMP-014", employeeName: "Karan Singh", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543223", email: "karan.singh@school.edu", joiningDate: "2022-03-05", status: "active", portalAccess: false },
+        { employeeId: "EMP-015", employeeName: "Vikram Yadav", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543224", email: "vikram.yadav@school.edu", joiningDate: "2022-06-11", status: "active", portalAccess: false },
+        { employeeId: "EMP-016", employeeName: "Rajendra Prasad", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543225", email: "rajendra.prasad@school.edu", joiningDate: "2022-08-14", status: "active", portalAccess: false },
+        { employeeId: "EMP-017", employeeName: "Sanjay Gupta", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543226", email: "sanjay.gupta@school.edu", joiningDate: "2023-01-10", status: "active", portalAccess: false },
+        { employeeId: "EMP-018", employeeName: "Manoj Tiwari", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543227", email: "manoj.tiwari@school.edu", joiningDate: "2023-02-18", status: "active", portalAccess: false },
+        { employeeId: "EMP-019", employeeName: "Balram Jat", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543228", email: "balram.jat@school.edu", joiningDate: "2023-05-22", status: "active", portalAccess: false },
+        { employeeId: "EMP-020", employeeName: "Deepak Chaurasia", departmentId: "dept-transport", accessLevel: "Admin", designation: "Driver", phone: "+91-9876543229", email: "deepak.c@school.edu", joiningDate: "2023-07-30", status: "active", portalAccess: false },
       ];
       setItem(STORAGE_KEYS.EMPLOYEES, employees);
     }
+
+    let migrated = false;
+    employees = employees.map(emp => {
+      if (emp.portalAccess === undefined) {
+        migrated = true;
+        // Operational staff (like Drivers) default to false, others true.
+        return { ...emp, portalAccess: emp.designation !== "Driver" };
+      }
+      return emp;
+    });
+
+    if (migrated) {
+      setItem(STORAGE_KEYS.EMPLOYEES, employees);
+    }
+
     return employees;
   },
 
@@ -2599,6 +2675,46 @@ const localProvider = {
     return list[index];
   },
 
+  // === OPERATIONAL PROFILES ===
+  getOperationalProfiles: async () => {
+    return getItem(STORAGE_KEYS.OPERATIONAL_PROFILES) || [];
+  },
+
+  getOperationalProfileByEmployeeId: async (employeeId) => {
+    const profiles = getItem(STORAGE_KEYS.OPERATIONAL_PROFILES) || [];
+    return profiles.find((p) => p.employeeId === employeeId) || null;
+  },
+
+  createOperationalProfile: async (data) => {
+    const list = getItem(STORAGE_KEYS.OPERATIONAL_PROFILES) || [];
+    const newRecord = {
+      id: `op-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...data
+    };
+    list.push(newRecord);
+    setItem(STORAGE_KEYS.OPERATIONAL_PROFILES, list);
+    return newRecord;
+  },
+
+  updateOperationalProfile: async (id, updates) => {
+    const list = getItem(STORAGE_KEYS.OPERATIONAL_PROFILES) || [];
+    const index = list.findIndex(p => p.id === id || p.employeeId === id);
+    if (index === -1) throw new Error("Operational profile not found");
+    
+    list[index] = { ...list[index], ...updates, updatedAt: new Date().toISOString() };
+    setItem(STORAGE_KEYS.OPERATIONAL_PROFILES, list);
+    return list[index];
+  },
+
+  deleteOperationalProfile: async (id) => {
+    let list = getItem(STORAGE_KEYS.OPERATIONAL_PROFILES) || [];
+    list = list.filter(p => p.id !== id && p.employeeId !== id);
+    setItem(STORAGE_KEYS.OPERATIONAL_PROFILES, list);
+    return true;
+  },
+
   // === INSTITUTION SETTINGS ===
   getInstitutionSettings: async () => {
     return getItem(STORAGE_KEYS.INSTITUTION_SETTINGS) || {};
@@ -2611,6 +2727,13 @@ const localProvider = {
     return updated;
   },
 
+  // === ADMIN / SYSTEM ===
+  resetSeedData: async () => {
+    Object.values(STORAGE_KEYS).forEach((key) => {
+      setItem(key, []);
+    });
+    return true;
+  },
 };
 
 export default localProvider;

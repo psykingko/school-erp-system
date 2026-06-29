@@ -19,6 +19,7 @@ const AchievementsPage = () => {
 
   // Modal
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedAch, setSelectedAch] = useState(null);
   const [successBanner, setSuccessBanner] = useState("");
 
   useEffect(() => {
@@ -44,10 +45,13 @@ const AchievementsPage = () => {
 
   const handleRecordAchievement = async (formData) => {
     try {
-      const newAch = {
-        studentId: formData.studentId,
+      const provider = getDataProvider();
+      
+      const payload = {
+        studentId: formData.scope === "student" ? formData.studentId : null,
         titleEn: formData.title,
         category: formData.category,
+        scope: formData.scope || "student",
         date: new Date().toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
@@ -56,25 +60,44 @@ const AchievementsPage = () => {
         rank: formData.rank || "gold",
       };
 
-      const provider = getDataProvider();
-      await provider.createAchievement(newAch);
+      if (selectedAch) {
+        await provider.updateAchievement(selectedAch.id, payload);
+        setSuccessBanner(`Successfully updated achievement!`);
+      } else {
+        await provider.createAchievement(payload);
+        setSuccessBanner(`Successfully recorded new achievement!`);
+      }
+
       const allAchievements = await provider.getAchievements();
       setAchievements(allAchievements || []);
 
-      const stu = students.find((s) => s.id === formData.studentId);
-      setSuccessBanner(
-        `Successfully recorded achievement honor for ${stu ? stu.name : "Student"}!`,
-      );
       setTimeout(() => setSuccessBanner(""), 4000);
       setCreateOpen(false);
+      setSelectedAch(null);
     } catch (e) {
       console.error(e);
     }
   };
 
+  const handleDeleteAchievement = async (id) => {
+    if (window.confirm("Are you sure you want to delete this achievement?")) {
+      try {
+        const provider = getDataProvider();
+        await provider.deleteAchievement(id);
+        setSuccessBanner(`Achievement deleted successfully!`);
+        setTimeout(() => setSuccessBanner(""), 4000);
+        
+        const allAchievements = await provider.getAchievements();
+        setAchievements(allAchievements || []);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
   // Helper resolver to format achievements display
   const resolvedAchievements = achievements.map((ach) => {
-    const stu = students.find((s) => s.id === ach.studentId);
+    const stu = ach.studentId ? students.find((s) => s.id === ach.studentId) : null;
 
     // Format category
     let catStr = "Co-Curricular";
@@ -87,10 +110,16 @@ const AchievementsPage = () => {
     let rankStr = "Gold Medal";
     if (ach.rank === "silver") rankStr = "Silver Medal";
     else if (ach.rank === "bronze") rankStr = "Bronze Medal";
+    
+    // Format Scope
+    let scopeDisplay = stu ? stu.name : "Student";
+    if (ach.scope === "school") scopeDisplay = "School Achievement";
+    else if (ach.scope === "house") scopeDisplay = "House Achievement";
+    else if (ach.scope === "class") scopeDisplay = "Class Achievement";
 
     return {
       ...ach,
-      studentName: stu ? stu.name : "Student Name",
+      studentName: scopeDisplay,
       categoryStr: catStr,
       rankStr: rankStr,
       description: `Secured the highest honors during the state level ${ach.category} competitions representing the school.`,
@@ -111,10 +140,22 @@ const AchievementsPage = () => {
 
   const achievementFields = [
     {
+      name: "scope",
+      label: "Achievement Scope",
+      type: "select",
+      options: [
+        { value: "student", label: "Individual Student" },
+        { value: "house", label: "House Achievement" },
+        { value: "class", label: "Class Achievement" },
+        { value: "school", label: "School Achievement" }
+      ]
+    },
+    {
       name: "studentId",
       label: "Select Mapped Student",
       type: "select",
       options: students.map((s) => s.id),
+      hidden: (form) => form.scope !== "student"
     },
     {
       name: "title",
@@ -149,7 +190,10 @@ const AchievementsPage = () => {
         breadcrumbs={["Admin Portal", "Institutional", "Achievements"]}
         actionButton={
           <button
-            onClick={() => setCreateOpen(true)}
+            onClick={() => {
+              setSelectedAch(null);
+              setCreateOpen(true);
+            }}
             className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] text-white px-5 py-2.5 rounded-2xl shadow-sm text-xs font-black transition-colors"
           >
             <Plus size={16} />
@@ -241,6 +285,11 @@ const AchievementsPage = () => {
               rank={ach.rankStr}
               description={ach.description}
               date={ach.date}
+              onEdit={() => {
+                setSelectedAch(ach);
+                setCreateOpen(true);
+              }}
+              onDelete={() => handleDeleteAchievement(ach.id)}
             />
           ))}
         </div>
@@ -249,9 +298,18 @@ const AchievementsPage = () => {
       {/* Record Achievement Modal */}
       <AdminEditForm
         isOpen={createOpen}
-        onClose={() => setCreateOpen(false)}
-        title="Record Student Honor Medal"
-        data={{ studentId: "", title: "", category: "academic", rank: "gold" }}
+        onClose={() => {
+          setCreateOpen(false);
+          setSelectedAch(null);
+        }}
+        title={selectedAch ? "Edit Achievement Honor" : "Record Student Honor Medal"}
+        data={selectedAch ? {
+          studentId: selectedAch.studentId || "",
+          title: selectedAch.titleEn,
+          category: selectedAch.category,
+          rank: selectedAch.rank,
+          scope: selectedAch.scope || "student"
+        } : { studentId: "", title: "", category: "academic", rank: "gold", scope: "student" }}
         fields={achievementFields}
         onSubmit={handleRecordAchievement}
       />

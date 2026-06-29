@@ -11,7 +11,7 @@ import {
   NOTICE_PRIORITIES,
   NOTICE_CATEGORIES,
   AUDIENCE_TYPES,
-} from "../../data/mockDB/seed/notices";
+} from "../../services/noticeService";
 import {
   Bell,
   Filter,
@@ -34,6 +34,8 @@ import ToastNotification from "../../shared/components/ToastNotification";
 import LoadingSkeleton from "../../shared/components/LoadingSkeleton";
 import ChartWrapper from "../../shared/components/ChartWrapper";
 import AudienceSelector from "../../components/shared/AudienceSelector";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 
 const NoticesPage = () => {
   const [notices, setNotices] = useState([]);
@@ -453,17 +455,21 @@ const NoticesPage = () => {
         description="Manage institutional communication and broadcast notices"
         breadcrumbs={["Admin", "Notices"]}
         actionButton={
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setAddNoticeOpen(true)}
-            className="px-5 py-2.5 bg-[#0077b6] text-white rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-[#03045e] transition-colors flex items-center gap-2 shadow-lg shadow-[#0077b6]/20"
-          >
-            <Bell size={16} />
-            Create Notice
-          </motion.button>
+          <PermissionGate moduleId="admin_notices" permission="create" mode="hidden">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setAddNoticeOpen(true)}
+              className="px-5 py-2.5 bg-[#0077b6] text-white rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-[#03045e] transition-colors flex items-center gap-2 shadow-lg shadow-[#0077b6]/20"
+            >
+              <Bell size={16} />
+              Create Notice
+            </motion.button>
+          </PermissionGate>
         }
       />
+      
+      <PageAuthorityBanner moduleId="admin_notices" moduleName="Notice Management" />
 
       <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <AdminStatCard
@@ -532,24 +538,28 @@ const NoticesPage = () => {
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                   {selectedNotices.length} selected
                 </span>
-                {[
-                  { action: "archive", icon: Archive },
-                  { action: "duplicate", icon: Copy },
-                  { action: "cancel", icon: X },
-                  { action: "publish", icon: Send },
-                  { action: "schedule", icon: Calendar },
-                ].map(({ action, icon: Icon }) => (
-                  <motion.button
-                    key={action}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleBulkAction(action)}
-                    className="p-2 rounded-xl bg-[#caf0f8]/20 text-[#0077b6] hover:bg-[#0077b6] hover:text-white transition-colors"
-                    title={action.charAt(0).toUpperCase() + action.slice(1)}
-                  >
-                    <Icon size={16} />
-                  </motion.button>
-                ))}
+                <PermissionGate moduleId="admin_notices" permission="edit" mode="hidden">
+                  <div className="flex items-center gap-1">
+                    {[
+                      { action: "archive", icon: Archive },
+                      { action: "duplicate", icon: Copy },
+                      { action: "cancel", icon: X },
+                      { action: "publish", icon: Send },
+                      { action: "schedule", icon: Calendar },
+                    ].map(({ action, icon: Icon }) => (
+                      <motion.button
+                        key={action}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleBulkAction(action)}
+                        className="p-2 rounded-xl bg-[#caf0f8]/20 text-[#0077b6] hover:bg-[#0077b6] hover:text-white transition-colors"
+                        title={action.charAt(0).toUpperCase() + action.slice(1)}
+                      >
+                        <Icon size={16} />
+                      </motion.button>
+                    ))}
+                  </div>
+                </PermissionGate>
               </div>
             )
           }
@@ -742,24 +752,28 @@ const NoticesPage = () => {
                       >
                         <Eye size={14} />
                       </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setEditNotice(notice)}
-                        className="p-1.5 rounded-lg bg-[#caf0f8]/20 text-[#0077b6] hover:bg-[#0077b6] hover:text-white transition-colors"
-                        title="Edit"
-                      >
-                        <Edit size={14} />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleDeleteClick(notice)}
-                        className="p-1.5 rounded-lg bg-[#fef3c7]/20 text-[#f59e0b] hover:bg-[#f59e0b] hover:text-white transition-colors"
-                        title="Delete"
-                      >
-                        <Trash size={14} />
-                      </motion.button>
+                      <PermissionGate moduleId="admin_notices" permission="edit" mode="hidden">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setEditNotice(notice)}
+                          className="p-1.5 rounded-lg bg-[#caf0f8]/20 text-[#0077b6] hover:bg-[#0077b6] hover:text-white transition-colors"
+                          title="Edit"
+                        >
+                          <Edit size={14} />
+                        </motion.button>
+                      </PermissionGate>
+                      <PermissionGate moduleId="admin_notices" permission="delete" mode="hidden">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleDeleteClick(notice)}
+                          className="p-1.5 rounded-lg bg-[#fef3c7]/20 text-[#f59e0b] hover:bg-[#f59e0b] hover:text-white transition-colors"
+                          title="Delete"
+                        >
+                          <Trash size={14} />
+                        </motion.button>
+                      </PermissionGate>
                     </div>
                   </td>
                 </motion.tr>

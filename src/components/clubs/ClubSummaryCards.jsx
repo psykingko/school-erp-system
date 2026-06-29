@@ -1,36 +1,38 @@
 import React from "react";
 import { Users, Calendar, Award, Compass } from "lucide-react";
 import MainCard from "../MainCard";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ClubSummaryCards({ clubs = [], totalMembers = 0, upcomingEventsCount = 0 }) {
+  const { t } = useLanguage();
   const cards = [
     {
-      title: "Clubs Managed",
+      title: t("clubs.clubsManaged", { fallback: "Clubs Managed" }),
       value: clubs.length,
       icon: Compass,
       color: "bg-blue-50 text-blue-600 border-blue-100",
-      description: "Active co-curricular charges"
+      description: t("clubs.clubsManagedDesc", { fallback: "Active co-curricular charges" })
     },
     {
-      title: "Active Members",
+      title: t("clubs.activeMembers", { fallback: "Active Members" }),
       value: totalMembers,
       icon: Users,
       color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      description: "Students enrolled"
+      description: t("clubs.activeMembersDesc", { fallback: "Students enrolled" })
     },
     {
-      title: "Upcoming Events",
+      title: t("clubs.upcomingEvents", { fallback: "Upcoming Events" }),
       value: upcomingEventsCount,
       icon: Calendar,
       color: "bg-amber-50 text-amber-600 border-amber-100",
-      description: "Co-curricular plans"
+      description: t("clubs.upcomingEventsDesc", { fallback: "Co-curricular plans" })
     },
     {
-      title: "Allowed Classes",
+      title: t("clubs.allowedClasses", { fallback: "Allowed Classes" }),
       value: "11 (All Sections)",
       icon: Award,
       color: "bg-purple-50 text-purple-600 border-purple-100",
-      description: "Institutional eligibility scope"
+      description: t("clubs.allowedClassesDesc", { fallback: "Institutional eligibility scope" })
     }
   ];
 

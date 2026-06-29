@@ -1,13 +1,15 @@
 import React from "react";
 import { Calendar, Clock, MapPin, Plus, CheckCircle, HelpCircle } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ClubEventsList({ events = [], onOpenScheduleModal, onOpenManageParticipants }) {
+  const { t } = useLanguage();
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-50">
         <h4 className="text-xs font-black text-[#03045e] uppercase tracking-wider flex items-center gap-1.5">
           <Calendar className="w-4 h-4 text-blue-500" />
-          Scheduled Co-Curricular Events
+          {t("clubs.scheduledEvents", { fallback: "Scheduled Co-Curricular Events" })}
         </h4>
         {onOpenScheduleModal && (
           <button
@@ -15,7 +17,7 @@ export default function ClubEventsList({ events = [], onOpenScheduleModal, onOpe
             className="inline-flex items-center gap-1 text-[9px] font-black bg-blue-50 text-blue-600 hover:bg-blue-100 px-2.5 py-1.5 rounded-xl border border-blue-100 transition-all uppercase tracking-tighter"
           >
             <Plus className="w-3 h-3" />
-            Schedule Event
+            {t("clubs.scheduleEvent", { fallback: "Schedule Event" })}
           </button>
         )}
       </div>
@@ -23,8 +25,8 @@ export default function ClubEventsList({ events = [], onOpenScheduleModal, onOpe
       {events.length === 0 ? (
         <div className="text-center py-8 text-xs font-bold text-gray-400 italic">
           {onOpenScheduleModal 
-            ? "No events scheduled for this club yet. Click \"Schedule Event\" to plan one!"
-            : "No events scheduled for this club yet."}
+            ? t("clubs.noEventsWithBtn", { fallback: "No events scheduled for this club yet. Click \"Schedule Event\" to plan one!" })
+            : t("clubs.noEvents", { fallback: "No events scheduled for this club yet." })}
         </div>
       ) : (
         <div className="space-y-4">
@@ -52,7 +54,7 @@ export default function ClubEventsList({ events = [], onOpenScheduleModal, onOpe
                       onClick={() => onOpenManageParticipants(evt)}
                       className="text-[9px] font-black text-white bg-[#03045e] hover:bg-[#0077b6] px-2.5 py-1.5 rounded-lg shadow-sm transition-colors uppercase tracking-wider"
                     >
-                      Manage Participants
+                      {t("clubs.manageParticipants", { fallback: "Manage Participants" })}
                     </button>
                   )}
                 </div>

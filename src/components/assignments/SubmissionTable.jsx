@@ -1,33 +1,36 @@
 import React from "react";
 import { CheckCircle, AlertCircle, Clock, Award, ChevronRight, CornerDownRight } from "lucide-react";
 import { motion } from "framer-motion";
-
-const STATUS_PILLS = {
-  SUBMITTED: { bg: "bg-amber-50 border-amber-200 text-amber-600", label: "Submitted", icon: AlertCircle },
-  GRADED: { bg: "bg-emerald-50 border-emerald-200 text-emerald-600", label: "Graded", icon: CheckCircle },
-  OVERDUE: { bg: "bg-rose-50 border-rose-200 text-rose-600", label: "Overdue", icon: Clock },
-  PENDING: { bg: "bg-blue-50 border-blue-200 text-blue-600", label: "Pending", icon: Clock }
-};
+import { useLanguage } from "../../context/LanguageContext";
 
 const SubmissionTable = ({ roster, totalMarks, onGradeStudent }) => {
+  const { t } = useLanguage();
+
+  const STATUS_PILLS = {
+    SUBMITTED: { bg: "bg-amber-50 border-amber-200 text-amber-600", label: t("common.submitted", { fallback: "Submitted" }), icon: AlertCircle },
+    GRADED: { bg: "bg-emerald-50 border-emerald-200 text-emerald-600", label: t("common.graded", { fallback: "Graded" }), icon: CheckCircle },
+    OVERDUE: { bg: "bg-rose-50 border-rose-200 text-rose-600", label: t("common.overdue", { fallback: "Overdue" }), icon: Clock },
+    PENDING: { bg: "bg-blue-50 border-blue-200 text-blue-600", label: t("common.pending", { fallback: "Pending" }), icon: Clock }
+  };
+
   return (
     <div className="w-full border border-gray-150 rounded-3xl overflow-hidden bg-white shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Student</th>
-              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Submitted At</th>
-              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Score</th>
-              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">{t("assignments.student", { fallback: "Student" })}</th>
+              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">{t("assignments.status", { fallback: "Status" })}</th>
+              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">{t("assignments.submittedAt", { fallback: "Submitted At" })}</th>
+              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">{t("assignments.score", { fallback: "Score" })}</th>
+              <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">{t("common.action", { fallback: "Action" })}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-[#03045e]">
             {roster.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-6 py-12 text-center text-xs text-gray-400 font-bold">
-                  No students found in the class roster for this subject.
+                  {t("assignments.noStudentsRoster", { fallback: "No students found in the class roster for this subject." })}
                 </td>
               </tr>
             ) : (
@@ -47,7 +50,7 @@ const SubmissionTable = ({ roster, totalMarks, onGradeStudent }) => {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-xs font-black">{student.studentName}</span>
-                        <span className="text-[9px] text-gray-400 font-bold mt-0.5">Adm No: {student.admissionNo}</span>
+                        <span className="text-[9px] text-gray-400 font-bold mt-0.5">{t("assignments.admNo", { fallback: "Adm No:" })} {student.admissionNo}</span>
                       </div>
                     </td>
 
@@ -64,7 +67,7 @@ const SubmissionTable = ({ roster, totalMarks, onGradeStudent }) => {
                     {/* Submitted At */}
                     <td className="px-6 py-4 text-xs font-bold text-gray-500">
                       {student.submittedAt ? student.submittedAt : (
-                        <span className="text-[10px] text-gray-400 italic">No submission</span>
+                        <span className="text-[10px] text-gray-400 italic">{t("assignments.noSubmission", { fallback: "No submission" })}</span>
                       )}
                     </td>
 
@@ -92,7 +95,7 @@ const SubmissionTable = ({ roster, totalMarks, onGradeStudent }) => {
                             : "bg-[#03045e]/5 text-[#03045e] hover:bg-[#03045e] hover:text-white"
                         }`}
                       >
-                        {student.status === "GRADED" ? "Update Grade" : "Grade Now"}
+                        {student.status === "GRADED" ? t("assignments.updateGrade", { fallback: "Update Grade" }) : t("assignments.gradeNow", { fallback: "Grade Now" })}
                       </button>
                     </td>
                   </motion.tr>

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X } from "lucide-react";
 import PropTypes from "prop-types";
+import { useLanguage } from "../../context/LanguageContext";
 
 const ConfirmationModal = ({
   isOpen,
@@ -9,9 +10,13 @@ const ConfirmationModal = ({
   warningText,
   onConfirm,
   onCancel,
-  confirmButtonText = "Confirm",
-  cancelButtonText = "Cancel",
+  confirmButtonText,
+  cancelButtonText,
 }) => {
+  const { t } = useLanguage();
+  
+  const confirmText = confirmButtonText || t("btn.confirm");
+  const cancelText = cancelButtonText || t("btn.cancel");
   return (
     <AnimatePresence>
       {isOpen && (
@@ -63,13 +68,13 @@ const ConfirmationModal = ({
                 onClick={onCancel}
                 className="flex-1 py-2.5 rounded-2xl text-xs font-black border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
               >
-                {cancelButtonText}
+                {cancelText}
               </button>
               <button
                 onClick={onConfirm}
                 className="flex-1 py-2.5 rounded-2xl text-xs font-black bg-[#0077b6] text-white hover:bg-[#03045e] transition-colors"
               >
-                {confirmButtonText}
+                {confirmText}
               </button>
             </div>
           </motion.div>

@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Megaphone, Send, Clock, Sparkles, Pin, Archive } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ClubAnnouncementsTab({ announcements = [], onPostAnnouncement, onArchiveAnnouncement, isReadOnly }) {
+  const { t } = useLanguage();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("General");
@@ -30,7 +32,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     if (!title || !content || !category) {
-      setErrorMsg("Please fill out all fields.");
+      setErrorMsg(t("clubs.fillAllFields", { fallback: "Please fill out all fields." }));
       return;
     }
 
@@ -43,7 +45,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
       setCategory("General");
       setIsPinned(false);
     } catch (err) {
-      setErrorMsg(err.message || "Failed to publish announcement.");
+      setErrorMsg(err.message || t("clubs.publishFailed", { fallback: "Failed to publish announcement." }));
     } finally {
       setSubmitting(false);
     }
@@ -54,7 +56,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
       <div className="flex items-center gap-2 pb-3 border-b border-gray-50">
         <Megaphone className="w-4 h-4 text-[#00b4d8]" />
         <h4 className="text-xs font-black text-[#03045e] uppercase tracking-wider">
-          Club Announcements Feed
+          {t("clubs.announcementsFeed", { fallback: "Club Announcements Feed" })}
         </h4>
       </div>
 
@@ -63,7 +65,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
         <form onSubmit={handlePostSubmit} className="space-y-3 p-5 md:p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
           <div className="flex items-center gap-1.5 mb-1">
             <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">Post Announcement</span>
+            <span className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">{t("clubs.postAnnouncement", { fallback: "Post Announcement" })}</span>
           </div>
 
           {errorMsg && (
@@ -76,7 +78,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
             <input
               type="text"
               required
-              placeholder="Announcement title..."
+              placeholder={t("clubs.announcementTitlePlaceholder", { fallback: "Announcement title..." })}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full text-xs font-bold text-gray-700 bg-white border border-gray-100 p-2 rounded-lg focus:outline-none focus:border-blue-300 transition-colors"
@@ -96,7 +98,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
           <div className="space-y-2">
             <textarea
               required
-              placeholder="Type your announcement content here..."
+              placeholder={t("clubs.announcementContentPlaceholder", { fallback: "Type your announcement content here..." })}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={2}
@@ -114,7 +116,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
               />
               <span className="text-[10px] font-black text-gray-600 uppercase flex items-center gap-1">
                 <Pin size={10} className={isPinned ? "text-[#00b4d8]" : "text-gray-400"} />
-                Pin Announcement
+                {t("clubs.pinAnnouncement", { fallback: "Pin Announcement" })}
               </span>
             </label>
             <button
@@ -123,7 +125,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
               className="inline-flex items-center gap-1 text-[9px] font-black bg-[#03045e] hover:bg-[#0077b6] text-white disabled:opacity-50 px-3.5 py-1.5 rounded-lg shadow-sm transition-all uppercase tracking-widest"
             >
               <Send className="w-2.5 h-2.5" />
-              {submitting ? "Publishing..." : "Publish"}
+              {submitting ? t("clubs.publishing", { fallback: "Publishing..." }) : t("clubs.publishBtn", { fallback: "Publish" })}
             </button>
           </div>
         </form>
@@ -133,7 +135,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
       <div className="space-y-4">
         {announcements.length === 0 ? (
           <div className="text-center py-6 text-xs font-bold text-gray-400 italic">
-            No announcements published yet.
+            {t("clubs.noAnnouncements", { fallback: "No announcements published yet." })}
           </div>
         ) : (
           announcements.map((ann) => (
@@ -145,7 +147,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
                   </span>
                   {ann.isPinned && (
                     <span className="flex items-center gap-1 text-[9px] font-black text-amber-600 uppercase bg-amber-100 px-1.5 py-0.5 rounded">
-                      <Pin size={10} /> Pinned
+                      <Pin size={10} /> {t("clubs.pinned", { fallback: "Pinned" })}
                     </span>
                   )}
                 </div>
@@ -173,7 +175,7 @@ export default function ClubAnnouncementsTab({ announcements = [], onPostAnnounc
               <h5 className="font-black text-xs text-[#03045e] mb-1">{ann.title}</h5>
               <p className="text-xs text-gray-600 font-medium leading-relaxed whitespace-pre-wrap">{ann.content}</p>
               <div className="mt-2 text-[9px] font-bold text-gray-400">
-                Posted by: {ann.createdByTeacherName || "Coordinator"}
+                {t("clubs.postedBy", { fallback: "Posted by: " })}{ann.createdByTeacherName || t("clubs.coordinator", { fallback: "Coordinator" })}
               </div>
             </div>
           ))

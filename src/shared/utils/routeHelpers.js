@@ -136,6 +136,8 @@ export function getRouteForNavItem(id, role) {
         return "/admin/parents";
       case "admin_classes":
         return "/admin/classes";
+      case "admin_subjects":
+        return "/admin/subjects";
       case "admin_timetable":
         return "/admin/timetable";
       case "admin_exams":

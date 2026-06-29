@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getItem } from "../../persistence/storage";
 import { STORAGE_KEYS } from "../../persistence/storageKeys";
 import { createAssignment, updateAssignment } from "../../services/assignmentService";
+import { useLanguage } from "../../context/LanguageContext";
 
 const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onAssignmentSaved }) => {
+  const { t } = useLanguage();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [classId, setClassId] = useState("");
@@ -105,17 +107,17 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
     e.preventDefault();
 
     if (!title.trim() || !classId || !subjectId || !dueDate || !totalMarks) {
-      setValidationError("Please fill all required fields (Title, Class, Subject, Due Date, Marks).");
+      setValidationError(t("assignments.fillRequired", { fallback: "Please fill all required fields (Title, Class, Subject, Due Date, Marks)." }));
       return;
     }
 
     if (!description.trim() && !attachment) {
-      setValidationError("Provide an assignment description or attach a file.");
+      setValidationError(t("assignments.provideDescOrFile", { fallback: "Provide an assignment description or attach a file." }));
       return;
     }
 
     if (Number(totalMarks) <= 0) {
-      setValidationError("Total marks must be a positive number.");
+      setValidationError(t("assignments.positiveMarks", { fallback: "Total marks must be a positive number." }));
       return;
     }
 
@@ -145,7 +147,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
       onClose();
     } catch (err) {
       console.error(err);
-      setValidationError("An error occurred while saving. Please try again.");
+      setValidationError(t("assignments.saveError", { fallback: "An error occurred while saving. Please try again." }));
       setIsSaving(false);
     }
   };
@@ -167,10 +169,10 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
               </div>
               <div>
                 <h3 className="text-xl font-black leading-tight">
-                  {assignmentToEdit ? "Edit Assignment" : "Create New Assignment"}
+                  {assignmentToEdit ? t("assignments.editAssignment", { fallback: "Edit Assignment" }) : t("assignments.createAssignment", { fallback: "Create New Assignment" })}
                 </h3>
                 <p className="text-[10px] text-blue-100 font-bold mt-0.5">
-                  Set academic criteria and publish to class stream
+                  {t("assignments.createDesc", { fallback: "Set academic criteria and publish to class stream" })}
                 </p>
               </div>
             </div>
@@ -186,11 +188,11 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
             <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
               {/* Assignment Title */}
               <div className="md:col-span-2 space-y-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Assignment Title</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.assignmentTitle", { fallback: "Assignment Title" })}</span>
                 <input 
                   type="text"
                   className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
-                  placeholder="e.g., Chapter 3 Forces Numerical Sheet"
+                  placeholder={t("assignments.titlePlaceholder", { fallback: "e.g., Chapter 3 Forces Numerical Sheet" })}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
@@ -198,7 +200,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
 
               {/* Subject Dropdown */}
               <div className="space-y-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subject</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.subject", { fallback: "Subject" })}</span>
                 <select
                   className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
                   value={subjectId}
@@ -212,7 +214,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
 
               {/* Class Dropdown */}
               <div className="space-y-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Target Class</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.targetClass", { fallback: "Target Class" })}</span>
                 <select
                   className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
                   value={classId}
@@ -226,7 +228,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
 
               {/* Due Date */}
               <div className="space-y-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Due Date</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.dueDate", { fallback: "Due Date" })}</span>
                 <input 
                   type="date"
                   className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
@@ -237,7 +239,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
 
               {/* Total Marks */}
               <div className="space-y-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Max Marks</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.maxMarks", { fallback: "Max Marks" })}</span>
                 <input 
                   type="number"
                   className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
@@ -249,14 +251,14 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
 
               {/* Attachment */}
               <div className="md:col-span-2 space-y-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Attachment (Max 10MB)</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.attachmentMax", { fallback: "Attachment (Max 10MB)" })}</span>
                 <input 
                   type="file"
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (!file) return;
                     if (file.size > 10 * 1024 * 1024) {
-                      setValidationError("File size exceeds 10MB limit.");
+                      setValidationError(t("assignments.fileTooLarge", { fallback: "File size exceeds 10MB limit." }));
                       e.target.value = "";
                       return;
                     }
@@ -277,22 +279,22 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
                 />
                 {attachment && attachment.fileName && (
                   <p className="text-xs text-emerald-600 font-bold ml-1">
-                    Selected File: {attachment.fileName} ({(attachment.fileSize / 1024 / 1024).toFixed(2)} MB)
+                    {t("assignments.selectedFile", { fallback: "Selected File:" })} {attachment.fileName} ({(attachment.fileSize / 1024 / 1024).toFixed(2)} MB)
                   </p>
                 )}
                 {attachment && typeof attachment === "string" && (
                   <p className="text-xs text-blue-600 font-bold ml-1">
-                    Existing Link: {attachment}
+                    {t("assignments.existingLink", { fallback: "Existing Link:" })} {attachment}
                   </p>
                 )}
               </div>
 
               {/* Description */}
               <div className="md:col-span-2 space-y-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Description / Instructions</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.descInstructions", { fallback: "Description / Instructions" })}</span>
                 <textarea 
                   className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
-                  placeholder="State guidelines, chapters covered, and assignment steps..."
+                  placeholder={t("assignments.descPlaceholder", { fallback: "State guidelines, chapters covered, and assignment steps..." })}
                   rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -314,7 +316,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
                 onClick={onClose}
                 className="flex-1 py-4 rounded-2xl bg-gray-50 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-all border border-gray-150"
               >
-                Cancel
+                {t("common.cancel", { fallback: "Cancel" })}
               </button>
               <button 
                 type="submit"
@@ -330,7 +332,7 @@ const AssignmentForm = ({ isOpen, onClose, teacherProfile, assignmentToEdit, onA
                 ) : (
                   <>
                     <Save size={15} />
-                    <span>Publish Assignment</span>
+                    <span>{t("assignments.publishAssignment", { fallback: "Publish Assignment" })}</span>
                   </>
                 )}
               </button>

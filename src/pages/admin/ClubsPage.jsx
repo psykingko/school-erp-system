@@ -10,6 +10,8 @@ import AdminDataTable from "../../components/admin/AdminDataTable";
 import AdminEditForm from "../../components/admin/AdminEditForm";
 import ClubDetailPanel from "../../components/clubs/ClubDetailPanel";
 import { clubsService } from "../../services/clubsService";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 
 const ClubsPage = () => {
   const [activeTab, setActiveTab] = useState("overview"); // "overview", "requests"
@@ -199,6 +201,8 @@ const ClubsPage = () => {
         description="Configure institutional activity clubs, assign faculty coordinators, and verify student enrollment quotas."
         breadcrumbs={["Admin Portal", "Institutional", "Clubs"]}
       />
+      
+      <PageAuthorityBanner moduleId="admin_clubs" moduleName="Clubs & Extracurriculars" />
 
       {/* Success Notification Alert */}
       {successBanner && (
@@ -531,12 +535,14 @@ const ClubsPage = () => {
                           </span>
                         </td>
                         <td className="py-4 px-5 text-right">
-                          <button
-                            onClick={() => { setSelectedProposal(prop); setReviewProposalOpen(true); }}
-                            className="text-[10px] font-black text-[#00b4d8] hover:text-[#0077b6] bg-[#caf0f8]/30 hover:bg-[#caf0f8] px-3 py-1.5 rounded-lg transition-colors uppercase tracking-wider"
-                          >
-                            Review
-                          </button>
+                          <PermissionGate moduleId="admin_clubs" permission="edit" mode="hidden">
+                            <button
+                              onClick={() => { setSelectedProposal(prop); setReviewProposalOpen(true); }}
+                              className="text-[10px] font-black text-[#00b4d8] hover:text-[#0077b6] bg-[#caf0f8]/30 hover:bg-[#caf0f8] px-3 py-1.5 rounded-lg transition-colors uppercase tracking-wider"
+                            >
+                              Review
+                            </button>
+                          </PermissionGate>
                         </td>
                       </tr>
                     ))
@@ -617,20 +623,24 @@ const ClubsPage = () => {
 
               {selectedProposal.status === "Pending" ? (
                 <div className="mt-6 flex gap-3">
-                  <button
-                    onClick={handleRejectProposal}
-                    disabled={isSubmittingDecision}
-                    className="flex-1 h-10 rounded-xl bg-rose-50 text-rose-600 font-black text-[11px] uppercase tracking-wider hover:bg-rose-100 transition-colors disabled:opacity-50"
-                  >
-                    Reject
-                  </button>
-                  <button
-                    onClick={handleApproveProposal}
-                    disabled={isSubmittingDecision}
-                    className="flex-1 h-10 rounded-xl bg-emerald-50 text-emerald-600 font-black text-[11px] uppercase tracking-wider hover:bg-emerald-100 transition-colors disabled:opacity-50"
-                  >
-                    Approve
-                  </button>
+                  <PermissionGate moduleId="admin_clubs" permission="edit" mode="disabled">
+                    <button
+                      onClick={handleRejectProposal}
+                      disabled={isSubmittingDecision}
+                      className="flex-1 h-10 rounded-xl bg-rose-50 text-rose-600 font-black text-[11px] uppercase tracking-wider hover:bg-rose-100 transition-colors disabled:opacity-50"
+                    >
+                      Reject
+                    </button>
+                  </PermissionGate>
+                  <PermissionGate moduleId="admin_clubs" permission="edit" mode="disabled">
+                    <button
+                      onClick={handleApproveProposal}
+                      disabled={isSubmittingDecision}
+                      className="flex-1 h-10 rounded-xl bg-emerald-50 text-emerald-600 font-black text-[11px] uppercase tracking-wider hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                    >
+                      Approve
+                    </button>
+                  </PermissionGate>
                 </div>
               ) : (
                 <div className="mt-6">

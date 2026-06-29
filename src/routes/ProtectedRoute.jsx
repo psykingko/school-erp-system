@@ -9,12 +9,18 @@ import { useAuth } from "../context/AuthContext";
  * Provides dynamic escape actions if a user lands on an unauthorized route.
  */
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const { isAuthenticated, role, logout } = useAuth();
+  const { isAuthenticated, role, logout, user } = useAuth();
   const navigate = useNavigate();
 
   // 1. Check if authenticated
   if (!isAuthenticated || !role) {
     return <Navigate to="/login" replace />;
+  }
+
+  // 1.5. Intercept Phase 12.4 forced password resets
+  const isForceResetPage = window.location.pathname === "/force-reset-password";
+  if (user?.status === "PENDING_PASSWORD_RESET" && !isForceResetPage) {
+    return <Navigate to="/force-reset-password" replace />;
   }
 
   // 2. Check Role Permissions (RBAC)

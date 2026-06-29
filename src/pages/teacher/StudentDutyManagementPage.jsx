@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import studentDutyService from "../../services/studentDutyService";
-import localProvider from "../../data/providers/localProvider";
+import { getAllStudents } from "../../services/studentService";
 import {
   ClipboardCheck,
   CheckCircle,
@@ -20,10 +20,12 @@ import {
 } from "lucide-react";
 import MainCard from "../../components/MainCard";
 import DutyDetailsModal from "../../components/DutyDetailsModal";
+import { useLanguage } from "../../context/LanguageContext";
 
 const CATEGORIES = ["Sports", "Assembly", "Competition", "Academic", "Administrative"];
 
 export default function StudentDutyManagementPage() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   
   // Tab State
@@ -86,7 +88,7 @@ export default function StudentDutyManagementPage() {
 
       // Fetch students for the selection list
       if (students.length === 0) {
-        const allStudents = await localProvider.getStudents();
+        const allStudents = await getAllStudents();
         setStudents(allStudents);
       }
     } catch (error) {
@@ -314,9 +316,9 @@ export default function StudentDutyManagementPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-black text-[#03045e] tracking-tight">Student Duty Management</h1>
+          <h1 className="text-2xl font-black text-[#03045e] tracking-tight">{t("duty.title", { fallback: "Student Duty Management" })}</h1>
           <p className="text-gray-500 font-medium mt-1">
-            {activeTab === "my-requests" ? "Create and manage official student duty requests." : "Verify official student duty requests before releasing students from class."}
+            {activeTab === "my-requests" ? t("duty.subtitle.teacher", { fallback: "Create and manage official student duty requests." }) : t("duty.subtitle.admin", { fallback: "Verify official student duty requests before releasing students from class." })}
           </p>
         </div>
         {activeTab === "my-requests" && (
@@ -325,7 +327,7 @@ export default function StudentDutyManagementPage() {
             className="bg-[#0077b6] text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-[#023e8a] transition-colors"
           >
             <Plus size={18} />
-            Create Request
+            {t("duty.createRequest", { fallback: "Create Request" })}
           </button>
         )}
       </div>
@@ -339,7 +341,7 @@ export default function StudentDutyManagementPage() {
           }`}
         >
           <ClipboardCheck size={18} />
-          My Requests
+          {t("duty.myRequests", { fallback: "My Requests" })}
         </button>
         <button
           onClick={() => setActiveTab("verification-board")}
@@ -348,7 +350,7 @@ export default function StudentDutyManagementPage() {
           }`}
         >
           <ListTodo size={18} />
-          Active Duty Board
+          {t("duty.activeDutyBoard", { fallback: "Active Duty Board" })}
         </button>
       </div>
 
@@ -362,7 +364,7 @@ export default function StudentDutyManagementPage() {
                 <ClipboardCheck size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Total Requests</p>
+                <p className="text-sm text-gray-500 font-medium">{t("duty.totalRequests", { fallback: "Total Requests" })}</p>
                 <p className="text-2xl font-bold text-gray-800">{myStats.total}</p>
               </div>
             </MainCard>
@@ -371,7 +373,7 @@ export default function StudentDutyManagementPage() {
                 <Clock size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Active</p>
+                <p className="text-sm text-gray-500 font-medium">{t("duty.active", { fallback: "Active" })}</p>
                 <p className="text-2xl font-bold text-gray-800">{myStats.active}</p>
               </div>
             </MainCard>
@@ -380,7 +382,7 @@ export default function StudentDutyManagementPage() {
                 <CheckCircle size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Completed</p>
+                <p className="text-sm text-gray-500 font-medium">{t("duty.completed", { fallback: "Completed" })}</p>
                 <p className="text-2xl font-bold text-gray-800">{myStats.completed}</p>
               </div>
             </MainCard>
@@ -389,7 +391,7 @@ export default function StudentDutyManagementPage() {
                 <XCircle size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Cancelled</p>
+                <p className="text-sm text-gray-500 font-medium">{t("duty.cancelled", { fallback: "Cancelled" })}</p>
                 <p className="text-2xl font-bold text-gray-800">{myStats.cancelled}</p>
               </div>
             </MainCard>
@@ -398,29 +400,29 @@ export default function StudentDutyManagementPage() {
           {/* Table */}
           <MainCard className="overflow-hidden">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-[#03045e]">My Duty Requests</h2>
+              <h2 className="text-lg font-bold text-[#03045e]">{t("duty.myRequests", { fallback: "My Duty Requests" })}</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider">
-                    <th className="p-4 font-bold">Title</th>
-                    <th className="p-4 font-bold">Category</th>
-                    <th className="p-4 font-bold">Date & Time</th>
-                    <th className="p-4 font-bold">Location</th>
-                    <th className="p-4 font-bold">Requested Students</th>
-                    <th className="p-4 font-bold">Status</th>
-                    <th className="p-4 font-bold text-right">Actions</th>
+                    <th className="p-4 font-bold">{t("duty.titleColumn", { fallback: "Title" })}</th>
+                    <th className="p-4 font-bold">{t("duty.categoryColumn", { fallback: "Category" })}</th>
+                    <th className="p-4 font-bold">{t("duty.dateTimeColumn", { fallback: "Date & Time" })}</th>
+                    <th className="p-4 font-bold">{t("duty.locationColumn", { fallback: "Location" })}</th>
+                    <th className="p-4 font-bold">{t("duty.requestedStudentsColumn", { fallback: "Requested Students" })}</th>
+                    <th className="p-4 font-bold">{t("duty.statusColumn", { fallback: "Status" })}</th>
+                    <th className="p-4 font-bold text-right">{t("duty.actionsColumn", { fallback: "Actions" })}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {loadingMyRequests ? (
                     <tr>
-                      <td colSpan="7" className="p-8 text-center text-gray-400">Loading...</td>
+                      <td colSpan="7" className="p-8 text-center text-gray-400">{t("common.loading", { fallback: "Loading..." })}</td>
                     </tr>
                   ) : myRequests.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="p-8 text-center text-gray-400 font-medium">No duty requests found.</td>
+                      <td colSpan="7" className="p-8 text-center text-gray-400 font-medium">{t("duty.noRequests", { fallback: "No duty requests found." })}</td>
                     </tr>
                   ) : (
                     myRequests.map((req) => (
@@ -444,7 +446,7 @@ export default function StudentDutyManagementPage() {
                           <span 
                             className="inline-block text-sm font-bold text-[#0077b6] bg-blue-50 px-2.5 py-1 rounded-md"
                           >
-                            {req.targetStudents?.length || 0} Students
+                            {req.targetStudents?.length || 0} {t("common.student", { fallback: "Students" })}
                           </span>
                         </td>
                         <td className="p-4">
@@ -509,7 +511,7 @@ export default function StudentDutyManagementPage() {
                 <Clock size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Total Active Duties</p>
+                <p className="text-sm text-gray-500 font-medium">{t("duty.totalActiveDuties", { fallback: "Total Active Duties" })}</p>
                 <p className="text-2xl font-bold text-gray-800">{boardStats.totalDuties}</p>
               </div>
             </MainCard>
@@ -518,7 +520,7 @@ export default function StudentDutyManagementPage() {
                 <Users size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Students Requested</p>
+                <p className="text-sm text-gray-500 font-medium">{t("duty.studentsRequested", { fallback: "Students Requested" })}</p>
                 <p className="text-2xl font-bold text-gray-800">{boardStats.students}</p>
               </div>
             </MainCard>
@@ -527,7 +529,7 @@ export default function StudentDutyManagementPage() {
                 <ClipboardCheck size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Teachers Requesting</p>
+                <p className="text-sm text-gray-500 font-medium">{t("duty.teachersRequesting", { fallback: "Teachers Requesting" })}</p>
                 <p className="text-2xl font-bold text-gray-800">{boardStats.teachers}</p>
               </div>
             </MainCard>
@@ -537,14 +539,14 @@ export default function StudentDutyManagementPage() {
           <div className="flex flex-wrap gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Filter size={16} className="text-gray-400" />
-              <span className="text-sm font-bold text-gray-600">Filters:</span>
+              <span className="text-sm font-bold text-gray-600">{t("duty.filters", { fallback: "Filters:" })}</span>
             </div>
             
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input 
                 type="text" 
-                placeholder="Search Student..." 
+                placeholder={t("duty.searchStudent", { fallback: "Search Student..." })}
                 value={boardStudentSearch}
                 onChange={(e) => setBoardStudentSearch(e.target.value)}
                 className="pl-9 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#00b4d8]"
@@ -563,7 +565,7 @@ export default function StudentDutyManagementPage() {
               onChange={(e) => setBoardCategory(e.target.value)}
               className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#00b4d8] bg-white"
             >
-              <option value="All">All Categories</option>
+              <option value="All">{t("duty.allCategories", { fallback: "All Categories" })}</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
 
@@ -572,15 +574,15 @@ export default function StudentDutyManagementPage() {
               onChange={(e) => setBoardClass(e.target.value)}
               className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 outline-none focus:border-[#0077b6] transition-all min-w-[140px]"
             >
-              <option value="All">All Class Levels</option>
-              {boardClasses.map(c => <option key={c} value={c}>Class {c}</option>)}
+              <option value="All">{t("duty.allClassLevels", { fallback: "All Class Levels" })}</option>
+              {boardClasses.map(c => <option key={c} value={c}>{t("common.class")} {c}</option>)}
             </select>
 
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input 
                 type="text" 
-                placeholder="Search Teacher..." 
+                placeholder={t("duty.searchTeacher", { fallback: "Search Teacher..." })}
                 value={boardTeacherSearch}
                 onChange={(e) => setBoardTeacherSearch(e.target.value)}
                 className="pl-9 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#00b4d8]"
@@ -598,19 +600,19 @@ export default function StudentDutyManagementPage() {
                 }}
                 className="text-sm text-red-500 hover:text-red-700 font-medium ml-auto"
               >
-                Clear All
+                {t("duty.clearAll", { fallback: "Clear All" })}
               </button>
             )}
           </div>
 
           {/* Board Cards */}
           {loadingBoard ? (
-            <div className="p-8 text-center text-gray-400">Loading board...</div>
+            <div className="p-8 text-center text-gray-400">{t("common.loading", { fallback: "Loading board..." })}</div>
           ) : filteredBoardRequests.length === 0 ? (
             <MainCard className="p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
               <ClipboardCheck size={48} className="text-gray-300 mb-4" />
-              <h3 className="text-lg font-bold text-gray-700 mb-1">No Active Duty Requests</h3>
-              <p className="text-gray-500 text-sm">There are currently no active student duty requests requiring verification.</p>
+              <h3 className="text-lg font-bold text-gray-700 mb-1">{t("duty.noActiveDuty", { fallback: "No Active Duty Requests" })}</h3>
+              <p className="text-gray-500 text-sm">{t("duty.noActiveDutyDesc", { fallback: "There are currently no active student duty requests requiring verification." })}</p>
             </MainCard>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -622,10 +624,10 @@ export default function StudentDutyManagementPage() {
                         {req.category}
                       </span>
                       <h3 className="font-black text-gray-800 text-lg leading-tight mt-1">{req.title}</h3>
-                      <p className="text-xs text-gray-500 mt-1">Req by: <span className="font-bold text-gray-700">{req.requestedByTeacherName}</span></p>
+                      <p className="text-xs text-gray-500 mt-1">{t("duty.reqBy", { fallback: "Req by:" })} <span className="font-bold text-gray-700">{req.requestedByTeacherName}</span></p>
                     </div>
                     <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200 whitespace-nowrap">
-                      Active
+                      {t("duty.active", { fallback: "Active" })}
                     </span>
                   </div>
                   
@@ -647,7 +649,7 @@ export default function StudentDutyManagementPage() {
                     </div>
 
                     <div className="mt-2">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Students Assigned</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t("duty.studentsAssigned", { fallback: "Students Assigned" })}</p>
                       <ul className="space-y-1.5 max-h-32 overflow-y-auto pr-2">
                         {req.targetStudents?.map(s => (
                           <li key={s.studentId} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-sm">
@@ -665,7 +667,7 @@ export default function StudentDutyManagementPage() {
                       onClick={() => handleOpenView(req)}
                       className="text-sm font-bold text-[#0077b6] hover:text-[#023e8a] flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
                     >
-                      <Eye size={16} /> View Details
+                      <Eye size={16} /> {t("duty.viewDetails", { fallback: "View Details" })}
                     </button>
                   </div>
                 </div>
@@ -681,7 +683,7 @@ export default function StudentDutyManagementPage() {
           <MainCard className="w-full w-[95vw] md:w-[90vw] lg:max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
             <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl">
               <h2 className="text-xl font-bold text-[#03045e]">
-                {selectedRequest ? "Edit Duty Request" : "Create Duty Request"}
+                {selectedRequest ? t("duty.editDuty", { fallback: "Edit Duty Request" }) : t("duty.createDuty", { fallback: "Create Duty Request" })}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -694,10 +696,10 @@ export default function StudentDutyManagementPage() {
             <div className="flex-1 overflow-y-auto p-6 flex flex-col md:flex-row gap-8">
               {/* Left side: Basic Info */}
               <div className="flex-1 flex flex-col gap-4">
-                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2">1. Duty Details</h3>
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2">{t("duty.step1", { fallback: "1. Duty Details" })}</h3>
                 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Duty Title <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">{t("duty.dutyTitle", { fallback: "Duty Title" })} <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     value={formData.title}
@@ -709,7 +711,7 @@ export default function StudentDutyManagementPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Category</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">{t("duty.category", { fallback: "Category" })}</label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -719,7 +721,7 @@ export default function StudentDutyManagementPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Location</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">{t("label.location", { fallback: "Location" })}</label>
                     <input
                       type="text"
                       value={formData.location}
@@ -731,7 +733,7 @@ export default function StudentDutyManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Duty Date <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">{t("duty.dutyDate", { fallback: "Duty Date" })} <span className="text-red-500">*</span></label>
                   <input
                     type="date"
                     value={formData.dutyDate}
@@ -742,7 +744,7 @@ export default function StudentDutyManagementPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Start Time</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">{t("duty.startTime", { fallback: "Start Time" })}</label>
                     <input
                       type="time"
                       value={formData.startTime}
@@ -751,7 +753,7 @@ export default function StudentDutyManagementPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">End Time</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">{t("duty.endTime", { fallback: "End Time" })}</label>
                     <input
                       type="time"
                       value={formData.endTime}
@@ -762,7 +764,7 @@ export default function StudentDutyManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Reason</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">{t("label.reason", { fallback: "Reason" })}</label>
                   <textarea
                     value={formData.reason}
                     onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
@@ -775,7 +777,7 @@ export default function StudentDutyManagementPage() {
 
               {/* Right side: Student Selection */}
               <div className="flex-1 flex flex-col gap-4 border-l border-gray-100 pl-8">
-                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2">2. Student Selection <span className="text-red-500">*</span></h3>
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2">{t("duty.step2", { fallback: "2. Student Selection" })} <span className="text-red-500">*</span></h3>
                 
                 {/* Filters */}
                 <div className="flex gap-2">
@@ -785,7 +787,7 @@ export default function StudentDutyManagementPage() {
                       type="text"
                       value={studentSearch}
                       onChange={(e) => setStudentSearch(e.target.value)}
-                      placeholder="Search name or adm no..."
+                      placeholder={t("duty.searchName", { fallback: "Search name or adm no..." })}
                       className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00b4d8] transition-all font-medium"
                     />
                   </div>
@@ -799,8 +801,8 @@ export default function StudentDutyManagementPage() {
                     }}
                     className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none font-medium"
                   >
-                    <option value="">All Class Levels</option>
-                    {classes.map(c => <option key={c} value={c}>Class {c}</option>)}
+                    <option value="">{t("duty.allClassLevels", { fallback: "All Class Levels" })}</option>
+                    {classes.map(c => <option key={c} value={c}>{t("common.class")} {c}</option>)}
                   </select>
                   <select
                     value={sectionFilter}
@@ -808,15 +810,15 @@ export default function StudentDutyManagementPage() {
                     disabled={!classFilter}
                     className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <option value="">All Sections</option>
+                    <option value="">{t("common.section", { fallback: "Section" })}...</option>
                     {sections.map(s => <option key={s} value={s}>Section {s}</option>)}
                   </select>
                 </div>
 
                 {/* List */}
-                <div className="flex-1 border border-gray-200 rounded-xl overflow-y-auto max-h-48 bg-white p-2">
+                <div className="flex-1 min-h-[150px] max-h-[250px] overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100 bg-white">
                   {filteredStudents.length === 0 ? (
-                    <p className="text-center text-sm text-gray-500 p-4">No students found.</p>
+                    <div className="p-4 text-center text-sm text-gray-500">No students found</div>
                   ) : (
                     filteredStudents.map(student => {
                       const studentId = student.id || student.studentId;
@@ -825,7 +827,7 @@ export default function StudentDutyManagementPage() {
                         <div 
                           key={studentId} 
                           onClick={() => toggleStudentSelection(student)}
-                          className={`p-2 flex items-center justify-between rounded-lg cursor-pointer transition-colors mb-1 ${isSelected ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
+                          className={`p-2 flex items-center justify-between rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
                         >
                           <div>
                             <p className={`text-sm font-bold ${isSelected ? 'text-[#0077b6]' : 'text-gray-700'}`}>
@@ -844,21 +846,26 @@ export default function StudentDutyManagementPage() {
 
                 {/* Selected Count / Tokens */}
                 <div className="mt-2 bg-gray-50 border border-gray-200 rounded-xl p-3">
-                  <p className="text-sm font-bold text-gray-700 mb-2">Selected Students ({formData.targetStudents.length})</p>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-sm font-bold text-gray-800">{t("duty.targetStudents", { fallback: "Target Students" })} ({formData.targetStudents.length})</h4>
+                  </div>
                   <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
                     {formData.targetStudents.map(s => (
                       <div key={s.studentId} className="bg-white border border-gray-200 rounded-md px-2 py-1 flex items-center gap-1 text-xs font-medium text-gray-700">
                         {s.studentName} <span className="text-gray-400">({s.className})</span>
                         <button 
-                          onClick={() => setFormData({ ...formData, targetStudents: formData.targetStudents.filter(ts => ts.studentId !== s.studentId) })}
-                          className="text-gray-400 hover:text-red-500 ml-1"
+                          onClick={() => toggleStudentSelection({ id: s.studentId })}
+                          className="text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50 transition-colors"
+                          title={t("duty.removeStudent", { fallback: "Remove student" })}
                         >
-                          <X size={12} />
+                          <X size={14} />
                         </button>
                       </div>
                     ))}
                     {formData.targetStudents.length === 0 && (
-                      <p className="text-xs text-gray-400 italic">None selected.</p>
+                      <div className="p-4 text-center text-sm text-gray-400 italic bg-gray-50 rounded-xl border border-dashed border-gray-200 w-full">
+                        {t("duty.noStudentsSelected", { fallback: "No students selected yet." })}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -870,15 +877,17 @@ export default function StudentDutyManagementPage() {
             <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 rounded-b-3xl">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-6 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-xl transition-colors"
+                className="px-6 py-2 text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
               >
-                Cancel
+                {t("common.cancel", { fallback: "Cancel" })}
               </button>
               <button
                 onClick={handleSave}
-                className="px-6 py-2 text-sm font-bold text-white bg-[#0077b6] hover:bg-[#023e8a] rounded-xl transition-colors"
+                disabled={!formData.title.trim() || !formData.dutyDate || formData.targetStudents.length === 0}
+                className="px-6 py-2 text-sm font-bold text-white bg-[#0077b6] hover:bg-[#023e8a] rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {selectedRequest ? "Save Changes" : "Create Request"}
+                <CheckCircle size={16} />
+                {false ? t("duty.saving", { fallback: "Saving..." }) : (selectedRequest ? t("duty.saveRequest", { fallback: "Save Request" }) : t("duty.createRequestBtn", { fallback: "Create Request" }))}
               </button>
             </div>
           </MainCard>

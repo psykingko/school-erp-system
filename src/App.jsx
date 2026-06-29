@@ -46,6 +46,8 @@ const MentorSupportPage = lazy(() => import("./pages/shared/MentorSupportPage"))
 const ClubsCommitteesPage = lazy(() => import("./pages/shared/ClubsCommitteesPage"));
 const TransportPage = lazy(() => import("./pages/shared/TransportPage"));
 const StudentProfilePage = lazy(() => import("./pages/shared/StudentProfilePage"));
+const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const ForcePasswordResetPage = lazy(() => import("./pages/auth/ForcePasswordResetPage"));
 const LeavePage = lazy(() => import("./pages/student/LeavePage"));
 const SupportCenterPage = lazy(() => import("./pages/shared/SupportCenterPage"));
 
@@ -157,7 +159,7 @@ import SkeletonCard from "./components/SkeletonCard";
 import { ROLES } from "./auth/roles";
 import { ROLE_NAVIGATION } from "./auth/navigation";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import LoginPage from "./pages/auth/LoginPage";
+import AdminRouteGuard from "./routes/AdminRouteGuard";
 
 // Layouts
 import StudentLayout from "./layouts/StudentLayout";
@@ -678,7 +680,7 @@ function AppContent() {
           transition={{ duration: 0.3 }}
           className="w-full h-full"
         >
-          <LoginPage />
+          <LazyRoute Component={LoginPage} />
         </motion.div>
       </AnimatePresence>
     );
@@ -941,132 +943,135 @@ function AppContent() {
       >
         <Route
           path="dashboard"
-          element={<LazyRoute Component={AdminDashboard} />}
+          element={<AdminRouteGuard requiredModule="admin_home"><LazyRoute Component={AdminDashboard} /></AdminRouteGuard>}
         />
         <Route
           path="students"
-          element={<LazyRoute Component={StudentsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_students"><LazyRoute Component={StudentsPage} /></AdminRouteGuard>}
         />
         <Route
           path="students/:id"
-          element={<LazyRoute Component={StudentDetailsAdminPage} />}
+          element={<AdminRouteGuard requiredModule="admin_students"><LazyRoute Component={StudentDetailsAdminPage} /></AdminRouteGuard>}
         />
         <Route
           path="teachers"
-          element={<LazyRoute Component={TeachersPage} />}
+          element={<AdminRouteGuard requiredModule="admin_teachers"><LazyRoute Component={TeachersPage} /></AdminRouteGuard>}
         />
-        <Route path="parents" element={<LazyRoute Component={ParentsPage} />} />
-        <Route path="employees" element={<LazyRoute Component={EmployeeDirectoryPage} />} />
-        <Route path="employee-leaves" element={<LazyRoute Component={EmployeeLeavePage} />} />
-        <Route path="classes" element={<LazyRoute Component={ClassesPage} />} />
+        <Route path="parents" element={<AdminRouteGuard requiredModule="admin_parents"><LazyRoute Component={ParentsPage} /></AdminRouteGuard>} />
+        <Route path="employees" element={<AdminRouteGuard requiredModule="admin_employees"><LazyRoute Component={EmployeeDirectoryPage} /></AdminRouteGuard>} />
+        <Route path="employee-leaves" element={<AdminRouteGuard requiredModule="admin_employee_leaves"><LazyRoute Component={EmployeeLeavePage} /></AdminRouteGuard>} />
+        <Route path="classes" element={<AdminRouteGuard requiredModule="admin_classes"><LazyRoute Component={ClassesPage} /></AdminRouteGuard>} />
         <Route
           path="subjects"
-          element={<LazyRoute Component={SubjectsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_subjects"><LazyRoute Component={SubjectsPage} /></AdminRouteGuard>}
         />
         <Route
           path="timetable"
-          element={<LazyRoute Component={TimetablePage} />}
+          element={<AdminRouteGuard requiredModule="admin_timetable"><LazyRoute Component={TimetablePage} /></AdminRouteGuard>}
         />
         <Route
           path="exams"
-          element={<LazyRoute Component={ExaminationsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_exams"><LazyRoute Component={ExaminationsPage} /></AdminRouteGuard>}
         />
         <Route
           path="question-papers"
-          element={<LazyRoute Component={QuestionPapersAdminPage} />}
+          element={<AdminRouteGuard requiredModule="admin_question_papers"><LazyRoute Component={QuestionPapersAdminPage} /></AdminRouteGuard>}
         />
         <Route
           path="academic-performance"
-          element={<LazyRoute Component={AcademicPerformancePage} />}
+          element={<AdminRouteGuard requiredModule="admin_academic_performance"><LazyRoute Component={AcademicPerformancePage} /></AdminRouteGuard>}
         />
         <Route
           path="attendance"
-          element={<LazyRoute Component={AttendanceOverviewPage} />}
+          element={<AdminRouteGuard requiredModule="admin_attendance"><LazyRoute Component={AttendanceOverviewPage} /></AdminRouteGuard>}
         />
         <Route
           path="leave-management"
-          element={<LazyRoute Component={LeaveManagementPage} />}
+          element={<AdminRouteGuard requiredModule="admin_leave_management"><LazyRoute Component={LeaveManagementPage} /></AdminRouteGuard>}
         />
         <Route
           path="transport"
-          element={<LazyRoute Component={TransportManagementPage} />}
+          element={<AdminRouteGuard requiredModule="admin_transport"><LazyRoute Component={TransportManagementPage} /></AdminRouteGuard>}
         />
         <Route
           path="fees"
-          element={<LazyRoute Component={FeeManagementPage} />}
+          element={<AdminRouteGuard requiredModule="admin_fees"><LazyRoute Component={FeeManagementPage} /></AdminRouteGuard>}
         />
         <Route
           path="documents"
-          element={<LazyRoute Component={AdminDocumentsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_documents"><LazyRoute Component={AdminDocumentsPage} /></AdminRouteGuard>}
         />
         <Route
           path="student-duty"
-          element={<LazyRoute Component={StudentDutyAdminPage} />}
+          element={<AdminRouteGuard requiredModule="student_duty"><LazyRoute Component={StudentDutyAdminPage} /></AdminRouteGuard>}
         />
         <Route
           path="clubs"
-          element={<LazyRoute Component={AdminClubsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_clubs"><LazyRoute Component={AdminClubsPage} /></AdminRouteGuard>}
         />
         <Route
           path="club-management"
-          element={<LazyRoute Component={AdminClubManagementPage} />}
+          element={<AdminRouteGuard requiredModule="admin_club_management"><LazyRoute Component={AdminClubManagementPage} /></AdminRouteGuard>}
         />
         <Route
           path="committees"
-          element={<LazyRoute Component={AdminCommitteesPage} />}
+          element={<AdminRouteGuard requiredModule="admin_clubs"><LazyRoute Component={AdminCommitteesPage} /></AdminRouteGuard>}
         />
         <Route
           path="achievements"
-          element={<LazyRoute Component={AdminAchievementsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_achievements"><LazyRoute Component={AdminAchievementsPage} /></AdminRouteGuard>}
         />
         <Route
           path="calendar"
-          element={<LazyRoute Component={AdminSchoolCalendarPage} />}
+          element={<AdminRouteGuard requiredModule="admin_calendar"><LazyRoute Component={AdminSchoolCalendarPage} /></AdminRouteGuard>}
         />
         <Route
           path="announcements"
-          element={<LazyRoute Component={AdminAnnouncementsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_notices"><LazyRoute Component={AdminAnnouncementsPage} /></AdminRouteGuard>}
         />
-        <Route path="notices" element={<LazyRoute Component={NoticesPage} />} />
+        <Route path="notices" element={<AdminRouteGuard requiredModule="admin_notices"><LazyRoute Component={NoticesPage} /></AdminRouteGuard>} />
         <Route
           path="analytics-workload"
-          element={<LazyRoute Component={WorkloadAnalyticsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_analytics_workload"><LazyRoute Component={WorkloadAnalyticsPage} /></AdminRouteGuard>}
         />
         <Route
           path="institutional-planning"
-          element={<LazyRoute Component={InstitutionalPlanningPage} />}
+          element={<AdminRouteGuard requiredModule="admin_institutional_planning"><LazyRoute Component={InstitutionalPlanningPage} /></AdminRouteGuard>}
         />
         <Route
           path="profile"
-          element={<LazyRoute Component={AdminProfilePage} />}
+          element={<AdminRouteGuard requiredModule="admin_profile"><LazyRoute Component={AdminProfilePage} /></AdminRouteGuard>}
         />
         <Route
           path="manage-departments"
-          element={<LazyRoute Component={ManageDepartmentsPage} />}
+          element={<AdminRouteGuard requiredModule="admin_manage_departments"><LazyRoute Component={ManageDepartmentsPage} /></AdminRouteGuard>}
         />
         <Route
           path="access-control"
-          element={<LazyRoute Component={SystemAdministrationPage} />}
+          element={<AdminRouteGuard requiredModule="admin_access_control"><LazyRoute Component={SystemAdministrationPage} /></AdminRouteGuard>}
         />
         <Route
           path="communication-center"
-          element={<LazyRoute Component={CommunicationCenterPage} />}
+          element={<AdminRouteGuard requiredModule="admin_communication_center"><LazyRoute Component={CommunicationCenterPage} /></AdminRouteGuard>}
         />
-        <Route path="support" element={<LazyRoute Component={SupportCenterPage} />} />
-        <Route path="support-management" element={<LazyRoute Component={SupportManagementPage} />} />
+        <Route path="support" element={<AdminRouteGuard requiredModule="support_center"><LazyRoute Component={SupportCenterPage} /></AdminRouteGuard>} />
+        <Route path="support-management" element={<AdminRouteGuard requiredModule="admin_support_management"><LazyRoute Component={SupportManagementPage} /></AdminRouteGuard>} />
         <Route
           path="school-settings"
           element={
-            <LazyRoute
-              Component={PortalInDevelopment}
-              title="School Settings"
-            />
+            <AdminRouteGuard requiredModule="admin_school_settings">
+              <LazyRoute
+                Component={PortalInDevelopment}
+                title="School Settings"
+              />
+            </AdminRouteGuard>
           }
         />
       </Route>
 
       {/* Auth Route */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LazyRoute Component={LoginPage} />} />
+      <Route path="/force-reset-password" element={<LazyRoute Component={ForcePasswordResetPage} />} />
 
       {/* Global Fallback Route */}
       <Route path="*" element={<NavigateToDashboard />} />

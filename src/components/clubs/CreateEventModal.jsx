@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { X, Calendar, Clock, MapPin, AlignLeft } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
+  const { t } = useLanguage();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -15,7 +17,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!title || !eventDate || !time || !location) {
-      setErrorMsg("Please fill out all required fields.");
+      setErrorMsg(t("clubs.fillRequired", { fallback: "Please fill out all required fields." }));
       return;
     }
 
@@ -31,7 +33,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
       setLocation("");
       onClose();
     } catch (err) {
-      setErrorMsg(err.message || "Failed to schedule event.");
+      setErrorMsg(err.message || t("clubs.scheduleFailed", { fallback: "Failed to schedule event." }));
     } finally {
       setSubmitting(false);
     }
@@ -43,7 +45,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
         <div className="p-5 bg-gradient-to-r from-[#03045e] to-[#0077b6] text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            <h3 className="font-black text-sm uppercase tracking-wider">Schedule Club Event</h3>
+            <h3 className="font-black text-sm uppercase tracking-wider">{t("clubs.scheduleClubEvent", { fallback: "Schedule Club Event" })}</h3>
           </div>
           <button 
             onClick={onClose} 
@@ -61,11 +63,11 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
           )}
 
           <div className="space-y-1">
-            <label className="text-[9px] font-black text-gray-400 uppercase">Event Title *</label>
+            <label className="text-[9px] font-black text-gray-400 uppercase">{t("clubs.eventTitleLabel", { fallback: "Event Title *" })}</label>
             <input
               type="text"
               required
-              placeholder="e.g. Robotics Hackathon or Poetry Slam"
+              placeholder={t("clubs.eventTitlePlaceholder", { fallback: "e.g. Robotics Hackathon or Poetry Slam" })}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full text-xs font-bold text-gray-700 bg-gray-50 border border-gray-100 p-2.5 rounded-xl focus:outline-none focus:border-blue-300 transition-colors"
@@ -73,9 +75,9 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] font-black text-gray-400 uppercase">Description / Details</label>
+            <label className="text-[9px] font-black text-gray-400 uppercase">{t("clubs.descriptionDetails", { fallback: "Description / Details" })}</label>
             <textarea
-              placeholder="Provide a short brief of the event plans..."
+              placeholder={t("clubs.descriptionPlaceholder", { fallback: "Provide a short brief of the event plans..." })}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
@@ -85,7 +87,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[9px] font-black text-gray-400 uppercase">Date *</label>
+              <label className="text-[9px] font-black text-gray-400 uppercase">{t("common.date", { fallback: "Date" })} *</label>
               <input
                 type="date"
                 required
@@ -95,11 +97,11 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] font-black text-gray-400 uppercase">Time *</label>
+              <label className="text-[9px] font-black text-gray-400 uppercase">{t("common.time", { fallback: "Time" })} *</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. 10:30 AM"
+                placeholder={t("clubs.timePlaceholder", { fallback: "e.g. 10:30 AM" })}
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 className="w-full text-xs font-bold text-gray-700 bg-gray-50 border border-gray-100 p-2.5 rounded-xl focus:outline-none focus:border-blue-300 transition-colors"
@@ -108,13 +110,13 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] font-black text-gray-400 uppercase">Venue / Location *</label>
+            <label className="text-[9px] font-black text-gray-400 uppercase">{t("clubs.venueLocation", { fallback: "Venue / Location *" })}</label>
             <div className="relative">
               <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 required
-                placeholder="e.g. Physics Lab 1 or Seminar Hall B"
+                placeholder={t("clubs.venuePlaceholder", { fallback: "e.g. Physics Lab 1 or Seminar Hall B" })}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full text-xs font-bold text-gray-700 bg-gray-50 border border-gray-100 pl-9 pr-3 p-2.5 rounded-xl focus:outline-none focus:border-blue-300 transition-colors"
@@ -128,14 +130,14 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }) {
               onClick={onClose}
               className="px-4 py-2 text-[10px] font-black text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest"
             >
-              Cancel
+              {t("common.cancel", { fallback: "Cancel" })}
             </button>
             <button
               type="submit"
               disabled={submitting}
               className="px-5 py-2.5 bg-[#03045e] hover:bg-[#0077b6] text-white disabled:opacity-50 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-md hover:shadow-lg transition-all"
             >
-              {submitting ? "Scheduling..." : "Schedule Event"}
+              {submitting ? t("clubs.scheduling", { fallback: "Scheduling..." }) : t("clubs.scheduleEventBtn", { fallback: "Schedule Event" })}
             </button>
           </div>
         </form>

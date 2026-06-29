@@ -2,8 +2,10 @@ import React from "react";
 import { Users, Calendar, Award, CheckCircle, AlertTriangle, ArrowRight, Sparkles, BellRing } from "lucide-react";
 import { Link } from "react-router-dom";
 import MainCard from "../MainCard";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function MyClassPanel({ classInfo }) {
+  const { t } = useLanguage();
   if (!classInfo) return null;
 
   const {
@@ -43,7 +45,7 @@ export default function MyClassPanel({ classInfo }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 mb-6 gap-3">
         <div>
           <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider bg-blue-50 border border-blue-100 px-3 py-1 rounded-full">
-            Class Teacher Charge
+            {t("teacherDashboard.classTeacherCharge", { fallback: "Class Teacher Charge" })}
           </span>
           <h3 className="text-xl font-black text-[#03045e] mt-2 flex items-center gap-2">
             <Users className="w-5.5 h-5.5 text-blue-600" />
@@ -51,7 +53,7 @@ export default function MyClassPanel({ classInfo }) {
           </h3>
         </div>
         <div className="sm:text-right bg-slate-50 border border-slate-100 px-4 py-2 rounded-2xl">
-          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Class Room</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{t("teacherDashboard.classRoom", { fallback: "Class Room" })}</p>
           <p className="text-sm font-black text-[#00b4d8] uppercase tracking-wide mt-0.5">{room}</p>
         </div>
       </div>
@@ -88,18 +90,18 @@ export default function MyClassPanel({ classInfo }) {
             </div>
           </div>
           <div>
-            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Attendance</h4>
+            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("teacherDashboard.attendance", { fallback: "Attendance" })}</h4>
             <div className="flex items-center gap-1.5 mt-1">
               <span className={`w-2.5 h-2.5 rounded-full ${attendanceMarked ? "bg-emerald-500" : "bg-amber-400 animate-pulse"}`} />
               <span className="text-xs font-black text-[#03045e]">
-                {attendanceMarked ? `${presentStudents}/${totalStudents} Present` : "Pending Submission"}
+                {attendanceMarked ? `${presentStudents}/${totalStudents} ${t("teacherDashboard.present", { fallback: "Present" })}` : t("teacherDashboard.pendingSubmission", { fallback: "Pending Submission" })}
               </span>
             </div>
             <Link 
               to="/teacher/attendance" 
               className="text-[9px] font-black text-blue-600 hover:text-blue-800 transition-colors uppercase tracking-widest flex items-center gap-0.5 mt-2"
             >
-              Take Attendance <ArrowRight className="w-3 h-3" />
+              {t("teacherDashboard.takeAttendance", { fallback: "Take Attendance" })} <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
         </div>
@@ -114,16 +116,16 @@ export default function MyClassPanel({ classInfo }) {
             <Calendar className="w-5.5 h-5.5" />
           </div>
           <div>
-            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Leave Requests</h4>
+            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("teacherDashboard.leaveRequests", { fallback: "Leave Requests" })}</h4>
             <p className="text-xs font-black text-slate-700 mt-1">
-              {pendingLeavesCount > 0 ? `${pendingLeavesCount} Awaiting Review` : "All Leaves Approved"}
+              {pendingLeavesCount > 0 ? `${pendingLeavesCount} ${t("teacherDashboard.awaitingReview", { fallback: "Awaiting Review" })}` : t("teacherDashboard.allLeavesApproved", { fallback: "All Leaves Approved" })}
             </p>
             {pendingLeavesCount > 0 && (
               <Link 
                 to="/teacher/leave" 
                 className="text-[9px] font-black text-rose-600 hover:text-rose-800 transition-colors uppercase tracking-widest flex items-center gap-0.5 mt-2"
               >
-                Approve Leaves <ArrowRight className="w-3 h-3" />
+                {t("teacherDashboard.approveLeaves", { fallback: "Approve Leaves" })} <ArrowRight className="w-3 h-3" />
               </Link>
             )}
           </div>
@@ -139,16 +141,16 @@ export default function MyClassPanel({ classInfo }) {
             <Award className="w-5.5 h-5.5" />
           </div>
           <div>
-            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Mentor Tasks</h4>
+            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("teacherDashboard.mentorTasks", { fallback: "Mentor Tasks" })}</h4>
             <p className="text-xs font-black text-slate-700 mt-1">
-              {pendingMentorsCount > 0 ? `${pendingMentorsCount} Pending Reviews` : "All Students Mentored"}
+              {pendingMentorsCount > 0 ? `${pendingMentorsCount} ${t("teacherDashboard.pendingReviews", { fallback: "Pending Reviews" })}` : t("teacherDashboard.allStudentsMentored", { fallback: "All Students Mentored" })}
             </p>
             {pendingMentorsCount > 0 && (
               <Link 
                 to="/teacher/mentorship" 
                 className="text-[9px] font-black text-amber-600 hover:text-amber-800 transition-colors uppercase tracking-widest flex items-center gap-0.5 mt-2"
               >
-                Open Mentor Panel <ArrowRight className="w-3 h-3" />
+                {t("teacherDashboard.openMentorPanel", { fallback: "Open Mentor Panel" })} <ArrowRight className="w-3 h-3" />
               </Link>
             )}
           </div>
@@ -160,7 +162,7 @@ export default function MyClassPanel({ classInfo }) {
       <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-3">
           <BellRing className="w-4 h-4 text-blue-600" />
-          <h4 className="text-xs font-black text-[#03045e] uppercase tracking-wide">Upcoming Class Events</h4>
+          <h4 className="text-xs font-black text-[#03045e] uppercase tracking-wide">{t("teacherDashboard.upcomingEvents", { fallback: "Upcoming Class Events" })}</h4>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 gap-3">
           {classEvents.map((evt, idx) => (

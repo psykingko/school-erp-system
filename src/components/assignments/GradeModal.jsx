@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { X, CheckCircle, ExternalLink, FileText, Sparkles, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { gradeSubmission } from "../../services/assignmentService";
+import { useLanguage } from "../../context/LanguageContext";
 
 const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onGradeSaved }) => {
+  const { t } = useLanguage();
   const [marks, setMarks] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -25,12 +27,12 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
     const numericMarks = Number(marks);
 
     if (isNaN(numericMarks) || marks.trim() === "") {
-      setValidationError("Please enter valid numeric marks.");
+      setValidationError(t("assignments.invalidMarks", { fallback: "Please enter valid numeric marks." }));
       return;
     }
 
     if (numericMarks < 0 || numericMarks > totalMarks) {
-      setValidationError(`Marks must be between 0 and ${totalMarks}.`);
+      setValidationError(`${t("assignments.marksBetween", { fallback: "Marks must be between 0 and" })} ${totalMarks}.`);
       return;
     }
 
@@ -49,7 +51,7 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
       onClose();
     } catch (err) {
       console.error("Grading failed:", err);
-      setValidationError("Failed to submit grades. Please try again.");
+      setValidationError(t("assignments.failedToSubmitGrades", { fallback: "Failed to submit grades. Please try again." }));
       setIsSaving(false);
     }
   };
@@ -67,10 +69,10 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
           <div className="p-6 bg-gradient-to-r from-[#03045e] to-[#0077b6] text-white flex justify-between items-start">
             <div>
               <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-md">
-                Grading Center
+                {t("assignments.gradingCenter", { fallback: "Grading Center" })}
               </span>
               <h3 className="text-xl font-black mt-1 leading-tight">{submission.studentName}</h3>
-              <p className="text-[10px] text-blue-100 font-bold mt-0.5">Adm No: {submission.admissionNo}</p>
+              <p className="text-[10px] text-blue-100 font-bold mt-0.5">{t("assignments.admNo", { fallback: "Adm No:" })} {submission.admissionNo}</p>
             </div>
             <button 
               onClick={onClose}
@@ -85,11 +87,11 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
             <div className="space-y-2">
               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                 <FileText size={12} className="text-[#0077b6]" />
-                Submitted Response
+                {t("assignments.submittedResponse", { fallback: "Submitted Response" })}
               </span>
               <div className="p-4 bg-gray-50 border border-gray-150 rounded-2xl min-h-[80px] flex flex-col justify-center gap-3">
                 {submission.status === "PENDING" || submission.status === "OVERDUE" ? (
-                  <span className="text-xs text-rose-500 font-bold italic">No response submitted yet ( Roster Entry Grading Mode ).</span>
+                  <span className="text-xs text-rose-500 font-bold italic">{t("assignments.noResponseYet", { fallback: "No response submitted yet ( Roster Entry Grading Mode )." })}</span>
                 ) : (
                   <>
                     {(submission.submissionText || (!submission.submissionText && !submission.attachment && submission.content)) && (
@@ -99,7 +101,7 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
                     )}
                     {submission.attachment && (
                       <div className="pt-2 border-t border-gray-200">
-                        <span className="text-xs text-gray-500 font-bold block mb-1">Attached File:</span>
+                        <span className="text-xs text-gray-500 font-bold block mb-1">{t("assignments.attachedFile", { fallback: "Attached File:" })}</span>
                         {typeof submission.attachment === "string" ? (
                           <a 
                             href={submission.attachment}
@@ -108,7 +110,7 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
                             className="text-xs text-blue-600 font-black hover:underline flex items-center gap-1 w-fit bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100/60"
                           >
                             <ExternalLink size={12} />
-                            Open Student Link
+                            {t("assignments.openStudentLink", { fallback: "Open Student Link" })}
                           </a>
                         ) : (
                           <a 
@@ -117,13 +119,13 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
                             className="text-xs text-blue-600 font-black hover:underline flex items-center gap-1 w-fit bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100/60"
                           >
                             <FileText size={12} />
-                            Download {submission.attachment.fileName}
+                            {t("assignments.download", { fallback: "Download" })} {submission.attachment.fileName}
                           </a>
                         )}
                       </div>
                     )}
                     {!submission.submissionText && !submission.attachment && !submission.content && (
-                      <span className="text-xs text-gray-500 font-bold italic">Empty submission.</span>
+                      <span className="text-xs text-gray-500 font-bold italic">{t("assignments.emptySubmission", { fallback: "Empty submission." })}</span>
                     )}
                   </>
                 )}
@@ -136,7 +138,7 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
               <div className="space-y-2">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                   <Sparkles size={12} className="text-amber-500" />
-                  Score (Max {totalMarks})
+                  {t("assignments.scoreMax", { fallback: "Score (Max" })} {totalMarks})
                 </span>
                 <div className="relative">
                   <input 
@@ -154,11 +156,11 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
               <div className="md:col-span-2 space-y-2">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                   <MessageSquare size={12} className="text-indigo-500" />
-                  Feedback / Comments
+                  {t("assignments.feedbackComments", { fallback: "Feedback / Comments" })}
                 </span>
                 <textarea 
                   className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-3.5 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
-                  placeholder="Provide qualitative guidance..."
+                  placeholder={t("assignments.feedbackPlaceholder", { fallback: "Provide qualitative guidance..." })}
                   rows={2}
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
@@ -179,7 +181,7 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
                 onClick={onClose}
                 className="flex-1 py-4 rounded-2xl bg-gray-50 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-all border border-gray-150"
               >
-                Cancel
+                {t("common.cancel", { fallback: "Cancel" })}
               </button>
               <button 
                 type="submit"
@@ -195,7 +197,7 @@ const GradeModal = ({ isOpen, onClose, submission, totalMarks, assignmentId, onG
                 ) : (
                   <>
                     <CheckCircle size={15} />
-                    <span>Publish Grade</span>
+                    <span>{t("assignments.publishGrade", { fallback: "Publish Grade" })}</span>
                   </>
                 )}
               </button>

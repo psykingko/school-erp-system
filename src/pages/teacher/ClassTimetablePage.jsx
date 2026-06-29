@@ -11,9 +11,11 @@ import {
   HelpCircle,
 } from "lucide-react";
 import MainCard from "../../components/MainCard";
+import { useLanguage } from "../../context/LanguageContext";
 
 const ClassTimetablePage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const teacherId = user?.linkedEntityId || "teach-001";
 
   const [weeklySchedule, setWeeklySchedule] = useState([]);
@@ -37,12 +39,37 @@ const ClassTimetablePage = () => {
   }, [teacherId]);
 
   const daysOfTheWeek = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
+    t("common.monday", { fallback: "Monday" }),
+    t("common.tuesday", { fallback: "Tuesday" }),
+    t("common.wednesday", { fallback: "Wednesday" }),
+    t("common.thursday", { fallback: "Thursday" }),
+    t("common.friday", { fallback: "Friday" }),
   ];
+  const enDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  
+  // Mapping display day back to internal en day
+  const getEnDay = (displayDay) => {
+    const idx = daysOfTheWeek.indexOf(displayDay);
+    return idx >= 0 ? enDays[idx] : displayDay;
+  };
+  
+  // Mapping internal en day to display day
+  const getDisplayDay = (enDay) => {
+    const idx = enDays.indexOf(enDay);
+    return idx >= 0 ? daysOfTheWeek[idx] : enDay;
+  };
+
+  const [selectedDisplayDay, setSelectedDisplayDay] = useState(daysOfTheWeek[0]);
+  
+  useEffect(() => {
+    setSelectedDisplayDay(getDisplayDay(selectedDay));
+  }, [t, selectedDay]);
+
+  const handleDaySelect = (displayDay) => {
+    setSelectedDisplayDay(displayDay);
+    setSelectedDay(getEnDay(displayDay));
+  };
+
   const dayFilteredSchedule = weeklySchedule.filter(
     (s) => s.day === selectedDay,
   );
@@ -59,7 +86,7 @@ const ClassTimetablePage = () => {
     <div className="space-y-6 pb-12">
       <TeacherModuleHeader
         titleKey="nav.class_timetable"
-        descriptionKey="Analyze your weekly class allocations, subject streams, and room mappings."
+        descriptionKey="timetable.desc"
         helperContentEn="The My Schedule page lets you view your complete weekly class coordination plans. Switch tabs to analyze individual days and plan homework releases."
         helperContentHi="मेरी अनुसूची पृष्ठ आपको अपनी पूरी साप्ताहिक कक्षा समन्वय योजनाओं को देखने की अनुमति देता है। व्यक्तिगत दिनों का विश्लेषण करने और होमवर्क जारी करने की योजना बनाने के लिए टैब स्विच करें।"
       />
@@ -70,26 +97,27 @@ const ClassTimetablePage = () => {
           <MainCard className="p-5">
             <h3 className="text-xs font-black text-[#03045e] uppercase tracking-wider mb-4 flex items-center gap-1.5 pb-2 border-b border-gray-50">
               <CalendarDays className="w-4 h-4 text-blue-500" />
-              Day Navigation
+              {t("timetable.dayNavigation", { fallback: "Day Navigation" })}
             </h3>
             <div className="space-y-2">
-              {daysOfTheWeek.map((day) => {
+              {daysOfTheWeek.map((displayDay) => {
+                const enDay = getEnDay(displayDay);
                 const count = weeklySchedule.filter(
-                  (s) => s.day === day,
+                  (s) => s.day === enDay,
                 ).length;
-                const isSelected = selectedDay === day;
+                const isSelected = selectedDisplayDay === displayDay;
 
                 return (
                   <button
-                    key={day}
-                    onClick={() => setSelectedDay(day)}
+                    key={displayDay}
+                    onClick={() => handleDaySelect(displayDay)}
                     className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-black transition-all uppercase tracking-wider ${
                       isSelected
                         ? "bg-[#03045e] border-[#03045e] text-white shadow-sm"
                         : "bg-white border-gray-100 text-gray-500 hover:bg-blue-50/30 hover:border-blue-100"
                     }`}
                   >
-                    <span>{day}</span>
+                    <span>{displayDay}</span>
                     <span
                       className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
                         isSelected
@@ -97,7 +125,7 @@ const ClassTimetablePage = () => {
                           : "bg-gray-100 text-gray-400"
                       }`}
                     >
-                      {count} {count === 1 ? "Class" : "Classes"}
+                      {count} {count === 1 ? t("common.class", { fallback: "Class" }) : t("common.classes", { fallback: "Classes" })}
                     </span>
                   </button>
                 );
@@ -112,16 +140,16 @@ const ClassTimetablePage = () => {
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-5">
               <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider flex items-center gap-1.5">
                 <Compass className="w-4.5 h-4.5 text-blue-600" />
-                Teaching Schedule: {selectedDay}
+                {t("timetable.teachingSchedule", { fallback: "Teaching Schedule" })}: {selectedDisplayDay}
               </h3>
               <span className="text-[9px] font-black bg-blue-50 text-blue-600 px-2 py-0.5 rounded-lg border border-blue-100 uppercase tracking-tighter">
-                {dayFilteredSchedule.length} Assigned Periods
+                {dayFilteredSchedule.length} {t("timetable.assignedPeriods", { fallback: "Assigned Periods" })}
               </span>
             </div>
 
             {dayFilteredSchedule.length === 0 ? (
               <div className="text-center py-16 text-xs font-bold text-gray-400 italic bg-gray-50/20 rounded-2xl border border-dashed border-gray-100">
-                You have no scheduled class allocations on {selectedDay}.
+                {t("timetable.noSchedule", { fallback: `You have no scheduled class allocations on ${selectedDisplayDay}.` })}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -141,7 +169,7 @@ const ClassTimetablePage = () => {
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] font-black text-[#00b4d8] bg-[#caf0f8]/20 px-2.5 py-1 rounded-xl">
-                          Class {item.class}
+                          {t("common.class", { fallback: "Class" })} {item.class}
                         </span>
                       </div>
                     </div>

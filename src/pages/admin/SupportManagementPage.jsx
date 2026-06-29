@@ -17,6 +17,8 @@ import MainCard from "../../components/MainCard";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getAllSupportRequests, updateSupportRequestStatus, addSupportRemark, getSupportStats, getSupportCategoryStats, getSupportHandler } from "../../services/supportService";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 
 const CATEGORIES = [
   "Help Request",
@@ -169,6 +171,8 @@ export default function SupportManagementPage() {
           </div>
         )}
       </div>
+
+      <PageAuthorityBanner moduleId="admin_support_management" moduleName="Support Center" />
 
       {/* Insights Section */}
       <div className="space-y-4">
@@ -437,14 +441,16 @@ export default function SupportManagementPage() {
                 </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   {/* Status Dropdown */}
-                  <select
-                    value={viewRequest.status}
-                    onChange={(e) => handleUpdateStatus(e.target.value)}
-                    disabled={updating}
-                    className={`text-sm font-bold rounded-xl px-4 py-2 border outline-none ${getStatusColor(viewRequest.status)} ${updating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}`}
-                  >
-                    {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <PermissionGate moduleId="admin_support_management" permission="edit" mode="disabled">
+                    <select
+                      value={viewRequest.status}
+                      onChange={(e) => handleUpdateStatus(e.target.value)}
+                      disabled={updating}
+                      className={`text-sm font-bold rounded-xl px-4 py-2 border outline-none ${getStatusColor(viewRequest.status)} ${updating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}`}
+                    >
+                      {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </PermissionGate>
 
                   <button
                     onClick={() => setViewRequest(null)}
@@ -564,31 +570,33 @@ export default function SupportManagementPage() {
                   </div>
 
                   {/* Add Remark Form */}
-                  <div className="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm">
-                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-3">Add Note</p>
-                    <textarea
-                      rows={4}
-                      placeholder="Type a remark..."
-                      value={newRemark}
-                      onChange={(e) => setNewRemark(e.target.value)}
-                      disabled={updating}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-[#0077b6] outline-none resize-none mb-3 disabled:opacity-50"
-                    />
-                    <motion.button
-                      whileHover={newRemark.trim() && !updating ? { scale: 1.02 } : {}}
-                      whileTap={newRemark.trim() && !updating ? { scale: 0.98 } : {}}
-                      onClick={handleAddRemark}
-                      disabled={!newRemark.trim() || updating}
-                      className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
-                        newRemark.trim() && !updating
-                          ? "bg-[#0077b6] text-white shadow-lg shadow-blue-500/20 hover:bg-[#023e8a]"
-                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      }`}
-                    >
-                      <Send size={16} />
-                      {updating ? "Saving..." : "Add Remark"}
-                    </motion.button>
-                  </div>
+                  <PermissionGate moduleId="admin_support_management" permission="edit" mode="hidden">
+                    <div className="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm">
+                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-3">Add Note</p>
+                      <textarea
+                        rows={4}
+                        placeholder="Type a remark..."
+                        value={newRemark}
+                        onChange={(e) => setNewRemark(e.target.value)}
+                        disabled={updating}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-[#0077b6] outline-none resize-none mb-3 disabled:opacity-50"
+                      />
+                      <motion.button
+                        whileHover={newRemark.trim() && !updating ? { scale: 1.02 } : {}}
+                        whileTap={newRemark.trim() && !updating ? { scale: 0.98 } : {}}
+                        onClick={handleAddRemark}
+                        disabled={!newRemark.trim() || updating}
+                        className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
+                          newRemark.trim() && !updating
+                            ? "bg-[#0077b6] text-white shadow-lg shadow-blue-500/20 hover:bg-[#023e8a]"
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        }`}
+                      >
+                        <Send size={16} />
+                        {updating ? "Saving..." : "Add Remark"}
+                      </motion.button>
+                    </div>
+                  </PermissionGate>
 
                 </div>
 

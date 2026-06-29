@@ -12,7 +12,9 @@ import { useLanguage } from "../../context/LanguageContext";
  */
 const TeacherModuleHeader = ({ 
   titleKey, 
+  title, // Optional: if provided, skips translation
   descriptionKey, 
+  description, // Optional: if provided, skips translation
   helperContentEn, 
   helperContentHi,
   colorLegend = []
@@ -28,7 +30,7 @@ const TeacherModuleHeader = ({
           animate={{ opacity: 1, x: 0 }}
           className="text-3xl font-black text-[#03045e] tracking-tight"
         >
-          {t(titleKey)}
+          {title || t(titleKey)}
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, x: -10 }}
@@ -36,7 +38,7 @@ const TeacherModuleHeader = ({
           transition={{ delay: 0.1 }}
           className="text-gray-500 font-medium max-w-2xl"
         >
-          {t(descriptionKey) || "Manage this module's operations and data."}
+          {description || (descriptionKey ? t(descriptionKey) : t("common.moduleFallbackDesc"))}
         </motion.p>
       </div>
 

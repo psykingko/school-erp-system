@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Check, X, Users, AlertCircle } from "lucide-react";
 import { clubsService } from "../../services/clubsService";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ActivityParticipantsModal({
   isOpen,
@@ -15,6 +16,7 @@ export default function ActivityParticipantsModal({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (isOpen && activity) {
@@ -31,7 +33,7 @@ export default function ActivityParticipantsModal({
       setExistingParticipations(parts);
     } catch (err) {
       console.error(err);
-      setErrorMsg("Failed to load existing participations.");
+      setErrorMsg(t("clubs.loadParticipationsFailed", { fallback: "Failed to load existing participations." }));
     } finally {
       setLoading(false);
     }
@@ -104,7 +106,7 @@ export default function ActivityParticipantsModal({
       await loadParticipations();
       setSelectedStudentIds(new Set());
     } catch (err) {
-      setErrorMsg(err.message || "Failed to mark participation.");
+      setErrorMsg(err.message || t("clubs.markParticipationFailed", { fallback: "Failed to mark participation." }));
     } finally {
       setSaving(false);
     }
@@ -134,7 +136,7 @@ export default function ActivityParticipantsModal({
 
       await loadParticipations();
     } catch (err) {
-      setErrorMsg(err.message || "Failed to remove participation.");
+      setErrorMsg(err.message || t("clubs.removeParticipationFailed", { fallback: "Failed to remove participation." }));
     } finally {
       setSaving(false);
     }
@@ -150,7 +152,7 @@ export default function ActivityParticipantsModal({
             <Users className="w-5 h-5 text-[#00b4d8]" />
             <div>
               <h3 className="font-black text-sm text-[#03045e] uppercase tracking-wider">
-                Activity Participants
+                {t("clubs.activityParticipants", { fallback: "Activity Participants" })}
               </h3>
               <p className="text-[10px] text-gray-500 font-bold mt-0.5">
                 {activity.title} • {activity.date}
@@ -182,12 +184,12 @@ export default function ActivityParticipantsModal({
               {/* Student Selection */}
               <div className="mb-6">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-3">
-                  Student Selection (Club Members Only)
+                  {t("clubs.studentSelection", { fallback: "Student Selection (Club Members Only)" })}
                 </h4>
                 
                 {availableMembers.length === 0 ? (
                   <div className="text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-[11px] font-bold text-gray-400 italic">
-                    All active club members have already been marked or there are no active members.
+                    {t("clubs.allMembersMarked", { fallback: "All active club members have already been marked or there are no active members." })}
                   </div>
                 ) : (
                   <div className="border border-gray-200 rounded-2xl overflow-hidden">
@@ -203,11 +205,11 @@ export default function ActivityParticipantsModal({
                           <Check size={10} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none" />
                         </div>
                         <span className="text-[11px] font-black text-[#03045e] uppercase tracking-wider group-hover:text-[#00b4d8] transition-colors">
-                          Select All Members
+                          {t("clubs.selectAllMembers", { fallback: "Select All Members" })}
                         </span>
                       </label>
                       <span className="text-[10px] font-bold text-gray-500">
-                        {selectedStudentIds.size} selected
+                        {selectedStudentIds.size} {t("clubs.selected", { fallback: "selected" })}
                       </span>
                     </div>
                     
@@ -225,7 +227,7 @@ export default function ActivityParticipantsModal({
                           </div>
                           <div>
                             <div className="text-xs font-black text-[#03045e]">{member.name}</div>
-                            <div className="text-[10px] font-bold text-gray-400">Class {member.class}</div>
+                            <div className="text-[10px] font-bold text-gray-400">{t("common.class", { fallback: "Class" })} {member.class}</div>
                           </div>
                         </label>
                       ))}
@@ -240,7 +242,7 @@ export default function ActivityParticipantsModal({
                     className="h-10 px-6 bg-[#03045e] text-white rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-[#0077b6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {saving && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                    Mark Participation
+                    {t("clubs.markParticipationBtn", { fallback: "Mark Participation" })}
                   </button>
                 </div>
               </div>
@@ -248,12 +250,12 @@ export default function ActivityParticipantsModal({
               {/* Already Marked Section */}
               <div className="pt-4 border-t border-gray-100">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-3">
-                  Already Marked ({alreadyMarkedList.length})
+                  {t("clubs.alreadyMarked", { fallback: "Already Marked" })} ({alreadyMarkedList.length})
                 </h4>
                 
                 {alreadyMarkedList.length === 0 ? (
                   <div className="text-[11px] font-bold text-gray-400 italic">
-                    No participants marked yet.
+                    {t("clubs.noParticipantsMarked", { fallback: "No participants marked yet." })}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 gap-2">
@@ -267,7 +269,7 @@ export default function ActivityParticipantsModal({
                           onClick={() => handleRemoveParticipation(p.studentId)}
                           disabled={saving}
                           className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all disabled:opacity-50"
-                          title="Remove from participated"
+                          title={t("clubs.removeFromParticipated", { fallback: "Remove from participated" })}
                         >
                           <X size={12} />
                         </button>

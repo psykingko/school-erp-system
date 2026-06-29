@@ -2,17 +2,19 @@ import React, { useState } from "react";
 import StatusBadge from "./StatusBadge";
 import { Check, X, ShieldAlert, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import PermissionGate from "../PermissionGate";
 
 /**
  * ApprovalTable
  * 
  * Directory view mapping student or faculty leave schedules and approving logs.
  */
-const ApprovalTable = ({ 
-  requests = [], 
+const ApprovalTable = ({
+  requests = [],
   onApprove, 
   onReject, 
-  isEmpty = false
+  isEmpty = false,
+  gateProps = null
 }) => {
   const [expandedRow, setExpandedRow] = useState(null);
 
@@ -93,21 +95,45 @@ const ApprovalTable = ({
                                <AlertCircle size={10} /> Insufficient Balance
                              </div>
                           ) : (
+                            gateProps ? (
+                              <PermissionGate {...gateProps}>
+                                <button 
+                                  onClick={() => onApprove(req.id)}
+                                  className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 border border-emerald-100 transition-colors"
+                                  title="Approve request"
+                                >
+                                  <Check size={14} />
+                                </button>
+                              </PermissionGate>
+                            ) : (
+                              <button 
+                                onClick={() => onApprove(req.id)}
+                                className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 border border-emerald-100 transition-colors"
+                                title="Approve request"
+                              >
+                                <Check size={14} />
+                              </button>
+                            )
+                          )}
+                          {gateProps ? (
+                            <PermissionGate {...gateProps}>
+                              <button 
+                                onClick={() => onReject(req.id)}
+                                className="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 flex items-center justify-center text-rose-600 border border-rose-100 transition-colors"
+                                title="Reject request"
+                              >
+                                <X size={14} />
+                              </button>
+                            </PermissionGate>
+                          ) : (
                             <button 
-                              onClick={() => onApprove(req.id)}
-                              className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 border border-emerald-100 transition-colors"
-                              title="Approve request"
+                              onClick={() => onReject(req.id)}
+                              className="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 flex items-center justify-center text-rose-600 border border-rose-100 transition-colors"
+                              title="Reject request"
                             >
-                              <Check size={14} />
+                              <X size={14} />
                             </button>
                           )}
-                          <button 
-                            onClick={() => onReject(req.id)}
-                            className="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 flex items-center justify-center text-rose-600 border border-rose-100 transition-colors"
-                            title="Reject request"
-                          >
-                            <X size={14} />
-                          </button>
                         </div>
                       )}
                     </td>

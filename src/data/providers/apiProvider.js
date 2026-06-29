@@ -748,10 +748,27 @@ const apiProvider = {
 
   // === ACHIEVEMENT WRITE ===
   createAchievement: async (_achievementData) => {
-    console.warn(
-      "[apiProvider] createAchievement: Backend not implemented yet",
+    return Promise.reject(
+      new Error(
+        "[apiProvider] createAchievement: Backend not implemented yet",
+      ),
     );
-    return null;
+  },
+
+  updateAchievement: async (_id, _data) => {
+    return Promise.reject(
+      new Error(
+        "[apiProvider] updateAchievement: Backend not implemented yet",
+      ),
+    );
+  },
+
+  deleteAchievement: async (_id) => {
+    return Promise.reject(
+      new Error(
+        "[apiProvider] deleteAchievement: Backend not implemented yet",
+      ),
+    );
   },
 
   // === NOTICES & EVENTS WRITE ===
@@ -762,6 +779,38 @@ const apiProvider = {
   createEvent: async (_eventData) => {
     console.warn("[apiProvider] createEvent: Backend not implemented yet");
     return null;
+  },
+
+  // === STUDENT DUTY DATA ===
+  getStudentDutyRequests: async () => {
+    console.warn("[apiProvider] getStudentDutyRequests: Backend not implemented yet");
+    return [];
+  },
+  getStudentDutyRequestById: async (_id) => {
+    console.warn("[apiProvider] getStudentDutyRequestById: Backend not implemented yet");
+    return null;
+  },
+  createStudentDutyRequest: async (_data) => {
+    console.warn("[apiProvider] createStudentDutyRequest: Backend not implemented yet");
+    return null;
+  },
+  updateStudentDutyRequest: async (_id, _data) => {
+    console.warn("[apiProvider] updateStudentDutyRequest: Backend not implemented yet");
+    return null;
+  },
+  cancelStudentDutyRequest: async (_id) => {
+    console.warn("[apiProvider] cancelStudentDutyRequest: Backend not implemented yet");
+    return false;
+  },
+  completeStudentDutyRequest: async (_id) => {
+    console.warn("[apiProvider] completeStudentDutyRequest: Backend not implemented yet");
+    return false;
+  },
+
+  // === ADMIN / SYSTEM ===
+  resetSeedData: async () => {
+    console.warn("[apiProvider] resetSeedData: Backend not implemented yet");
+    return false;
   },
 };
 /* eslint-enable no-unused-vars */

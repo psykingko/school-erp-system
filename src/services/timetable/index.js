@@ -5,7 +5,6 @@
 
 import { getDataProvider } from "../../data";
 import { getChildren } from "../parentService";
-import { timetableSeed } from "../../data/mockDB/seed/timetable";
 
 // ── Validation (always returns clean — no blocking conflicts) ─────────────────
 const validateTimetables = () => [];
@@ -109,15 +108,18 @@ const ensureTimetableExists = async (classId) => {
   const provider = getDataProvider();
   const existing = await provider.getTimetableByClass(classId);
   if (!existing) {
-    // Use static seed data if no timetable exists
-    const staticTimetable = timetableSeed.find((tt) => tt.classId === classId);
-    if (staticTimetable) {
-      const all = (await provider.getTimetables()) || [];
-      all.push(staticTimetable);
-      await provider.setTimetables(all);
-      return true;
-    }
-    return false;
+    // If no timetable exists, we could initialize an empty one.
+    const newTimetable = {
+      classId,
+      status: "draft",
+      weeklySchedule: {
+        Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: []
+      }
+    };
+    const all = (await provider.getTimetables()) || [];
+    all.push(newTimetable);
+    await provider.setTimetables(all);
+    return true;
   }
   return true;
 };
@@ -126,31 +128,13 @@ export const initializeTimetables = async (forceRegenerate = false) => {
   const provider = getDataProvider();
   let existing = await provider.getTimetables();
 
-  // Check if timetables need regeneration (missing subject/teacher fields from new template format)
-  const needsRegeneration =
-    forceRegenerate ||
-    !existing ||
-    existing.length === 0 ||
-    existing.some((tt) => {
-      const firstDay = Object.keys(tt.weeklySchedule || {})[0];
-      const firstSlot = tt.weeklySchedule?.[firstDay]?.[0];
-      return !firstSlot || !firstSlot.subject || !firstSlot.teacher;
-    });
-
-  if (needsRegeneration) {
-    // Use static timetable seed data
-    await provider.setTimetables(timetableSeed);
+  if (!existing || existing.length === 0) {
+    // If empty, it should be populated by seed data during a hard reset
+    // For now, we return empty success
+    return { success: true, message: "No timetables found. Need seed." };
   } else {
     const periodCodeMap = {
-      1: "P1",
-      2: "P2",
-      3: "P3",
-      4: "P4",
-      5: "P5",
-      6: "P6",
-      7: "P7",
-      8: "P8",
-      9: "P9",
+      1: "P1", 2: "P2", 3: "P3", 4: "P4", 5: "P5", 6: "P6", 7: "P7", 8: "P8", 9: "P9",
     };
     let needsSave = false;
     const migrated = existing.map((tt) => {
@@ -182,10 +166,9 @@ export const initializeTimetables = async (forceRegenerate = false) => {
 
 export const resetTimetables = async () => {
   const provider = getDataProvider();
-  // Reset to static timetable seed data
-  await provider.setTimetables(timetableSeed);
+  // Instead of setting to seed directly, we rely on the provider's overall reset.
   await emitTimetablePublished({ reset: true });
-  return { success: true, message: "Timetables regenerated" };
+  return { success: true, message: "Timetables reset requested via provider." };
 };
 
 export const saveTimetableSlot = async (
@@ -269,6 +252,52 @@ export const publishTimetables = async () => {
   return { success: true };
 };
 
+export const getPublishedTimetable = async (classId) => {
+  const provider = getDataProvider();
+  const timetable = await provider.getTimetableByClass(classId);
+  if (timetable && timetable.status === "published") return timetable;
+  return null;
+};
+
+export const getClassTimetable = async (classId) => {
+  const provider = getDataProvider();
+  return await provider.getTimetableByClass(classId);
+};
+
+export const getTeacherTimetable = async (teacherId) => {
+  return await getTeacherSchedule(teacherId);
+};
+
+export const getRoomTimetable = async (roomId) => {
+  const provider = getDataProvider();
+  const timetables = await provider.getTimetables();
+  const roomSchedule = [];
+  timetables.forEach((tt) => {
+    Object.entries(tt.weeklySchedule || {}).forEach(([day, slots]) => {
+      slots.forEach((slot) => {
+        if (slot.roomId === roomId || SUBJECT_DEFAULT_ROOMS[slot.subjectId] === roomId) {
+          roomSchedule.push({ day, classId: tt.classId, ...slot });
+        }
+      });
+    });
+  });
+  return roomSchedule;
+};
+
+export const publishTimetable = publishClassTimetable;
+export const validateTimetable = validateTimetables;
+
+export const getTimetableDependencies = async () => {
+  const provider = getDataProvider();
+  const [classes, teachers, subjects, tsAssignments] = await Promise.all([
+    provider.getClasses(),
+    provider.getTeachers(),
+    provider.getSubjects(),
+    provider.getTeacherSubjectAssignments()
+  ]);
+  return { classes, teachers, subjects, tsAssignments };
+};
+
 export const adminTimetableService = {
   initializeTimetables,
   resetTimetables,
@@ -279,6 +308,13 @@ export const adminTimetableService = {
   publishTimetables,
   publishClassTimetable,
   SUBJECT_DEFAULT_ROOMS,
+  getPublishedTimetable,
+  getClassTimetable,
+  getTeacherTimetable,
+  getRoomTimetable,
+  publishTimetable,
+  validateTimetable,
+  getTimetableDependencies
 };
 
 // ── Teacher Schedule Projection ───────────────────────────────────────────────

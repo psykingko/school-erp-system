@@ -217,8 +217,32 @@ export const getTeacherProfile = async (teacherId) => {
   const provider = getDataProvider();
 
   const teachers = await provider.getTeachers();
-  const teacher = teachers.find((t) => t.id === tId);
-  if (!teacher) return null;
+  const rawTeacher = teachers.find((t) => t.id === tId);
+  if (!rawTeacher) return null;
+
+  let teacher = rawTeacher;
+  if (rawTeacher.employeeId) {
+    const employees = await provider.getEmployees();
+    const emp = employees.find(e => e.employeeId === rawTeacher.employeeId);
+    if (emp) {
+      teacher = {
+        ...rawTeacher,
+        name: emp.employeeName,
+        teacherName: emp.employeeName,
+        phone: emp.phone,
+        phoneNumber: emp.phone,
+        email: emp.email,
+        address: emp.address || rawTeacher.address,
+        dob: emp.dob || rawTeacher.dob,
+        gender: emp.gender || rawTeacher.gender,
+        department: emp.departmentId,
+        designation: emp.designation,
+        joiningDate: emp.joiningDate,
+        emergencyContact: emp.emergencyContact || rawTeacher.emergencyContact,
+        isActive: emp.status === "active"
+      };
+    }
+  }
 
   // Resolve assigned class & subjects
   const assignments = await provider.getTeacherSubjectAssignments();
@@ -305,38 +329,65 @@ export const updateTeacherProfile = async (teacherId, updates) => {
   const idx = teachers.findIndex((t) => t.id === tId);
   if (idx === -1) throw new Error("Teacher not found");
 
-  // Enforce validation: teachers can only edit allowed personal & professional fields
-  const allowedUpdates = {};
-  const editableKeys = [
-    "phoneNumber",
-    "email",
-    "emergencyContact",
-    "address",
-    "dob",
-    "gender",
-    "qualification",
-    "experience",
-    "certifications",
-    "subjectSpecialization",
-  ];
+  const teacher = teachers[idx];
 
-  editableKeys.forEach((key) => {
-    if (updates[key] !== undefined) {
-      if (key === "gender") {
-        allowedUpdates[key] = normalizeGender(updates[key]);
-      } else {
-        allowedUpdates[key] = updates[key];
-      }
+  // Split updates into HR vs Academic
+  const hrKeys = ["phoneNumber", "phone", "email", "emergencyContact", "address", "dob", "gender", "name", "teacherName"];
+  const hrUpdates = {};
+  const academicUpdates = {};
+
+  Object.keys(updates).forEach(key => {
+    if (hrKeys.includes(key)) {
+      if (key === "phoneNumber" || key === "phone") hrUpdates.phone = updates[key];
+      else if (key === "name" || key === "teacherName") hrUpdates.employeeName = updates[key];
+      else if (key === "gender") hrUpdates.gender = normalizeGender(updates[key]);
+      else hrUpdates[key] = updates[key];
+    } else {
+      academicUpdates[key] = updates[key];
     }
   });
 
-  const updatedTeacher = await provider.updateTeacher(tId, allowedUpdates);
-  return updatedTeacher;
+  if (teacher.employeeId && Object.keys(hrUpdates).length > 0) {
+    await provider.updateEmployee(teacher.employeeId, hrUpdates);
+  }
+
+  if (Object.keys(academicUpdates).length > 0 || !teacher.employeeId) {
+    // If no employeeId (edge case), just save to teacher
+    await provider.updateTeacher(tId, Object.keys(academicUpdates).length > 0 ? academicUpdates : updates);
+  }
+
+  return await getTeacherProfile(tId);
 };
 
 export const getAllTeachers = async () => {
   const provider = getDataProvider();
-  return await provider.getTeachers();
+  const teachers = await provider.getTeachers();
+  const employees = await provider.getEmployees();
+
+  return teachers.map(teacher => {
+    if (teacher.employeeId) {
+      const emp = employees.find(e => e.employeeId === teacher.employeeId);
+      if (emp) {
+        return {
+          ...teacher,
+          name: emp.employeeName,
+          teacherName: emp.employeeName,
+          phone: emp.phone,
+          phoneNumber: emp.phone,
+          email: emp.email,
+          address: emp.address || teacher.address,
+          dob: emp.dob || teacher.dob,
+          gender: emp.gender || teacher.gender,
+          department: emp.departmentId,
+          designation: emp.designation,
+          joiningDate: emp.joiningDate,
+          emergencyContact: emp.emergencyContact || teacher.emergencyContact,
+          isActive: emp.status === "active"
+        };
+      }
+    }
+    return teacher;
+  });
 };
 
 /**

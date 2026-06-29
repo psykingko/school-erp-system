@@ -1097,6 +1097,10 @@ Settings                → Profile, Access Control, School Settings
 | Teacher Workload | Admin | R | Analytics |
 | Manage Departments | Admin | RW | Departments + member add/remove |
 | Access Control | Admin | UI-only | Role permissions (mock data) |
+| Academic Analytics | Admin, Teacher | R | Performance metrics & reports |
+| Institutional Planning | Admin | RW | High-level academic & workforce planning |
+| Support Management | Admin, Teacher, Student, Parent | RW | Help desk ticket lifecycle |
+| Student Duty Management | Admin, Teacher, Student | RW | Duty rosters and records |
 
 ### ⚠️ Partially Implemented / UI-Only
 

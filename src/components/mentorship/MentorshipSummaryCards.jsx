@@ -1,35 +1,38 @@
 import React from "react";
 import { Users, ClipboardCheck, MessageSquare, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function MentorshipSummaryCards({ summary }) {
+  const { t } = useLanguage();
+
   const cards = [
     {
-      title: "Students Under Mentorship",
+      title: t("mentorSupport.studentsCountTitle", { fallback: "Students Under Mentorship" }),
       value: summary?.studentsCount || 0,
-      subtext: "Class Homeroom Assigned",
+      subtext: t("mentorSupport.studentsCountSub", { fallback: "Class Homeroom Assigned" }),
       icon: <Users className="w-5 h-5 text-indigo-500" />,
       color: "bg-indigo-50/60 border-indigo-100/50 text-indigo-900"
     },
     {
-      title: "Active Follow-Ups",
+      title: t("mentorSupport.activeFollowUpsTitle", { fallback: "Active Follow-Ups" }),
       value: summary?.activeFollowUps || 0,
-      subtext: "Observation tasks pending",
+      subtext: t("mentorSupport.activeFollowUpsSub", { fallback: "Observation tasks pending" }),
       icon: <ClipboardCheck className="w-5 h-5 text-rose-500" />,
       color: "bg-rose-50/60 border-rose-100/50 text-rose-900",
       alert: (summary?.activeFollowUps || 0) > 0
     },
     {
-      title: "Parent Consultations",
+      title: t("mentorSupport.parentConsultationsTitle", { fallback: "Parent Consultations" }),
       value: summary?.parentInteractionsCount || 0,
-      subtext: "Logged parent meetings",
+      subtext: t("mentorSupport.parentConsultationsSub", { fallback: "Logged parent meetings" }),
       icon: <MessageSquare className="w-5 h-5 text-emerald-500" />,
       color: "bg-emerald-50/60 border-emerald-100/50 text-emerald-900"
     },
     {
-      title: "Academic Concerns",
+      title: t("mentorSupport.academicConcernsTitle", { fallback: "Academic Concerns" }),
       value: summary?.academicConcernsCount || 0,
-      subtext: "High-priority subject alarms",
+      subtext: t("mentorSupport.academicConcernsSub", { fallback: "High-priority subject alarms" }),
       icon: <AlertTriangle className="w-5 h-5 text-amber-500" />,
       color: "bg-amber-50/60 border-amber-100/50 text-amber-900"
     }

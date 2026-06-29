@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export const MiniDatePicker = ({ selectedDate, onSelect, onClose }) => {
+  const { t, lang } = useLanguage();
   const [viewDate, setViewDate] = useState(new Date(selectedDate));
   
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+  // Format month and year using standard API
+  const formatMonthYear = (date) => {
+    return new Intl.DateTimeFormat(lang === "hi" ? "hi-IN" : "en-IN", {
+      month: "long",
+      year: "numeric",
+    }).format(date);
+  };
   
   const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
   const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
@@ -36,7 +41,7 @@ export const MiniDatePicker = ({ selectedDate, onSelect, onClose }) => {
     >
       <div className="flex items-center justify-between mb-4">
         <h4 className="font-bold text-[#03045e] text-sm">
-          {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
+          {formatMonthYear(viewDate)}
         </h4>
         <div className="flex gap-1">
           <button 
@@ -55,8 +60,10 @@ export const MiniDatePicker = ({ selectedDate, onSelect, onClose }) => {
       </div>
       
       <div className="grid grid-cols-7 gap-1 text-center mb-2">
-        {["M", "T", "W", "T", "F", "S", "S"].map(d => (
-          <span key={d} className="text-[10px] font-black text-gray-400">{d}</span>
+        {["M", "T", "W", "T", "F", "S", "S"].map((d, index) => (
+          <span key={index} className="text-[10px] font-black text-gray-400">
+            {t(`common.dayInitial.${index}`, { fallback: d })}
+          </span>
         ))}
       </div>
       
@@ -85,7 +92,7 @@ export const MiniDatePicker = ({ selectedDate, onSelect, onClose }) => {
         onClick={() => onSelect(new Date())}
         className="mt-4 w-full py-2 text-[11px] font-black uppercase tracking-widest text-[#0077b6] hover:bg-[#caf0f8] rounded-xl transition-colors"
       >
-        Jump to Today
+        {t("btn.jumpToToday")}
       </button>
     </motion.div>
   );

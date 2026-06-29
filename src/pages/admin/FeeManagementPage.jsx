@@ -17,6 +17,8 @@ import {
   Info,
 } from "lucide-react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
+import PermissionGate from "../../components/admin/PermissionGate";
 import OperationsFilterBar from "../../components/admin/operations/OperationsFilterBar";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
 import AdminDataTable from "../../components/admin/AdminDataTable";
@@ -263,7 +265,7 @@ function FeeStructureTab({ feeStructures, onSave }) {
                             </span>
                           )}
                           {isEditing ? (
-                            <>
+                            <PermissionGate moduleId="admin_fees" permission="edit" mode="hidden">
                               <button
                                 onClick={cancelEdit}
                                 className="border-2 border-slate-200 text-slate-500 px-3 py-1.5 rounded-xl text-[10px] font-black hover:bg-slate-50 transition-colors"
@@ -277,14 +279,16 @@ function FeeStructureTab({ feeStructures, onSave }) {
                               >
                                 {saving ? "Saving…" : "Save Changes"}
                               </button>
-                            </>
+                            </PermissionGate>
                           ) : (
-                            <button
-                              onClick={() => startEdit(fs)}
-                              className="flex items-center gap-1.5 border-2 border-[#0077b6]/20 text-[#0077b6] hover:bg-[#caf0f8]/40 px-3 py-1.5 rounded-xl text-[10px] font-black transition-colors"
-                            >
-                              <Edit2 size={11} /> Edit Amounts
-                            </button>
+                            <PermissionGate moduleId="admin_fees" permission="edit" mode="hidden">
+                              <button
+                                onClick={() => startEdit(fs)}
+                                className="flex items-center gap-1.5 border-2 border-[#0077b6]/20 text-[#0077b6] hover:bg-[#caf0f8]/40 px-3 py-1.5 rounded-xl text-[10px] font-black transition-colors"
+                              >
+                                <Edit2 size={11} /> Edit Amounts
+                              </button>
+                            </PermissionGate>
                           )}
                         </div>
                       </div>
@@ -759,15 +763,19 @@ const FeeManagementPage = () => {
         description="Manage fee structure, generate demand, track collections, and issue receipts."
         breadcrumbs={["Admin Portal", "Finance", "Fee Management"]}
         actionButton={
-          <button
-            onClick={() => setAddFeeOpen(true)}
-            className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] text-white px-5 py-2.5 rounded-2xl shadow-sm text-xs font-black transition-colors"
-          >
-            <IndianRupee size={16} />
-            <span>ADD FEE RECORD</span>
-          </button>
+          <PermissionGate moduleId="admin_fees" permission="create" mode="hidden">
+            <button
+              onClick={() => setAddFeeOpen(true)}
+              className="flex items-center gap-2 bg-[#0077b6] hover:bg-[#0096c7] text-white px-5 py-2.5 rounded-2xl shadow-sm text-xs font-black transition-colors"
+            >
+              <IndianRupee size={16} />
+              <span>ADD FEE RECORD</span>
+            </button>
+          </PermissionGate>
         }
       />
+
+      <PageAuthorityBanner moduleId="admin_fees" moduleName="Fee Management" />
 
       {/* Toast Notification */}
       <ToastNotification
@@ -1005,20 +1013,24 @@ const FeeManagementPage = () => {
                     </td>
                     <td className="py-3 px-2 text-right last:pr-2">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => setEditFee(fee)}
-                          className="text-[#0077b6] hover:text-[#03045e] bg-[#caf0f8]/40 px-2 py-1 rounded-lg text-[9px] font-black"
-                          title="Record Payment"
-                        >
-                          PAY
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(fee)}
-                          className="text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded-lg text-[9px] font-black"
-                          title="Delete Fee Record"
-                        >
-                          <X size={11} />
-                        </button>
+                        <PermissionGate moduleId="admin_fees" permission="create" mode="hidden">
+                          <button
+                            onClick={() => setEditFee(fee)}
+                            className="text-[#0077b6] hover:text-[#03045e] bg-[#caf0f8]/40 px-2 py-1 rounded-lg text-[9px] font-black"
+                            title="Record Payment"
+                          >
+                            PAY
+                          </button>
+                        </PermissionGate>
+                        <PermissionGate moduleId="admin_fees" permission="delete" mode="hidden">
+                          <button
+                            onClick={() => handleDeleteClick(fee)}
+                            className="text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded-lg text-[9px] font-black"
+                            title="Delete Fee Record"
+                          >
+                            <X size={11} />
+                          </button>
+                        </PermissionGate>
                         <button
                           className="text-amber-600 hover:text-amber-700 bg-amber-50 px-2 py-1 rounded-lg text-[9px] font-black"
                           title="Send SMS"
@@ -1106,9 +1118,11 @@ const FeeManagementPage = () => {
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
               Generate Fee Demand
             </h3>
-            <button className="bg-[#0077b6] hover:bg-[#0096c7] text-white px-4 py-2 rounded-xl text-xs font-black transition-colors flex items-center gap-2">
-              <FileText size={14} /> Generate Demand
-            </button>
+            <PermissionGate moduleId="admin_fees" permission="bulk" mode="hidden">
+              <button className="bg-[#0077b6] hover:bg-[#0096c7] text-white px-4 py-2 rounded-xl text-xs font-black transition-colors flex items-center gap-2">
+                <FileText size={14} /> Generate Demand
+              </button>
+            </PermissionGate>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -1146,9 +1160,11 @@ const FeeManagementPage = () => {
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
               Recent Receipts
             </h3>
-            <button className="border-2 border-slate-200 hover:border-[#0077b6] text-slate-700 px-4 py-2 rounded-xl text-xs font-black transition-colors flex items-center gap-2">
-              <Download size={14} /> Export All
-            </button>
+            <PermissionGate moduleId="admin_fees" permission="bulk" mode="hidden">
+              <button className="border-2 border-slate-200 hover:border-[#0077b6] text-slate-700 px-4 py-2 rounded-xl text-xs font-black transition-colors flex items-center gap-2">
+                <Download size={14} /> Export All
+              </button>
+            </PermissionGate>
           </div>
           <div className="text-center py-12 text-slate-400 text-xs font-semibold">
             No receipts generated yet. Use the Collection Dashboard to record

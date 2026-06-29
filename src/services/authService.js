@@ -39,7 +39,7 @@ export const authenticate = async ({ role, username, password }) => {
     throw new Error("Invalid username or password");
   }
 
-  if (!authUser.active) {
+  if (authUser.status === "INACTIVE" || authUser.active === false) {
     throw new Error("User account is inactive");
   }
 
@@ -60,7 +60,9 @@ export const authenticate = async ({ role, username, password }) => {
     entity = parents.find((p) => p.id === authUser.linkedEntityId || p.parentId === authUser.linkedEntityId);
     fullName = entity?.name || "Parent";
   } else if (authUser.role === ROLES.ADMIN) {
-    fullName = "System Administrator";
+    const employees = await provider.getEmployees();
+    entity = employees.find((e) => e.employeeId === authUser.employeeId || e.id === authUser.employeeId);
+    fullName = entity?.employeeName || entity?.name || "System Administrator";
   }
 
   // 3. Construct the normalized auth session object
@@ -77,20 +79,30 @@ export const authenticate = async ({ role, username, password }) => {
     [ROLES.ADMIN]: "#7209b7",
   };
 
+  // Calculate Access Profile using Phase 7 Effective Access Engine
+  const { default: effectiveAccessService } = await import("./effectiveAccessService");
+  const accessProfile = await effectiveAccessService.buildAccessProfile(authUser);
+
   return {
     isAuthenticated: true,
     authUserId: authUser.id,
     role: authUser.role,
     linkedEntityId: authUser.linkedEntityId,
+    employeeId: authUser.employeeId,
     name: fullName,
     admissionNumber:
       entity?.admissionNo ||
       entity?.employeeId ||
       authUser.linkedEntityId ||
+      authUser.employeeId ||
       "N/A",
     avatarInitials: initials || "?",
     avatarColor: roleColors[authUser.role] || "#03045e",
     profile: entity, // Full relational entity data for UI convenience
+    isSuperAdmin: !!authUser.isSuperAdmin,
+    departmentModules: accessProfile.departmentModules,
+    manualOverrides: accessProfile.manualOverrides,
+    effectiveModules: accessProfile.effectiveModules,
   };
 };
 
@@ -101,7 +113,7 @@ export const validateSession = async (user) => {
   if (!user || !user.authUserId) return false;
   const provider = getDataProvider();
   const record = await provider.getAuthUserById(user.authUserId);
-  return !!record && record.active;
+  return !!record && (record.status !== "INACTIVE") && (record.active !== false);
 };
 
 /**

@@ -1,11 +1,14 @@
 import React from "react";
 import { Compass, Users, ChevronRight, CheckCircle2 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ClubTable({ clubs = [], selectedClubId, onSelectClub }) {
+  const { t } = useLanguage();
+  
   if (clubs.length === 0) {
     return (
       <div className="bg-white border border-gray-100 rounded-3xl p-8 text-center font-bold text-xs text-gray-400 italic">
-        No clubs assigned to you in the co-curricular directory.
+        {t("clubs.noClubsAssigned", { fallback: "No clubs assigned to you in the co-curricular directory." })}
       </div>
     );
   }
@@ -15,10 +18,10 @@ export default function ClubTable({ clubs = [], selectedClubId, onSelectClub }) 
       <div className="p-5 border-b border-gray-100 flex items-center justify-between">
         <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider flex items-center gap-2">
           <Compass className="w-4 h-4 text-blue-500" />
-          My Assigned Clubs & Committees
+          {t("clubs.myAssignedClubs", { fallback: "My Assigned Clubs & Committees" })}
         </h3>
         <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-xl">
-          {clubs.length} Clubs
+          {clubs.length} {t("clubs.clubsCount", { fallback: "Clubs" })}
         </span>
       </div>
 
@@ -26,11 +29,11 @@ export default function ClubTable({ clubs = [], selectedClubId, onSelectClub }) 
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50/50 border-b border-gray-100">
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase">Club / Committee</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase">Category</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase">Scope</th>
-              <th className="p-4 text-[10px] font-black text-gray-400 uppercase">Status</th>
-              <th className="p-4 text-right text-[10px] font-black text-gray-400 uppercase">Operations</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase">{t("clubs.clubCommittee", { fallback: "Club / Committee" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase">{t("clubs.category", { fallback: "Category" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase">{t("clubs.scope", { fallback: "Scope" })}</th>
+              <th className="p-4 text-[10px] font-black text-gray-400 uppercase">{t("common.status", { fallback: "Status" })}</th>
+              <th className="p-4 text-right text-[10px] font-black text-gray-400 uppercase">{t("clubs.operations", { fallback: "Operations" })}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -56,7 +59,7 @@ export default function ClubTable({ clubs = [], selectedClubId, onSelectClub }) 
                   <td className="p-4">
                     <span className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase tracking-tighter">
                       <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                      Active
+                      {t("common.active", { fallback: "Active" })}
                     </span>
                   </td>
                   <td className="p-4 text-right">
@@ -68,7 +71,7 @@ export default function ClubTable({ clubs = [], selectedClubId, onSelectClub }) 
                           : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
                       }`}
                     >
-                      <span>Manage</span>
+                      <span>{t("clubs.manage", { fallback: "Manage" })}</span>
                       <ChevronRight className="w-3 h-3" />
                     </button>
                   </td>

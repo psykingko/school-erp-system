@@ -1,22 +1,59 @@
-import localProvider from "../data/providers/localProvider";
+import { getDataProvider } from "../data/providers/providerFactory";
 import { normalizeGender } from "../utils/genderUtils";
+import authUserService from "./authUserService";
 
 const employeeService = {
-  getEmployees: () => localProvider.getEmployees(),
-  createEmployee: (data) => {
+  getEmployees: () => getDataProvider().getEmployees(),
+
+  createEmployee: async (data) => {
     if (data.gender) data.gender = normalizeGender(data.gender);
-    return localProvider.createEmployee(data);
+
+    const { authUsername, authPassword, authStatus, systemAccess, portalAccess, ...employeeData } = data;
+
+    // 1. Create the employee
+    const newEmployee = await getDataProvider().createEmployee({ ...employeeData, systemAccess, portalAccess });
+
+    return newEmployee;
   },
-  updateEmployee: (id, data) => {
+
+  updateEmployee: async (id, data) => {
     if (data.gender !== undefined) data.gender = normalizeGender(data.gender);
-    return localProvider.updateEmployee(id, data);
+
+    const { authUsername, authPassword, authStatus, systemAccess, portalAccess, ...employeeData } = data;
+    return await getDataProvider().updateEmployee(id, { ...employeeData, systemAccess, portalAccess });
   },
-  deleteEmployee: (id) => localProvider.deleteEmployee(id),
+
+  deleteEmployee: async (id) => {
+    const employee = await getDataProvider().getEmployees().then(emps => emps.find(e => e.employeeId === id || e.id === id));
+    if (employee && employee.linkedAuthUserId) {
+      // Soft-delete the admin user to preserve audit history and traces
+      await authUserService.updateAdminUser(employee.linkedAuthUserId, { status: "INACTIVE" });
+    }
+    return getDataProvider().deleteEmployee(id);
+  },
+
+  // === OPERATIONAL PROFILES ===
+  getOperationalProfiles: async () => {
+    return await getDataProvider().getOperationalProfiles();
+  },
+
+  getOperationalProfile: async (employeeId) => {
+    return await getDataProvider().getOperationalProfileByEmployeeId(employeeId);
+  },
+
+  createOperationalProfile: async (data) => {
+    return await getDataProvider().createOperationalProfile(data);
+  },
+
+  updateOperationalProfile: async (id, data) => {
+    return await getDataProvider().updateOperationalProfile(id, data);
+  },
 };
 
 export const getDepartmentCapacityMetrics = async () => {
-  const departments = await localProvider.getDepartments();
-  const employees = await localProvider.getEmployees();
+  const provider = getDataProvider();
+  const departments = await provider.getDepartments();
+  const employees = await provider.getEmployees();
 
   return departments.map(dept => {
     const requiredStaff = dept.requiredStaff || 0;

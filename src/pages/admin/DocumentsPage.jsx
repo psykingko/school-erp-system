@@ -22,6 +22,8 @@ import {
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import OperationsStatCard from "../../components/admin/operations/OperationsStatCard";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 import { getDataProvider } from "../../data";
 
 // ─── Teacher Document Types (Static) ─────────────────────────────────────────
@@ -383,9 +385,11 @@ const StudentChecklistRow = ({
                     </button>
                   )}
                   {doc.status === "missing" && (
-                    <button className="w-full flex items-center justify-center gap-1 text-[9px] font-black text-slate-500 hover:bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg transition-colors">
-                      <Upload size={10} /> Upload
-                    </button>
+                    <PermissionGate moduleId="admin_documents" permission="create" mode="hidden">
+                      <button className="w-full flex items-center justify-center gap-1 text-[9px] font-black text-slate-500 hover:bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg transition-colors">
+                        <Upload size={10} /> Upload
+                      </button>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
@@ -788,18 +792,22 @@ const DocumentViewerModal = ({ doc, onVerify, onReject, onClose }) => {
 
         {doc.status === "pending" && !showRejectForm && (
           <div className="border-t border-slate-100 p-4 bg-white flex items-center justify-end gap-3">
-            <button 
-              onClick={() => setShowRejectForm(true)}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors"
-            >
-              <XCircle size={16} /> Reject
-            </button>
-            <button 
-              onClick={() => { onVerify(doc.id); onClose(); }}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-sm transition-colors"
-            >
-              <CheckCircle size={16} /> Approve & Verify
-            </button>
+            <PermissionGate moduleId="admin_documents" permission="edit" mode="disabled">
+              <button 
+                onClick={() => setShowRejectForm(true)}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors"
+              >
+                <XCircle size={16} /> Reject
+              </button>
+            </PermissionGate>
+            <PermissionGate moduleId="admin_documents" permission="edit" mode="disabled">
+              <button 
+                onClick={() => { onVerify(doc.id); onClose(); }}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-sm transition-colors"
+              >
+                <CheckCircle size={16} /> Approve & Verify
+              </button>
+            </PermissionGate>
           </div>
         )}
 
@@ -1055,6 +1063,8 @@ const DocumentsPage = () => {
           </button>
         }
       />
+      
+      <PageAuthorityBanner moduleId="admin_documents" moduleName="Document Center" />
 
       {/* Success Banner */}
       {successBanner && (

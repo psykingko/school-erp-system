@@ -292,6 +292,7 @@ const LeaveApprovalsPage = () => {
                       onApprove={handleApprove}
                       onReject={handleRejectClick}
                       isEmpty={false}
+                      gateProps={{ moduleId: "admin_leave_management", permission: "approve", mode: "disabled" }}
                     />
                   </div>
                 </div>
@@ -309,6 +310,7 @@ const LeaveApprovalsPage = () => {
                       onApprove={handleApprove}
                       onReject={handleRejectClick}
                       isEmpty={false}
+                      gateProps={{ moduleId: "admin_leave_management", permission: "approve", mode: "disabled" }}
                     />
                   </div>
                 </div>

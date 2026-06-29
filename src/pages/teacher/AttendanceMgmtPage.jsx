@@ -3,6 +3,7 @@ import TeacherModuleHeader from "../../components/teacher/TeacherModuleHeader";
 import TeacherDataTable from "../../components/teacher/TeacherDataTable";
 import MainCard from "../../components/MainCard";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   getTeacherWorkload,
   getStudentsInClass,
@@ -29,6 +30,7 @@ import { motion, AnimatePresence } from "framer-motion";
  */
 const AttendanceMgmtPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -152,7 +154,7 @@ const AttendanceMgmtPage = () => {
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       console.error(err);
-      setError("Failed to submit attendance. Please try again.");
+      setError(t("attendanceMgmt.failedToSubmit", { fallback: "Failed to submit attendance. Please try again." }));
     } finally {
       setSubmitting(false);
     }
@@ -160,7 +162,7 @@ const AttendanceMgmtPage = () => {
 
   const columns = [
     {
-      header: "Student Name",
+      header: t("attendanceMgmt.studentName", { fallback: "Student Name" }),
       render: (row) => {
         const leave = studentLeaves[row.id];
         return (
@@ -169,40 +171,44 @@ const AttendanceMgmtPage = () => {
               <span className="font-black text-[#03045e]">{row.name}</span>
               {leave && (
                 <span className="px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 text-[9px] font-black uppercase tracking-wider border border-sky-100">
-                  On Approved Leave
+                  {t("attendanceMgmt.onApprovedLeave", { fallback: "On Approved Leave" })}
                 </span>
               )}
             </div>
             <span className="text-[10px] text-gray-400 font-bold uppercase">
-              Adm: {row.admissionNo}
+              {t("attendanceMgmt.adm", { fallback: "Adm:" })} {row.admissionNo}
             </span>
           </div>
         );
       },
     },
     {
-      header: "Attendance Status",
+      header: t("attendanceMgmt.attendanceStatus", { fallback: "Attendance Status" }),
       className: "text-right",
       render: (row) => {
         const status = attendanceMap[row.id] || "unmarked";
         return (
           <div className="flex items-center justify-end gap-2">
             <StatusButton
+              t={t}
               active={status === "present"}
               type="present"
               onClick={() => toggleStatus(row.id, "present")}
             />
             <StatusButton
+              t={t}
               active={status === "absent"}
               type="absent"
               onClick={() => toggleStatus(row.id, "absent")}
             />
             <StatusButton
+              t={t}
               active={status === "on_leave"}
               type="on_leave"
               onClick={() => toggleStatus(row.id, "on_leave")}
             />
             <StatusButton
+              t={t}
               active={status === "unmarked"}
               type="unmarked"
               onClick={() => toggleStatus(row.id, "unmarked")}
@@ -217,7 +223,7 @@ const AttendanceMgmtPage = () => {
     <div className="space-y-8 pb-12">
       <TeacherModuleHeader
         titleKey="nav.attendance_mgmt"
-        descriptionKey="Mark and manage daily attendance for your assigned classes."
+        descriptionKey="attendanceMgmt.subtitle"
         helperContentEn="Select a class and date to mark attendance. You can also review and modify previously marked attendance."
         helperContentHi="उपस्थिति दर्ज करने के लिए कक्षा और तिथि चुनें। आप पहले से दर्ज उपस्थिति की समीक्षा और संशोधन भी कर सकते हैं।"
       />
@@ -228,22 +234,22 @@ const AttendanceMgmtPage = () => {
           {/* Class Teacher Section Badge — read-only, attendance authority */}
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
-              Your Class
+              {t("attendanceMgmt.yourClass", { fallback: "Your Class" })}
             </label>
             <div className="flex items-center gap-2 bg-[#03045e]/5 border border-[#03045e]/10 rounded-xl px-4 py-2">
               <div className="w-2 h-2 rounded-full bg-[#00b4d8]" />
               <span className="text-sm font-black text-[#03045e]">
                 {homeroomClass
                   ? homeroomClass.displayName ||
-                    `${homeroomClass.name} — Section ${homeroomClass.section}`
-                  : "Loading..."}
+                    `${homeroomClass.name} — ${t("common.section", { fallback: "Section" })} ${homeroomClass.section}`
+                  : t("common.loading", { fallback: "Loading..." })}
               </span>
             </div>
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
-              Date
+              {t("attendanceMgmt.date", { fallback: "Date" })}
             </label>
             <input
               type="date"
@@ -259,7 +265,7 @@ const AttendanceMgmtPage = () => {
             onClick={markAllPresent}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-black hover:bg-emerald-100 transition-colors"
           >
-            <Check size={14} /> MARK ALL PRESENT
+            <Check size={14} /> {t("attendanceMgmt.markAllPresent", { fallback: "MARK ALL PRESENT" })}
           </button>
           <button
             onClick={loadClassData}
@@ -273,18 +279,18 @@ const AttendanceMgmtPage = () => {
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-gray-50/50 rounded-2xl border border-gray-100 mt-[-1rem]">
-        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Legend:</span>
+        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("attendanceMgmt.legend", { fallback: "Legend:" })}</span>
         <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-          <div className="w-6 h-6 rounded-lg border-2 border-[#10b981] flex items-center justify-center"><Check size={12} className="text-[#10b981]" /></div> Present
+          <div className="w-6 h-6 rounded-lg border-2 border-[#10b981] flex items-center justify-center"><Check size={12} className="text-[#10b981]" /></div> {t("attendanceMgmt.present", { fallback: "Present" })}
         </div>
         <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-          <div className="w-6 h-6 rounded-lg border-2 border-[#ef4444] flex items-center justify-center"><X size={12} className="text-[#ef4444]" /></div> Absent
+          <div className="w-6 h-6 rounded-lg border-2 border-[#ef4444] flex items-center justify-center"><X size={12} className="text-[#ef4444]" /></div> {t("attendanceMgmt.absent", { fallback: "Absent" })}
         </div>
         <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-          <div className="w-6 h-6 rounded-lg border-2 border-[#0ea5e9] flex items-center justify-center"><Sunset size={12} className="text-[#0ea5e9]" /></div> On Leave
+          <div className="w-6 h-6 rounded-lg border-2 border-[#0ea5e9] flex items-center justify-center"><Sunset size={12} className="text-[#0ea5e9]" /></div> {t("attendanceMgmt.onLeave", { fallback: "On Leave" })}
         </div>
         <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-          <div className="w-6 h-6 rounded-lg border-2 border-[#f59e0b] flex items-center justify-center"><Clock size={12} className="text-[#f59e0b]" /></div> Unmarked
+          <div className="w-6 h-6 rounded-lg border-2 border-[#f59e0b] flex items-center justify-center"><Clock size={12} className="text-[#f59e0b]" /></div> {t("attendanceMgmt.unmarked", { fallback: "Unmarked" })}
         </div>
       </div>
 
@@ -294,7 +300,7 @@ const AttendanceMgmtPage = () => {
           columns={columns}
           data={students}
           loading={loading}
-          emptyMessage="No students found in this class."
+          emptyMessage={t("attendanceMgmt.noStudentsFound", { fallback: "No students found in this class." })}
         />
 
         {/* Floating Submit Bar */}
@@ -320,12 +326,12 @@ const AttendanceMgmtPage = () => {
                 ) : success ? (
                   <>
                     <CheckCircle2 size={20} />
-                    ATTENDANCE SAVED
+                    {t("attendanceMgmt.attendanceSaved", { fallback: "ATTENDANCE SAVED" })}
                   </>
                 ) : (
                   <>
                     <Save size={20} />
-                    {session ? "UPDATE ATTENDANCE" : "SUBMIT ATTENDANCE"}
+                    {session ? t("attendanceMgmt.updateAttendance", { fallback: "UPDATE ATTENDANCE" }) : t("attendanceMgmt.submitAttendance", { fallback: "SUBMIT ATTENDANCE" })}
                   </>
                 )}
               </button>
@@ -334,7 +340,7 @@ const AttendanceMgmtPage = () => {
                 <div className="mt-3 px-4 py-1.5 bg-white shadow-lg rounded-full border border-[#caf0f8] flex items-center gap-2 text-xs font-bold text-gray-500">
                   <CheckCircle2 size={14} className="text-emerald-500" />
                   <span>
-                    Submitted at{" "}
+                    {t("attendanceMgmt.submittedAt", { fallback: "Submitted at" })}{" "}
                     {new Date(session.submittedAt).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -380,18 +386,17 @@ const AttendanceMgmtPage = () => {
                 className="bg-white rounded-3xl p-8 w-[95vw] md:w-[90vw] lg:max-w-md shadow-2xl"
               >
                 <h3 className="text-lg font-black text-[#03045e] mb-3">
-                  Unmarked Students
+                  {t("attendanceMgmt.unmarkedStudents", { fallback: "Unmarked Students" })}
                 </h3>
                 <p className="text-sm text-gray-600 mb-6">
-                  Some students are still unmarked. Do you want to continue
-                  submitting attendance?
+                  {t("attendanceMgmt.unmarkedConfirmMsg", { fallback: "Some students are still unmarked. Do you want to continue submitting attendance?" })}
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setShowConfirm(false)}
                     className="px-6 py-3 rounded-xl text-sm font-black text-gray-600 hover:bg-gray-100 transition-colors"
                   >
-                    Cancel
+                    {t("common.cancel", { fallback: "Cancel" })}
                   </button>
                   <button
                     onClick={() => {
@@ -403,7 +408,7 @@ const AttendanceMgmtPage = () => {
                     }}
                     className="px-6 py-3 rounded-xl text-sm font-black bg-[#03045e] text-white hover:bg-[#0077b6] transition-colors"
                   >
-                    Continue
+                    {t("common.continue", { fallback: "Continue" })}
                   </button>
                 </div>
               </motion.div>
@@ -415,12 +420,12 @@ const AttendanceMgmtPage = () => {
   );
 };
 
-const StatusButton = ({ active, type, onClick }) => {
+const StatusButton = ({ t, active, type, onClick }) => {
   const configs = {
-    present: { color: "#10b981", icon: Check, label: "Present" },
-    absent: { color: "#ef4444", icon: X, label: "Absent" },
-    on_leave: { color: "#0ea5e9", icon: Sunset, label: "On Leave" },
-    unmarked: { color: "#f59e0b", icon: Clock, label: "Unmarked" },
+    present: { color: "#10b981", icon: Check, label: t("attendanceMgmt.present", { fallback: "Present" }) },
+    absent: { color: "#ef4444", icon: X, label: t("attendanceMgmt.absent", { fallback: "Absent" }) },
+    on_leave: { color: "#0ea5e9", icon: Sunset, label: t("attendanceMgmt.onLeave", { fallback: "On Leave" }) },
+    unmarked: { color: "#f59e0b", icon: Clock, label: t("attendanceMgmt.unmarked", { fallback: "Unmarked" }) },
   };
   const config = configs[type];
   const Icon = config.icon;

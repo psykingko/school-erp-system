@@ -7,8 +7,10 @@ import ClubLeadershipTab from "./ClubLeadershipTab";
 import CreateEventModal from "./CreateEventModal";
 import ActivityParticipantsModal from "./ActivityParticipantsModal";
 import { clubsService } from "../../services/clubsService";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ClubDetailPanel({ club, onBack, teacherId, isReadOnly = false }) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("members");
   const [members, setMembers] = useState([]);
   const [events, setEvents] = useState([]);
@@ -94,10 +96,10 @@ export default function ClubDetailPanel({ club, onBack, teacherId, isReadOnly = 
   if (!club) return null;
 
   const tabs = [
-    { id: "members", label: "Members", icon: Users, badge: members.length },
-    { id: "leadership", label: "Leadership", icon: Award },
-    { id: "events", label: "Activities", icon: Calendar, badge: events.length },
-    { id: "announcements", label: "Announcements", icon: Megaphone, badge: announcements.length }
+    { id: "members", label: t("clubs.membersTab", { fallback: "Members" }), icon: Users, badge: members.length },
+    { id: "leadership", label: t("clubs.leadershipTab", { fallback: "Leadership" }), icon: Award },
+    { id: "events", label: t("clubs.activitiesTab", { fallback: "Activities" }), icon: Calendar, badge: events.length },
+    { id: "announcements", label: t("clubs.announcementsTab", { fallback: "Announcements" }), icon: Megaphone, badge: announcements.length }
   ];
 
   return (
@@ -112,7 +114,7 @@ export default function ClubDetailPanel({ club, onBack, teacherId, isReadOnly = 
         </button>
         <div>
           <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
-            {club.category} {isReadOnly ? "Member" : "Coordinator"}
+            {club.category} {isReadOnly ? t("clubs.member", { fallback: "Member" }) : t("clubs.coordinator", { fallback: "Coordinator" })}
           </span>
           <h2 className="text-xl font-black text-[#03045e] mt-1">{club.name}</h2>
         </div>
@@ -124,17 +126,17 @@ export default function ClubDetailPanel({ club, onBack, teacherId, isReadOnly = 
           <Info className="w-5 h-5" />
         </div>
         <div>
-          <h4 className="text-xs font-black text-[#03045e] uppercase tracking-wider mb-1">About this Co-Curricular Club</h4>
+          <h4 className="text-xs font-black text-[#03045e] uppercase tracking-wider mb-1">{t("clubs.aboutClub", { fallback: "About this Co-Curricular Club" })}</h4>
           <p className="text-xs text-gray-600 font-medium leading-relaxed mb-3">
             {club.description}
           </p>
           <div className="flex flex-wrap gap-4 text-[10px] font-bold text-gray-500">
             <div>
-              <span className="text-gray-400">Class Scope:</span>{" "}
+              <span className="text-gray-400">{t("clubs.classScope", { fallback: "Class Scope:" })}</span>{" "}
               <span className="text-[#03045e]">{club.allowedClasses?.join(", ") || "11-A, 11-B"}</span>
             </div>
             <div>
-              <span className="text-gray-400">Max Member Capacity:</span>{" "}
+              <span className="text-gray-400">{t("clubs.maxCapacity", { fallback: "Max Member Capacity:" })}</span>{" "}
               <span className="text-[#03045e]">{club.maxMembers || 30}</span>
             </div>
           </div>

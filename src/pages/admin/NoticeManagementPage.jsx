@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "../../context/LanguageContext";
-import { getNotices, updateNotice, deleteNotice } from "../../services/noticeService";
-import { getDataProvider } from "../../data";
 import {
+  getNotices,
+  updateNotice,
+  deleteNotice,
   NOTICE_STATUS,
   NOTICE_PRIORITIES,
   NOTICE_CATEGORIES,
   AUDIENCE_TYPES,
-} from "../../data/mockDB/seed/notices";
+} from "../../services/noticeService";
+import { getDataProvider } from "../../data";
 import { Bell, Filter, Archive, Copy, X, Send, Calendar, Eye, CheckCircle, AlertCircle } from "lucide-react";
+import PermissionGate from "../../components/admin/PermissionGate";
+import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 
 const NoticeManagementPage = () => {
   const { language } = useLanguage();
@@ -237,14 +241,17 @@ const NoticeManagementPage = () => {
           <h1 className="text-2xl font-bold text-gray-900">Notice Management</h1>
           <p className="text-gray-600 mt-1">Manage institutional communication</p>
         </div>
-        <button
-          onClick={() => {/* TODO: Open create notice modal */}}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-        >
-          <Bell size={20} />
-          Create Notice
-        </button>
+        <PermissionGate moduleId="admin_notices" permission="create" mode="hidden">
+          <button
+            onClick={() => {/* TODO: Open create notice modal */}}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          >
+            <Bell size={20} />
+            Create Notice
+          </button>
+        </PermissionGate>
       </div>
+      <PageAuthorityBanner moduleId="admin_notices" moduleName="Notice Management" />
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -270,31 +277,35 @@ const NoticeManagementPage = () => {
               <span className="text-sm text-gray-600">
                 {selectedNotices.length} selected
               </span>
-              <BulkActionButton
-                action="archive"
-                onClick={() => handleBulkAction("archive")}
-                icon={Archive}
-              />
-              <BulkActionButton
-                action="duplicate"
-                onClick={() => handleBulkAction("duplicate")}
-                icon={Copy}
-              />
-              <BulkActionButton
-                action="cancel"
-                onClick={() => handleBulkAction("cancel")}
-                icon={X}
-              />
-              <BulkActionButton
-                action="publish"
-                onClick={() => handleBulkAction("publish")}
-                icon={Send}
-              />
-              <BulkActionButton
-                action="schedule"
-                onClick={() => handleBulkAction("schedule")}
-                icon={Calendar}
-              />
+              <PermissionGate moduleId="admin_notices" permission="edit" mode="hidden">
+                <div className="flex items-center gap-2">
+                  <BulkActionButton
+                    action="archive"
+                    onClick={() => handleBulkAction("archive")}
+                    icon={Archive}
+                  />
+                  <BulkActionButton
+                    action="duplicate"
+                    onClick={() => handleBulkAction("duplicate")}
+                    icon={Copy}
+                  />
+                  <BulkActionButton
+                    action="cancel"
+                    onClick={() => handleBulkAction("cancel")}
+                    icon={X}
+                  />
+                  <BulkActionButton
+                    action="publish"
+                    onClick={() => handleBulkAction("publish")}
+                    icon={Send}
+                  />
+                  <BulkActionButton
+                    action="schedule"
+                    onClick={() => handleBulkAction("schedule")}
+                    icon={Calendar}
+                  />
+                </div>
+              </PermissionGate>
             </div>
           )}
         </div>
@@ -445,20 +456,24 @@ const NoticeManagementPage = () => {
                     >
                       <Eye size={18} />
                     </button>
-                    <button
-                      onClick={() => {/* TODO: Edit notice */}}
-                      className="p-1 text-gray-600 hover:text-gray-900"
-                      title="Edit"
-                    >
-                      <CheckCircle size={18} />
-                    </button>
-                    <button
-                      onClick={() => {/* TODO: Delete notice */}}
-                      className="p-1 text-red-600 hover:text-red-900"
-                      title="Delete"
-                    >
-                      <AlertCircle size={18} />
-                    </button>
+                    <PermissionGate moduleId="admin_notices" permission="edit" mode="hidden">
+                      <button
+                        onClick={() => {/* TODO: Edit notice */}}
+                        className="p-1 text-gray-600 hover:text-gray-900"
+                        title="Edit"
+                      >
+                        <CheckCircle size={18} />
+                      </button>
+                    </PermissionGate>
+                    <PermissionGate moduleId="admin_notices" permission="delete" mode="hidden">
+                      <button
+                        onClick={() => {/* TODO: Delete notice */}}
+                        className="p-1 text-red-600 hover:text-red-900"
+                        title="Delete"
+                      >
+                        <AlertCircle size={18} />
+                      </button>
+                    </PermissionGate>
                   </div>
                 </td>
               </tr>

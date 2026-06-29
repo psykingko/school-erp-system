@@ -1,6 +1,7 @@
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -27,8 +28,7 @@ import WorkloadCard from "../../components/admin/analytics/WorkloadCard";
 
 import ConfirmationModal from "../../shared/components/ConfirmationModal";
 import ToastNotification from "../../shared/components/ToastNotification";
-import { getItem, setItem } from "../../persistence/storage";
-import { STORAGE_KEYS } from "../../persistence/storageKeys";
+import { dashboardAggregationService } from "../../services/dashboardAggregationService";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 15 },
@@ -45,6 +45,7 @@ const containerVariants = {
 const AdminDashboard = () => {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [studentCount, setStudentCount] = useState(0);
   const [teacherCount, setTeacherCount] = useState(0);
@@ -74,12 +75,9 @@ const AdminDashboard = () => {
     setResetConfirm({ isOpen: true });
   };
 
-  const handleResetConfirm = () => {
+  const handleResetConfirm = async () => {
     try {
-      // Clear all localStorage data by setting empty arrays
-      Object.values(STORAGE_KEYS).forEach((key) => {
-        setItem(key, []);
-      });
+      await dashboardAggregationService.resetSeedData();
       setResetConfirm({ isOpen: false });
       setToast({
         show: true,
@@ -106,49 +104,17 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const allStudents = getItem(STORAGE_KEYS.STUDENTS, []);
-      const allTeachers = getItem(STORAGE_KEYS.TEACHERS, []);
-      const allLeaves = getItem(STORAGE_KEYS.LEAVE_REQUESTS, []);
-      const allFees = getItem(STORAGE_KEYS.FEES, []);
-      const allRoutes = getItem(STORAGE_KEYS.TRANSPORT_ROUTES, []);
-      const allClasses = getItem(STORAGE_KEYS.CLASSES, []);
+      const data = await dashboardAggregationService.getAdminDashboardData();
+      
+      setStudentCount(data.studentCount);
+      setTeacherCount(data.teacherCount);
+      setPendingLeaves(data.pendingLeaves);
+      setFeesDefaulters(data.feesDefaulters);
+      setRoutesCount(data.routesCount);
+      setTeachers(data.teachers || []);
+      setClasses(data.classes || []);
+      setDemoClassScores(data.demoClassScores);
 
-      setStudentCount(allStudents.length);
-      setTeacherCount(allTeachers.length);
-      setPendingLeaves(allLeaves.filter((l) => l.status === "PENDING").length);
-      setFeesDefaulters(allFees.filter((f) => f.status !== "Paid").length);
-      setRoutesCount(allRoutes.length);
-      setTeachers(allTeachers || []);
-      setClasses(allClasses || []);
-
-      // Build real class average scores from results
-      const allResults = getItem(STORAGE_KEYS.RESULTS, []);
-      const allSubjects = getItem(STORAGE_KEYS.SUBJECTS, []);
-      const scoredClasses = allClasses.slice(0, 3).map((cls) => {
-        const classResults = allResults.filter((r) => r.classId === cls.id);
-        if (classResults.length === 0)
-          return { name: cls.displayName || cls.name, averageGrade: "N/A" };
-        const avg =
-          classResults.reduce((sum, r) => sum + (r.marksObtained || 0), 0) /
-          classResults.length;
-        const maxMarks = classResults[0]?.maxMarks || 100;
-        const pct = Math.round((avg / maxMarks) * 100);
-        const grade =
-          pct >= 90 ? "A+" : pct >= 75 ? "A" : pct >= 60 ? "B" : "C";
-        return {
-          name: cls.displayName || cls.name,
-          averageGrade: `${pct}% (${grade})`,
-        };
-      });
-      setDemoClassScores(
-        scoredClasses.length > 0
-          ? scoredClasses
-          : [
-              { name: "Class 11-A", averageGrade: "N/A" },
-              { name: "Class 11-B", averageGrade: "N/A" },
-              { name: "Class 12-A", averageGrade: "N/A" },
-            ],
-      );
     } catch (e) {
       console.error(e);
     } finally {
@@ -177,6 +143,36 @@ const AdminDashboard = () => {
           </div>
         }
       />
+
+      {/* Permission Debug Info (Temporary) */}
+      <div className="bg-[#caf0f8]/30 border border-[#0077b6]/20 p-3 rounded-xl flex items-center justify-between shadow-sm">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Permission Debug Info</span>
+          <span className="text-sm font-bold text-[#03045e]">
+            Current User: <span className="font-black text-[#0077b6]">{user?.name}</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="px-3 py-1 rounded-lg bg-white border border-[#caf0f8] text-xs font-bold text-[#03045e] shadow-sm">
+            Effective Modules: <span className="font-black text-[#0077b6] text-sm">{user?.isSuperAdmin ? "ALL (Super Admin)" : (user?.effectiveModules?.length || 0)}</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Permission Notice for Users with No Assigned Modules */}
+      {!user?.isSuperAdmin && (!user?.effectiveModules || user.effectiveModules.length === 0) && (
+        <div className="bg-red-50 border border-red-200 p-5 rounded-2xl flex items-start gap-4 shadow-sm">
+          <div className="p-3 bg-white rounded-xl shadow-sm text-red-500 shrink-0">
+            <AlertTriangle size={24} />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-red-700">No Modules Assigned</h3>
+            <p className="text-sm text-red-600/80 font-bold mt-1 max-w-2xl">
+              Your account has not been granted access to any administrative modules. You can only view the Dashboard and your Profile. Please contact your Super Administrator to request permissions.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Polish Pass: High fidelity KPI widgets grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

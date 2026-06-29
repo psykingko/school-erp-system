@@ -94,6 +94,7 @@ export function AuthProvider({ children }) {
       isParent: authState.user?.role === ROLES.PARENT,
       isTeacher: authState.user?.role === ROLES.TEACHER,
       isAdmin: authState.user?.role === ROLES.ADMIN,
+      isSuperAdmin: !!authState.user?.isSuperAdmin,
       login,
       logout,
     }),

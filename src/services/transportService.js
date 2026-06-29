@@ -67,7 +67,27 @@ export const getAllDrivers = async () => {
 };
 
 export const createDriver = async (driverData) => {
-  return await getDataProvider().createEmployee(driverData);
+  const provider = getDataProvider();
+  
+  // Enforce operational constraints
+  const employeePayload = {
+    ...driverData,
+    category: "Operational",
+    portalAccess: false
+  };
+
+  const newEmployee = await provider.createEmployee(employeePayload);
+  
+  // Generate the operational profile
+  await provider.createOperationalProfile({
+    employeeId: newEmployee.employeeId,
+    specialization: "Driver",
+    licenseNumber: driverData.licenseNumber || null,
+    licenseExpiry: driverData.licenseExpiry || null,
+    employmentShift: null,
+  });
+  
+  return newEmployee;
 };
 
 // === ALERT MANAGEMENT ===

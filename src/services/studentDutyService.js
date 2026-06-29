@@ -1,4 +1,4 @@
-import localProvider from "../data/providers/localProvider";
+import { getDataProvider } from "../data/providers/providerFactory";
 
 const validateDutyRequest = (data) => {
   if (!data.title || data.title.trim() === "") {
@@ -19,14 +19,16 @@ const validateDutyRequest = (data) => {
 
 export const studentDutyService = {
   getTeacherDutyRequests: async (teacherId) => {
-    const allRequests = await localProvider.getStudentDutyRequests();
+    const provider = getDataProvider();
+    const allRequests = await provider.getStudentDutyRequests();
     return allRequests.filter(
       (r) => r.requestedByTeacherId === teacherId
     ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
 
   getActiveDutyBoard: async () => {
-    const allRequests = await localProvider.getStudentDutyRequests();
+    const provider = getDataProvider();
+    const allRequests = await provider.getStudentDutyRequests();
     return allRequests
       .filter((r) => r.status === "Active")
       .sort((a, b) => {
@@ -43,29 +45,34 @@ export const studentDutyService = {
   },
 
   getStudentDutyRecords: async (studentId) => {
-    const allRequests = await localProvider.getStudentDutyRequests();
+    const provider = getDataProvider();
+    const allRequests = await provider.getStudentDutyRequests();
     return allRequests
       .filter((r) => r.targetStudents?.some((s) => s.studentId === studentId))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
 
   getParentDutyRecords: async (studentIds) => {
-    const allRequests = await localProvider.getStudentDutyRequests();
+    const provider = getDataProvider();
+    const allRequests = await provider.getStudentDutyRequests();
     return allRequests
       .filter((r) => r.targetStudents?.some((s) => studentIds.includes(s.studentId)))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
 
   getDutyRequestById: async (id) => {
-    return await localProvider.getStudentDutyRequestById(id);
+    const provider = getDataProvider();
+    return await provider.getStudentDutyRequestById(id);
   },
 
   getAllDutyRequests: async () => {
-    return await localProvider.getStudentDutyRequests();
+    const provider = getDataProvider();
+    return await provider.getStudentDutyRequests();
   },
 
   getDutyDashboardStats: async () => {
-    const allRequests = await localProvider.getStudentDutyRequests();
+    const provider = getDataProvider();
+    const allRequests = await provider.getStudentDutyRequests();
     
     const active = allRequests.filter(r => r.status === "Active").length;
     const completed = allRequests.filter(r => r.status === "Completed").length;
@@ -86,20 +93,24 @@ export const studentDutyService = {
 
   createDutyRequest: async (data) => {
     validateDutyRequest(data);
-    return await localProvider.createStudentDutyRequest(data);
+    const provider = getDataProvider();
+    return await provider.createStudentDutyRequest(data);
   },
 
   updateDutyRequest: async (id, data) => {
     validateDutyRequest(data);
-    return await localProvider.updateStudentDutyRequest(id, data);
+    const provider = getDataProvider();
+    return await provider.updateStudentDutyRequest(id, data);
   },
 
   cancelDutyRequest: async (id) => {
-    return await localProvider.cancelStudentDutyRequest(id);
+    const provider = getDataProvider();
+    return await provider.cancelStudentDutyRequest(id);
   },
 
   completeDutyRequest: async (id) => {
-    return await localProvider.completeStudentDutyRequest(id);
+    const provider = getDataProvider();
+    return await provider.completeStudentDutyRequest(id);
   },
 };
 

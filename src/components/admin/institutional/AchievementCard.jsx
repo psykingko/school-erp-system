@@ -1,6 +1,6 @@
 import React from "react";
 import MainCard from "../../MainCard";
-import { Award, ShieldAlert } from "lucide-react";
+import { Award, ShieldAlert, Edit2, Trash2 } from "lucide-react";
 
 /**
  * AchievementCard
@@ -13,11 +13,31 @@ const AchievementCard = ({
   category = "Co-Curricular", 
   rank = "Gold Medal", 
   description,
-  date 
+  date,
+  onEdit,
+  onDelete
 }) => {
   return (
-    <MainCard className="p-5 hover:shadow-md transition-shadow bg-white border border-[#caf0f8]/50 shadow-sm relative flex flex-col justify-between">
-      <div className="absolute top-0 right-0 p-3">
+    <MainCard className="p-5 hover:shadow-md transition-shadow bg-white border border-[#caf0f8]/50 shadow-sm relative flex flex-col justify-between group">
+      <div className="absolute top-0 right-0 p-3 flex gap-2">
+        {onEdit && (
+          <button 
+            onClick={onEdit}
+            className="p-1 text-gray-400 hover:text-[#0077b6] hover:bg-[#caf0f8]/50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+            title="Edit Achievement"
+          >
+            <Edit2 size={12} />
+          </button>
+        )}
+        {onDelete && (
+          <button 
+            onClick={onDelete}
+            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+            title="Delete Achievement"
+          >
+            <Trash2 size={12} />
+          </button>
+        )}
         <span className={`inline-block px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${
           rank.toLowerCase().includes("gold") ? "bg-amber-50 text-amber-600 border border-amber-100" :
           rank.toLowerCase().includes("silver") ? "bg-gray-50 text-gray-500 border border-gray-100" :
@@ -32,7 +52,7 @@ const AchievementCard = ({
           {category} Honor
         </span>
         
-        <h3 className="text-xs font-black text-[#03045e] tracking-tight mt-1 truncate max-w-[150px]">
+        <h3 className="text-xs font-black text-[#03045e] tracking-tight mt-1 pr-16 truncate">
           {title}
         </h3>
         

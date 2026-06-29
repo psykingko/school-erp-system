@@ -9,6 +9,7 @@ import QuickActionsPanel from "../../components/teacher/QuickActionsPanel";
 import NoticeBoard from "../../components/NoticeBoard";
 import { teacherDashboardService } from "../../services/teacherDashboardService";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 
@@ -55,6 +56,7 @@ const TeacherDashboard = () => {
   // Error indicators
   const [errorCritical, setErrorCritical] = useState("");
   const [errorDeferred, setErrorDeferred] = useState("");
+  const { t } = useLanguage();
 
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -78,7 +80,7 @@ const TeacherDashboard = () => {
         setErrorCritical("");
       } catch (e) {
         console.error("Failed to load critical schedule timeline:", e);
-        setErrorCritical("Unable to retrieve today's teaching schedule.");
+        setErrorCritical(t("dashboard.errorCritical"));
       } finally {
         setLoadingSchedule(false);
       }
@@ -102,7 +104,7 @@ const TeacherDashboard = () => {
         setErrorDeferred("");
       } catch (e) {
         console.error("Failed to load deferred action lists:", e);
-        setErrorDeferred("Unable to sync class rosters.");
+        setErrorDeferred(t("dashboard.errorDeferred"));
       } finally {
         setLoadingDeferred(false);
       }

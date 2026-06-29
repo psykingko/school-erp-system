@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import TeacherModuleHeader from "../../components/teacher/TeacherModuleHeader";
 import MainCard from "../../components/MainCard";
 import { useAuth } from "../../context/AuthContext";
-import { getTeacherWorkload } from "../../services/teacherService";
+import { useLanguage } from "../../context/LanguageContext";
 import { 
   getLeavesForTeacherApproval, 
   approveLeave, 
   rejectLeave 
 } from "../../services/leaveService";
+import { getTeacherWorkload } from "../../services/teacherService";
 import { getItem } from "../../persistence/storage";
 import { STORAGE_KEYS } from "../../persistence/storageKeys";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,6 +28,7 @@ import {
 
 const LeaveMgmtPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const teacherId = user?.linkedEntityId;
   
   // Data & UI State
@@ -82,7 +84,7 @@ const LeaveMgmtPage = () => {
       });
       await loadData();
     } catch (err) {
-      alert(err.message || "Failed to approve leave.");
+      alert(err.message || t("leaveMgmt.failedToApprove", { fallback: "Failed to approve leave." }));
     } finally {
       setSubmittingId(null);
     }
@@ -91,7 +93,7 @@ const LeaveMgmtPage = () => {
   const handleReject = async (id) => {
     const comment = comments[id] || "";
     if (!comment.trim()) {
-      alert("Please provide a feedback comment before rejecting leave requests.");
+      alert(t("leaveMgmt.rejectCommentRequired", { fallback: "Please provide a feedback comment before rejecting leave requests." }));
       return;
     }
     setSubmittingId(id);
@@ -104,7 +106,7 @@ const LeaveMgmtPage = () => {
       });
       await loadData();
     } catch (err) {
-      alert(err.message || "Failed to reject leave.");
+      alert(err.message || t("leaveMgmt.failedToReject", { fallback: "Failed to reject leave." }));
     } finally {
       setSubmittingId(null);
     }
@@ -129,12 +131,12 @@ const LeaveMgmtPage = () => {
     const e = new Date(end);
     const diff = e - s;
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
-    return days === 1 ? "1 Day" : `${days} Days`;
+    return days === 1 ? t("leaveMgmt.oneDay", { fallback: "1 Day" }) : `${days} ${t("leaveMgmt.days", { fallback: "Days" })}`;
   };
 
   // Resolve Student Info from database synchronously
   const getStudent = (studentId) => {
-    return students.find(s => s.id === studentId) || { name: "Unknown Student", admissionNo: "N/A" };
+    return students.find(s => s.id === studentId) || { name: t("leaveMgmt.unknownStudent", { fallback: "Unknown Student" }), admissionNo: t("leaveMgmt.na", { fallback: "N/A" }) };
   };
 
   // 1. Pending Queue
@@ -162,8 +164,9 @@ const LeaveMgmtPage = () => {
     <div className="space-y-8 pb-12">
       <TeacherModuleHeader 
         titleKey="nav.leave_mgmt"
-        subtitleEn="Class Leave Operations Center — Manage and Approve Absences"
-        subtitleHi="वर्ग अवकाश संचालन केंद्र — छात्र छुट्टियों को प्रबंधित और अनुमोदित करें"
+        descriptionKey="leaveMgmt.subtitle"
+        helperContentEn="Class Leave Operations Center — Manage and Approve Absences"
+        helperContentHi="वर्ग अवकाश संचालन केंद्र — छात्र छुट्टियों को प्रबंधित और अनुमोदित करें"
       />
 
       {loading ? (
@@ -178,18 +181,18 @@ const LeaveMgmtPage = () => {
             <MainCard className="p-6">
               <h2 className="text-lg font-black text-[#03045e] mb-2 flex items-center gap-2">
                 <Inbox size={20} className="text-[#0077b6]" />
-                Pending Leave Requests
+                {t("leaveMgmt.pendingLeaveRequests", { fallback: "Pending Leave Requests" })}
               </h2>
               <p className="text-xs font-semibold text-gray-400 mb-6 uppercase tracking-wider">
-                Review and approve/reject leave requests for your homeroom students.
+                {t("leaveMgmt.reviewAndApprove", { fallback: "Review and approve/reject leave requests for your homeroom students." })}
               </p>
 
               {pendingLeaves.length === 0 ? (
                 <div className="p-8 text-center bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col items-center justify-center">
                   <UserCheck size={36} className="text-[#00b4d8] mb-3 animate-pulse" />
-                  <p className="text-xs font-black text-[#03045e]">All caught up!</p>
+                  <p className="text-xs font-black text-[#03045e]">{t("leaveMgmt.allCaughtUp", { fallback: "All caught up!" })}</p>
                   <p className="text-[10px] text-gray-400 font-bold max-w-xs mt-1 uppercase tracking-wider">
-                    No pending leave applications require review right now.
+                    {t("leaveMgmt.noPendingLeaves", { fallback: "No pending leave applications require review right now." })}
                   </p>
                 </div>
               ) : (
@@ -209,7 +212,7 @@ const LeaveMgmtPage = () => {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <h3 className="text-sm font-black text-[#03045e]">{student.name}</h3>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase">ADM NO: {student.admissionNo}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase">{t("leaveMgmt.admNo", { fallback: "ADM NO:" })} {student.admissionNo}</p>
                           </div>
                           <div className="text-right">
                             <span className="px-2.5 py-0.5 inline-block bg-sky-50 border border-sky-100 text-[#0077b6] text-[9px] font-black uppercase tracking-wider rounded-full">
@@ -223,7 +226,7 @@ const LeaveMgmtPage = () => {
 
                         {/* Reason */}
                         <div className="p-3 bg-gray-50/80 rounded-2xl border border-gray-100/50">
-                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Reason Provided:</span>
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t("leaveMgmt.reasonProvided", { fallback: "Reason Provided:" })}</span>
                           <p className="text-xs font-semibold text-[#03045e] mt-1 leading-relaxed">{leave.reason}</p>
                         </div>
 
@@ -231,12 +234,12 @@ const LeaveMgmtPage = () => {
                         <div className="space-y-3 pt-1">
                           <div className="flex items-center gap-2">
                             <MessageSquare size={14} className="text-gray-400" />
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Teacher Comments / Remarks</span>
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{t("leaveMgmt.teacherComments", { fallback: "Teacher Comments / Remarks" })}</span>
                           </div>
                           
                           <input
                             type="text"
-                            placeholder="Add remarks or explanation (Required for Rejection)..."
+                            placeholder={t("leaveMgmt.commentsPlaceholder", { fallback: "Add remarks or explanation (Required for Rejection)..." })}
                             value={comments[leave.id] || ""}
                             onChange={(e) => handleCommentChange(leave.id, e.target.value)}
                             className="w-full px-3 py-2 text-xs font-semibold text-[#03045e] bg-gray-50 border border-gray-100 focus:border-[#00b4d8] focus:bg-white rounded-xl outline-none transition-all"
@@ -251,7 +254,7 @@ const LeaveMgmtPage = () => {
                               className="px-4 py-2 rounded-xl text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5"
                             >
                               <X size={14} />
-                              Reject
+                              {t("common.reject", { fallback: "Reject" })}
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.03 }}
@@ -261,7 +264,7 @@ const LeaveMgmtPage = () => {
                               className="px-4 py-2 rounded-xl text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5"
                             >
                               <Check size={14} />
-                              Approve
+                              {t("common.approve", { fallback: "Approve" })}
                             </motion.button>
                           </div>
                         </div>
@@ -280,15 +283,15 @@ const LeaveMgmtPage = () => {
             <MainCard className="p-6">
               <h2 className="text-lg font-black text-[#03045e] mb-2 flex items-center gap-2">
                 <Users size={20} className="text-[#0077b6]" />
-                On Approved Leave Today
+                {t("leaveMgmt.onApprovedLeaveToday", { fallback: "On Approved Leave Today" })}
               </h2>
               <p className="text-xs font-semibold text-gray-400 mb-4 uppercase tracking-wider">
-                Students currently excused from class attendance today.
+                {t("leaveMgmt.studentsExcused", { fallback: "Students currently excused from class attendance today." })}
               </p>
 
               {activeRoster.length === 0 ? (
                 <div className="py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
-                  No students on approved leave today.
+                  {t("leaveMgmt.noStudentsOnLeave", { fallback: "No students on approved leave today." })}
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -301,7 +304,7 @@ const LeaveMgmtPage = () => {
                       >
                         <div>
                           <p className="text-xs font-black text-[#03045e]">{student.name}</p>
-                          <p className="text-[9px] font-bold text-gray-400 uppercase">ADM: {student.admissionNo}</p>
+                          <p className="text-[9px] font-bold text-gray-400 uppercase">{t("leaveMgmt.adm", { fallback: "ADM:" })} {student.admissionNo}</p>
                         </div>
                         <div className="text-right text-[10px] font-bold text-sky-700">
                           {formatDate(leave.fromDate)} - {formatDate(leave.toDate)}
@@ -317,7 +320,7 @@ const LeaveMgmtPage = () => {
             <MainCard className="p-6 h-[480px] flex flex-col">
               <h2 className="text-lg font-black text-[#03045e] mb-4 flex items-center gap-2">
                 <FileText size={20} className="text-[#0077b6]" />
-                Review Log History
+                {t("leaveMgmt.reviewLogHistory", { fallback: "Review Log History" })}
               </h2>
 
               <div className="space-y-4 flex-1 flex flex-col min-h-0">
@@ -327,7 +330,7 @@ const LeaveMgmtPage = () => {
                     <Search className="absolute left-3 top-2.5 text-gray-400" size={14} />
                     <input
                       type="text"
-                      placeholder="Search student name..."
+                      placeholder={t("leaveMgmt.searchStudentName", { fallback: "Search student name..." })}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 text-xs font-bold text-[#03045e] bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:border-[#00b4d8] transition-all"
@@ -345,7 +348,7 @@ const LeaveMgmtPage = () => {
                             : "text-gray-400 hover:text-gray-600"
                         }`}
                       >
-                        {tab}
+                        {tab === "ALL" ? t("common.all", { fallback: "ALL" }) : tab === "APPROVED" ? t("common.approved", { fallback: "APPROVED" }) : t("common.rejected", { fallback: "REJECTED" })}
                       </button>
                     ))}
                   </div>
@@ -356,7 +359,7 @@ const LeaveMgmtPage = () => {
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
                     <Clock size={28} className="text-gray-300 mb-2" />
                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                      No logs match filters
+                      {t("leaveMgmt.noLogsMatch", { fallback: "No logs match filters" })}
                     </p>
                   </div>
                 ) : (
@@ -372,23 +375,23 @@ const LeaveMgmtPage = () => {
                             <div>
                               <p className="text-xs font-black text-[#03045e]">{student.name}</p>
                               <span className="text-[8px] font-extrabold text-gray-400 uppercase">
-                                ADM: {student.admissionNo}
+                                {t("leaveMgmt.adm", { fallback: "ADM:" })} {student.admissionNo}
                               </span>
                             </div>
 
                             {leave.status === "APPROVED" ? (
                               <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase tracking-wider border border-emerald-100">
-                                Approved
+                                {t("common.approved", { fallback: "Approved" })}
                               </span>
                             ) : (
                               <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[8px] font-black uppercase tracking-wider border border-rose-100">
-                                Rejected
+                                {t("common.rejected", { fallback: "Rejected" })}
                               </span>
                             )}
                           </div>
 
                           <div className="text-[10px] font-bold text-[#03045e]/70">
-                            Duration: {formatDate(leave.fromDate)} to {formatDate(leave.toDate)} ({calculateDays(leave.fromDate, leave.toDate)})
+                            {t("leaveMgmt.duration", { fallback: "Duration:" })} {formatDate(leave.fromDate)} to {formatDate(leave.toDate)} ({calculateDays(leave.fromDate, leave.toDate)})
                           </div>
 
                           {leave.teacherComment && (
@@ -399,7 +402,7 @@ const LeaveMgmtPage = () => {
                           )}
 
                           <div className="text-[8px] font-bold text-gray-400 text-right uppercase tracking-widest pt-1 border-t border-gray-50">
-                            Reviewed on: {new Date(leave.reviewedAt).toLocaleDateString()}
+                            {t("leaveMgmt.reviewedOn", { fallback: "Reviewed on:" })} {new Date(leave.reviewedAt).toLocaleDateString()}
                           </div>
                         </div>
                       );

@@ -1,8 +1,10 @@
 import React, { useState, forwardRef } from "react";
 import { Trash2, Pin, Calendar, Users, Layers, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../context/LanguageContext";
 
 const UpdateCard = forwardRef(({ update, onDelete }, ref) => {
+  const { t } = useLanguage();
   const [pinned, setPinned] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -87,15 +89,15 @@ const UpdateCard = forwardRef(({ update, onDelete }, ref) => {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 mb-3 border-b border-gray-50 pb-2.5">
         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
           <Layers className="w-3.5 h-3.5" />
-          <span>Class: {update.className}</span>
+          <span>{t("updates.class", { fallback: "Class:" })} {update.className}</span>
         </span>
         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
           <AlertCircle className="w-3.5 h-3.5" />
-          <span>Subject: {update.subjectName}</span>
+          <span>{t("updates.subject", { fallback: "Subject:" })} {update.subjectName}</span>
         </span>
         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
           <Users className="w-3.5 h-3.5" />
-          <span>Scope: {update.visibility.join(" & ")}</span>
+          <span>{t("updates.scope", { fallback: "Scope:" })} {update.visibility.join(" & ")}</span>
         </span>
       </div>
 
@@ -131,13 +133,13 @@ const UpdateCard = forwardRef(({ update, onDelete }, ref) => {
                   }}
                   className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm"
                 >
-                  Confirm
+                  {t("common.confirm", { fallback: "Confirm" })}
                 </button>
                 <button
                   onClick={() => setConfirmDelete(false)}
                   className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-[9px] font-black uppercase tracking-wider"
                 >
-                  Cancel
+                  {t("common.cancel", { fallback: "Cancel" })}
                 </button>
               </div>
             ) : (

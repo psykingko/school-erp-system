@@ -1,8 +1,10 @@
 import React from "react";
 import { UserCheck, Users, Calendar, BookOpen, Layers, CheckCircle2, Clock, Landmark } from "lucide-react";
 import MainCard from "../MainCard";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function TeacherIdentityCard({ identity }) {
+  const { t } = useLanguage();
   if (!identity) return null;
 
   const {
@@ -43,7 +45,7 @@ export default function TeacherIdentityCard({ identity }) {
                   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
                   : "bg-blue-500/10 text-blue-400 border-blue-500/20"
               }`}>
-                {isClassTeacher ? "Class Teacher" : "Subject Teacher"}
+                {isClassTeacher ? t("teacherDashboard.classTeacher", { fallback: "Class Teacher" }) : t("teacherDashboard.subjectTeacher", { fallback: "Subject Teacher" })}
               </span>
             </div>
             <p className="text-xs text-indigo-300 font-bold mt-0.5">{designation} • <span className="text-indigo-200">{department}</span></p>
@@ -52,12 +54,12 @@ export default function TeacherIdentityCard({ identity }) {
               {isClassTeacher ? (
                 <>
                   <Landmark className="w-4 h-4 text-emerald-400" />
-                  <span>You are the Class Teacher of <span className="text-emerald-400 font-extrabold underline decoration-wavy underline-offset-4">{className}</span></span>
+                  <span>{t("teacherDashboard.classTeacherOf", { fallback: "You are the Class Teacher of" })} <span className="text-emerald-400 font-extrabold underline decoration-wavy underline-offset-4">{className}</span></span>
                 </>
               ) : (
                 <>
                   <BookOpen className="w-4 h-4 text-blue-400" />
-                  <span>You are a <span className="text-blue-400 font-extrabold">Subject Teacher</span></span>
+                  <span>{t("teacherDashboard.youAreA", { fallback: "You are a" })} <span className="text-blue-400 font-extrabold">{t("teacherDashboard.subjectTeacher", { fallback: "Subject Teacher" })}</span></span>
                 </>
               )}
             </h3>
@@ -71,28 +73,28 @@ export default function TeacherIdentityCard({ identity }) {
             <>
               {/* Class Teacher Metrics */}
               <div className="text-center sm:text-left">
-                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">Class Roll</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">{t("teacherDashboard.classRoll", { fallback: "Class Roll" })}</span>
                 <p className="text-base font-black text-white mt-0.5 flex items-center justify-center sm:justify-start gap-1">
                   <Users className="w-4 h-4 text-indigo-400" />
-                  {totalStudents} Students
+                  {totalStudents} {t("teacherDashboard.students", { fallback: "Students" })}
                 </p>
               </div>
 
               <div className="text-center sm:text-left">
-                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">Attendance</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">{t("teacherDashboard.attendance", { fallback: "Attendance" })}</span>
                 <p className="text-base font-black mt-0.5 flex items-center justify-center sm:justify-start gap-1">
                   <CheckCircle2 className={`w-4 h-4 ${attendanceMarked ? "text-emerald-400" : "text-amber-400 animate-pulse"}`} />
                   <span className={attendanceMarked ? "text-emerald-400" : "text-amber-400"}>
-                    {attendanceMarked ? "Marked" : "Pending"}
+                    {attendanceMarked ? t("teacherDashboard.marked", { fallback: "Marked" }) : t("teacherDashboard.pending", { fallback: "Pending" })}
                   </span>
                 </p>
               </div>
 
               <div className="text-center sm:text-left col-span-2 sm:col-span-1">
-                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">Leaves Today</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">{t("teacherDashboard.leavesToday", { fallback: "Leaves Today" })}</span>
                 <p className="text-base font-black text-white mt-0.5 flex items-center justify-center sm:justify-start gap-1">
                   <Calendar className="w-4 h-4 text-indigo-400" />
-                  {pendingLeavesCount} Pending
+                  {pendingLeavesCount} {t("teacherDashboard.pending", { fallback: "Pending" })}
                 </p>
               </div>
             </>
@@ -100,26 +102,26 @@ export default function TeacherIdentityCard({ identity }) {
             <>
               {/* Subject Teacher Metrics */}
               <div className="text-center sm:text-left">
-                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">Subjects</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">{t("nav.admin_subjects", { fallback: "Subjects" })}</span>
                 <div className="text-[10px] font-black text-white mt-1.5 flex items-center justify-center sm:justify-start gap-1 flex-wrap">
                   <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{subjectsTaught.length} Assigned</span>
+                  <span>{subjectsTaught.length} {t("teacherDashboard.assigned", { fallback: "Assigned" })}</span>
                 </div>
               </div>
 
               <div className="text-center sm:text-left">
-                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">Classes</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">{t("nav.admin_classes", { fallback: "Classes" })}</span>
                 <div className="text-[10px] font-black text-white mt-1.5 flex items-center justify-center sm:justify-start gap-1 flex-wrap">
                   <Layers className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{classesAssigned.length} Assigned</span>
+                  <span>{classesAssigned.length} {t("teacherDashboard.assigned", { fallback: "Assigned" })}</span>
                 </div>
               </div>
 
               <div className="text-center sm:text-left col-span-2 sm:col-span-1">
-                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">Lectures Today</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300">{t("teacherDashboard.lecturesToday", { fallback: "Lectures Today" })}</span>
                 <div className="text-[10px] font-black text-indigo-300 mt-1.5 flex items-center justify-center sm:justify-start gap-1 flex-wrap">
                   <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{lecturesTodayCount} Periods</span>
+                  <span>{lecturesTodayCount} {t("teacherDashboard.periods", { fallback: "Periods" })}</span>
                 </div>
               </div>
             </>

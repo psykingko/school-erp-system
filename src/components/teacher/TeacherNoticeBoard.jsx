@@ -13,7 +13,7 @@ import {
 import {
   NOTICE_PRIORITIES,
   NOTICE_CATEGORIES,
-} from "../../data/mockDB/seed/notices";
+} from "../../services/noticeService";
 import { markNoticeRead } from "../../services/noticeService";
 import { useAuth } from "../../context/AuthContext";
 

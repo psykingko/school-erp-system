@@ -1,7 +1,9 @@
 import React from "react";
 import { Users, Clock, Shield } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ClubMembersTable({ members = [], loading = false }) {
+  const { t } = useLanguage();
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -13,7 +15,7 @@ export default function ClubMembersTable({ members = [], loading = false }) {
   if (members.length === 0) {
     return (
       <div className="p-8 text-center font-bold text-xs text-gray-400 italic bg-gray-50/50 rounded-2xl border border-dashed border-gray-100">
-        No students enrolled in this club yet.
+        {t("clubs.noStudentsEnrolled", { fallback: "No students enrolled in this club yet." })}
       </div>
     );
   }
@@ -23,10 +25,10 @@ export default function ClubMembersTable({ members = [], loading = false }) {
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
         <h4 className="text-xs font-black text-[#03045e] uppercase tracking-wider flex items-center gap-1.5">
           <Users className="w-4 h-4 text-emerald-500" />
-          Active Enrolled Students
+          {t("clubs.activeEnrolledStudents", { fallback: "Active Enrolled Students" })}
         </h4>
         <span className="text-[10px] font-black text-[#00b4d8] bg-[#caf0f8]/30 px-2 py-0.5 rounded-lg">
-          {members.length} Members
+          {members.length} {t("clubs.members", { fallback: "Members" })}
         </span>
       </div>
 
@@ -34,10 +36,10 @@ export default function ClubMembersTable({ members = [], loading = false }) {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50/40 border-b border-gray-100">
-              <th className="p-3 text-[9px] font-black text-gray-400 uppercase">Student Name</th>
-              <th className="p-3 text-[9px] font-black text-gray-400 uppercase">Class</th>
-              <th className="p-3 text-[9px] font-black text-gray-400 uppercase">Role / Capacity</th>
-              <th className="p-3 text-[9px] font-black text-gray-400 uppercase">Joined Date</th>
+              <th className="p-3 text-[9px] font-black text-gray-400 uppercase">{t("clubs.studentName", { fallback: "Student Name" })}</th>
+              <th className="p-3 text-[9px] font-black text-gray-400 uppercase">{t("common.class", { fallback: "Class" })}</th>
+              <th className="p-3 text-[9px] font-black text-gray-400 uppercase">{t("clubs.roleCapacity", { fallback: "Role / Capacity" })}</th>
+              <th className="p-3 text-[9px] font-black text-gray-400 uppercase">{t("clubs.joinedDate", { fallback: "Joined Date" })}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
