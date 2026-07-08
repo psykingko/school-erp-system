@@ -24,6 +24,24 @@ flowchart LR
 ```
 
 
+# Student Examination Consumption Workflow
+
+```mermaid
+flowchart LR
+    A[Admin Examination Module]
+
+    A --> B[Published Exam Cycles]
+
+    B --> C[Student Class Filtering]
+
+    C --> D[Student Examination Page]
+
+    D --> E[Exam Cycle Selection]
+
+    E --> F[Date Sheet]
+    E --> G[General Instructions]
+```
+
 # Parent Module
 
 ```mermaid

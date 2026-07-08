@@ -826,6 +826,7 @@ Every service is an `async` function that reads/writes through `MockDB`. Service
   - `enterMarks(examId, classId, marksData)` → bulk insert results
   - `publishResults(examId, classIds)` → set published + emit RESULT_PUBLISHED event
 - `getExamsByClass(classId)` → filtered exams
+- `getExamData(studentId)` → `{ cycles, defaultCycleId }` (Aggregated Student Examination Data)
 - `getResultsForStudent(studentId)` → full result history
 - `getResultAnalytics(examId, classId)` → topper, average, weak areas
 

@@ -36,3 +36,9 @@ The Identity Card module is a pure presentation component shared across Student3
 - **Component Architecture**: The `IDCard` entry component routes normalized data to `IDCardFront` and `IDCardBack`.
 - **Variant System**: Relies on a `variant` prop (`student` or `staff`) to render context-appropriate layouts without business logic.
 - **Preview & Print**: `IDCardPreviewModal` acts as an isolation wrapper, employing print-specific styling using `@media print` to optimize the browser's native print-to-PDF engine.
+
+## Student Examination Architecture
+The Student Portal is a read-only consumer of the centralized Examination Module. It does not duplicate examination logic or state.
+- **Data Flow**: Business logic remains entirely inside `examService.js`. The UI exclusively owns presentation state (such as the active tab or helper popups).
+- **Component Hierarchy**: `ExaminationPage` → `CycleSelector` → `ScheduleSection` → `InstructionsSection`.
+- **Synchronization**: `ExaminationPage` handles dynamic Exam Cycle navigation and synchronizes Date Sheets and General Instructions dynamically, perfectly matching the admin configurations with absolutely zero presentation-layer mock data.

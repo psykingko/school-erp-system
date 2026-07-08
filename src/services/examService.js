@@ -306,7 +306,6 @@ export const getExamData = async (studentId) => {
   // Resolve student context
   const students = await provider.getStudents();
   const student = students.find((s) => s.id === studentId);
-  const rollNo = student ? `R-${student.admissionNo}` : "R-2024001";
   const classId = student ? student.classId : null;
 
   // Resolve subjects list
@@ -315,130 +314,61 @@ export const getExamData = async (studentId) => {
   // Resolve exam sessions
   const exams = await provider.getExams();
 
-  const activeSession =
-    exams.find((e) => e.status === "ongoing" || e.status === "scheduled") ||
-    exams[0];
+  const validStatuses = ["scheduled", "ongoing", "evaluation", "published"];
+  let visibleExams = exams.filter((e) => validStatuses.includes(e.status));
 
-  const isDraft = activeSession?.status === "draft";
+  // Sort by Exam Start Date ASC
+  visibleExams.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-  let schedule = [];
-  let guidelines = [
-    "Admit card is mandatory for examination hall entry.",
-    "Arrive at least 30 minutes before the scheduled start time.",
-    "Only standard writing materials (blue/black pens) are permitted.",
-  ];
+  // Query actual relational scheduled papers for this class
+  const allPapers = await provider.getExamPapers();
+  const studentClassPapers = classId
+    ? allPapers.filter((p) => p.classId === classId)
+    : [];
 
-  if (activeSession && !isDraft && classId) {
-    // Query actual relational scheduled papers for this class and active session
-    const papers = await provider.getExamPapers();
-    const classPapers = papers
-      .filter(
-        (p) => p.examSessionId === activeSession.id && p.classId === classId,
-      )
+  const cycles = visibleExams.map((exam) => {
+    const examPapers = studentClassPapers
+      .filter((p) => p.examSessionId === exam.id)
       .sort((a, b) => {
         const dateDiff = new Date(a.date) - new Date(b.date);
         if (dateDiff !== 0) return dateDiff;
         return a.startTime.localeCompare(b.startTime);
       });
 
-    if (classPapers.length > 0) {
-      schedule = classPapers.map((p) => {
-        const subject = subjects.find((s) => s.id === p.subjectId);
-
-        return {
-          id: p.id,
-          date: formatDateString(p.date),
-          day: getDayName(p.date),
-          subject: subject ? subject.name : p.subjectId,
-          time: `${format12Hour(p.startTime)} - ${format12Hour(p.endTime)}`,
-          room: p.roomId || "Main Hall",
-        };
-      });
-    }
-  }
-
-  // Graceful fallback to static prebuilt structure if database is empty/not scheduled yet
-  if (
-    schedule.length === 0 &&
-    !isDraft &&
-    activeSession?.status !== "evaluation"
-  ) {
-    const studentSubjects = await getSubjectsForStudent(studentId);
-    const baseDates = [
-      { date: "18 Jul", day: "Friday" },
-      { date: "21 Jul", day: "Monday" },
-      { date: "23 Jul", day: "Wednesday" },
-      { date: "25 Jul", day: "Friday" },
-      { date: "28 Jul", day: "Monday" },
-      { date: "30 Jul", day: "Wednesday" },
-    ];
-
-    schedule = studentSubjects.map((sub, idx) => {
-      const d = baseDates[idx % baseDates.length];
-      let room = "Examination Hall A";
-      let time = "09:00 AM - 12:00 PM";
-
-      const isScienceCore =
-        sub.id === "sub-phy" ||
-        sub.id === "sub-chem" ||
-        sub.id === "sub-bio" ||
-        sub.id === "sub-cs";
-      if (isScienceCore && idx % 2 === 0) {
-        room = sub.id === "sub-cs" ? "Computer Lab A" : "Science Lab 1";
-        time = "09:00 AM - 11:30 AM (Practical & Viva)";
-      }
+    const dateSheet = examPapers.map((p) => {
+      const subject = subjects.find((s) => s.id === p.subjectId);
 
       return {
-        id: `sch-${sub.id}`,
-        date: d.date,
-        day: d.day,
-        subject: sub.name,
-        time: time,
-        room: room,
+        id: p.id,
+        date: formatDateString(p.date),
+        day: getDayName(p.date),
+        subject: subject ? subject.name : p.subjectId,
+        time: `${format12Hour(p.startTime)} - ${format12Hour(p.endTime)}`,
+        room: p.roomId || "N/A",
       };
     });
+
+    return {
+      id: exam.id,
+      name: exam.name,
+      status: exam.status,
+      dateSheet,
+      generalInstructions: exam.instructions || [],
+    };
+  });
+
+  // Calculate Default Cycle Priority: ONGOING > SCHEDULED > PUBLISHED > other
+  let defaultCycleId = null;
+  if (cycles.length > 0) {
+    const ongoing = cycles.find((c) => c.status === "ongoing");
+    const scheduled = cycles.find((c) => c.status === "scheduled");
+    const published = cycles.find((c) => c.status === "published");
+    defaultCycleId = (ongoing || scheduled || published || cycles[0]).id;
   }
 
-  const instructions =
-    activeSession?.instructions?.length > 0
-      ? activeSession.instructions
-      : [
-          "Candidates must carry a physical copy of their Admit Card to the examination hall.",
-          "Banned items include mobile phones, calculators, smartwatches, and loose paper sheets.",
-          "Candidates must report to the examination center at least 30 minutes before the scheduled time.",
-          "A grace period of 15 minutes is allowed, post which no student will be permitted to enter the hall.",
-          "Do not write anything on the question paper or admit card during the examination.",
-        ];
-
-  const admitCard = {
-    examName: activeSession
-      ? activeSession.name
-      : "Half-Yearly Examination 2025",
-    issued: activeSession ? activeSession.status !== "draft" : false,
-    rollNo: rollNo,
-    examCenter: "Springdale Senior Secondary School, Main Campus",
-    reportingTime: "08:30 AM",
-    examDates: activeSession
-      ? `${formatDateString(activeSession.startDate)} - ${formatDateString(activeSession.endDate)}`
-      : "18th July - 28th July 2025",
-  };
-
   return {
-    activeExams: exams.filter(
-      (e) =>
-        e.status === "ongoing" ||
-        e.status === "evaluation" ||
-        (new Date(e.startDate) <= new Date() &&
-          new Date(e.endDate) >= new Date()),
-    ),
-    upcomingExams: exams.filter(
-      (e) => e.status === "scheduled" && new Date(e.startDate) > new Date(),
-    ),
-    guidelines,
-    admitCard,
-    schedule,
-    instructions,
-    activeSession,
+    cycles,
+    defaultCycleId,
   };
 };
 

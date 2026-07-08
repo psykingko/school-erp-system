@@ -1,7 +1,7 @@
 export const examTranslations = {
   en: {
     "exam.title": "Examinations",
-    "exam.subtitle": "Half-Yearly 2025 · Class 11 Science",
+    "exam.subtitle": "View your examination schedule and instructions",
     "exam.admitCard": "Admit Card",
     "exam.schedule": "Exam Schedule",
     "exam.results": "Results",
@@ -30,7 +30,7 @@ export const examTranslations = {
   },
   hi: {
     "exam.title": "परीक्षा",
-    "exam.subtitle": "अर्धवार्षिक 2025 · कक्षा 11 विज्ञान",
+    "exam.subtitle": "अपना परीक्षा कार्यक्रम और निर्देश देखें",
     "exam.admitCard": "प्रवेश पत्र",
     "exam.schedule": "परीक्षा कार्यक्रम",
     "exam.results": "परिणाम",

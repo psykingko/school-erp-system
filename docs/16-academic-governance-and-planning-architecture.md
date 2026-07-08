@@ -6,12 +6,14 @@ This document serves as the canonical architectural reference for the EduDash ac
 ## 1. The Canonical Academic Pipeline
 The academic lifecycle in EduDash follows a strict, sequential pipeline. This pipeline ensures data integrity, proper administrative oversight, and consistent application of governance rules before any student performance data is published.
 
-1. **Teacher Marks Submission**: Teachers enter marks and grades for their assigned courses. The data remains in a `draft` state until explicitly `submitted`. Once submitted, it is locked for the teacher and awaits administrative review.
-2. **Admin Evaluation**: Administrators review the submitted marks. They can either reject the submission (returning it to the teacher for correction) or approve and `publish` the marks.
-3. **Results Publication**: Published marks become visible to students and parents as individual "Exam-wise Result Previews". However, this is not the final report card.
-4. **Assessment Governance**: The system applies global, centralized academic policies configured by the administrator. This includes defining **Assessment Categories** (e.g., Formative, Summative), **Category Weightages** (how much each category contributes to the final grade), and **Grade Boundaries** (the percentage thresholds for letter grades like A+, B, etc.).
-5. **Academic Report Cards**: At the end of a session, administrators use the Generation Wizard to aggregate all published exams for a class. The calculation pipeline applies the Assessment Governance weightages and grade boundaries to produce the final, aggregated Academic Report Cards.
-6. **Student / Parent Consumption**: Once the generated report cards are reviewed, administrators `publish` them. Only then do they become visible in the student and parent portals as the final, official session result. Administrators may also `freeze` report cards to make them immutable.
+1. **Exam Cycle & Date Sheet**: Administrators create and schedule an exam cycle, producing a published Date Sheet and Instructions.
+2. **Student Examination Consumption**: The Student Portal is a read-only consumer of the centralized Examination Module. It allows students to dynamically navigate published Exam Cycles and view their synchronized Date Sheets.
+3. **Teacher Marks Submission**: Teachers enter marks and grades for their assigned courses. The data remains in a `draft` state until explicitly `submitted`. Once submitted, it is locked for the teacher and awaits administrative review.
+4. **Admin Evaluation & Publication**: Administrators review the submitted marks. They can either reject the submission (returning it to the teacher for correction) or approve and `publish` the marks.
+5. **Academic Results Consumption**: Published marks become visible to students and parents as individual "Exam-wise Result Previews". However, this is not the final report card.
+6. **Assessment Governance**: The system applies global, centralized academic policies configured by the administrator. This includes defining **Assessment Categories** (e.g., Formative, Summative), **Category Weightages** (how much each category contributes to the final grade), and **Grade Boundaries** (the percentage thresholds for letter grades like A+, B, etc.).
+7. **Academic Report Card Generation**: At the end of a session, administrators use the Generation Wizard to aggregate all published exams for a class. The calculation pipeline applies the Assessment Governance weightages and grade boundaries to produce the final, aggregated Academic Report Cards.
+8. **Final Report Card Consumption**: Once the generated report cards are reviewed, administrators `publish` them. Only then do they become visible in the student and parent portals as the final, official session result. Administrators may also `freeze` report cards to make them immutable.
 
 ## 2. Assessment Governance Details
 **Target Portals:** Admin
