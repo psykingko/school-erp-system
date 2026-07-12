@@ -237,11 +237,11 @@ const StudentProfilePage = ({ onNavigatePage }) => {
                   className="flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-[#03045e] text-white hover:bg-[#0077b6] transition-all shadow-lg shadow-[#03045e]/20 group"
                >
                   <Contact size={18} />
-                  <span className="text-[11px] font-black uppercase tracking-widest">View ID Card</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest">{t("profile.viewIdCard", { fallback: "View ID Card" })}</span>
                </button>
                <button className="flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-white border border-gray-100 text-[#03045e] hover:border-[#00b4d8] hover:text-[#00b4d8] transition-all shadow-sm group">
                   <Edit3 size={18} />
-                  <span className="text-[11px] font-black uppercase tracking-widest">Update Data</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest">{t("profile.updateData", { fallback: "Update Data" })}</span>
                </button>
                <HelperButton onClick={() => setShowHelper(true)} />
                <button className="w-14 h-14 rounded-2xl bg-gray-50 text-gray-400 hover:text-[#03045e] hover:bg-white border border-transparent hover:border-gray-100 flex items-center justify-center transition-all hidden lg:flex">
@@ -260,19 +260,19 @@ const StudentProfilePage = ({ onNavigatePage }) => {
             {/* 1. Personal Information */}
             <ProfileSection 
               icon={User} 
-              title="Personal Information" 
+              title={t("profile.personalInfo", { fallback: "Personal Information" })} 
             >
               <MainCard borderColor="#00b4d8" className="p-6 md:p-8">
                 <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
-                  <InfoField label="Admission No." value={data.personal.admissionNumber} />
-                  <InfoField label="Roll Number" value={data.personal.rollNumber} />
-                  <InfoField label="Date of Birth" value={data.personal.dateOfBirth} />
-                  <InfoField label="Gender" value={data.personal.gender} />
-                  <InfoField label="Category" value={data.personal.category} />
-                  <InfoField label="Nationality" value={data.personal.nationality} />
-                  <InfoField label="Aadhaar / ID" value={data.personal.aadhaarNumber} />
-                  <InfoField label="Email Address" value={data.personal.email} icon={Mail} />
-                  <InfoField label="Phone Number" value={data.personal.phoneNumber} icon={Phone} />
+                  <InfoField label={t("profile.admissionNo", { fallback: "Admission No." })} value={data.personal.admissionNumber} />
+                  <InfoField label={t("profile.rollNumber", { fallback: "Roll Number" })} value={data.personal.rollNumber} />
+                  <InfoField label={t("profile.dob", { fallback: "Date of Birth" })} value={data.personal.dateOfBirth} />
+                  <InfoField label={t("profile.gender", { fallback: "Gender" })} value={data.personal.gender} />
+                  <InfoField label={t("profile.category", { fallback: "Category" })} value={data.personal.category} />
+                  <InfoField label={t("profile.nationality", { fallback: "Nationality" })} value={data.personal.nationality} />
+                  <InfoField label={t("profile.aadhaar", { fallback: "Aadhaar / ID" })} value={data.personal.aadhaarNumber} />
+                  <InfoField label={t("profile.email", { fallback: "Email Address" })} value={data.personal.email} icon={Mail} />
+                  <InfoField label={t("profile.phone", { fallback: "Phone Number" })} value={data.personal.phoneNumber} icon={Phone} />
                 </div>
               </MainCard>
             </ProfileSection>
@@ -280,19 +280,19 @@ const StudentProfilePage = ({ onNavigatePage }) => {
             {/* 2. Academic Information */}
             <ProfileSection 
               icon={GraduationCap} 
-              title="Academic Information" 
+              title={t("profile.academicInfo", { fallback: "Academic Information" })} 
             >
               <MainCard borderColor="#00b4d8" className="p-6 md:p-8">
                 <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6 mb-8">
-                  <InfoField label="Current Class" value={data.academic.class} />
-                  <InfoField label="Section" value={data.academic.section} />
-                  <InfoField label="Stream" value={data.academic.stream} />
-                  <InfoField label="House Group" value={data.academic.house} />
-                  <InfoField label="Class Teacher" value={data.academic.classTeacher} />
-                  <InfoField label="Admission Date" value={data.academic.admissionDate} />
+                  <InfoField label={t("profile.currentClass", { fallback: "Current Class" })} value={data.academic.class} />
+                  <InfoField label={t("profile.section", { fallback: "Section" })} value={data.academic.section} />
+                  <InfoField label={t("profile.stream", { fallback: "Stream" })} value={data.academic.stream} />
+                  <InfoField label={t("profile.houseGroup", { fallback: "House Group" })} value={data.academic.house} />
+                  <InfoField label={t("profile.classTeacher", { fallback: "Class Teacher" })} value={data.academic.classTeacher} />
+                  <InfoField label={t("profile.admissionDate", { fallback: "Admission Date" })} value={data.academic.admissionDate} />
                 </div>
                 <div className="pt-6 border-t border-gray-100">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Subjects Registered</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4">{t("profile.subjectsReg", { fallback: "Subjects Registered" })}</span>
                   <div className="flex flex-wrap gap-2">
                     {data.academic.subjects.map((sub, i) => (
                       <span key={i} className="px-4 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-100 text-[11px] font-black tracking-tight uppercase">
@@ -307,7 +307,7 @@ const StudentProfilePage = ({ onNavigatePage }) => {
             {/* 3. Family Information */}
             <ProfileSection 
               icon={Users} 
-              title="Family Information" 
+              title={t("profile.familyInfo", { fallback: "Family Information" })} 
             >
               <MainCard borderColor="#00b4d8" className="p-6 md:p-8">
                 <div className="space-y-8">
@@ -315,13 +315,13 @@ const StudentProfilePage = ({ onNavigatePage }) => {
                     {/* Father Details */}
                     <div className="bg-gray-50/50 rounded-[1.5rem] p-5 border border-gray-100">
                       <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                         <User size={12} /> Father Details
+                         <User size={12} /> {t("profile.fatherDetails", { fallback: "Father Details" })}
                       </h3>
                       <div className="space-y-4">
-                        <InfoField label="Name" value={data.family?.father?.name || "N/A"} density="compact" />
+                        <InfoField label={t("profile.name", { fallback: "Name" })} value={data.family?.father?.name || "N/A"} density="compact" />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <InfoField label="Phone" value={data.family?.father?.phoneNumber || "N/A"} icon={Smartphone} density="compact" />
-                          <InfoField label="Occupation" value={data.family?.father?.occupation || "N/A"} density="compact" />
+                          <InfoField label={t("profile.phone", { fallback: "Phone" })} value={data.family?.father?.phoneNumber || "N/A"} icon={Smartphone} density="compact" />
+                          <InfoField label={t("profile.occupation", { fallback: "Occupation" })} value={data.family?.father?.occupation || "N/A"} density="compact" />
                         </div>
                       </div>
                     </div>
@@ -329,13 +329,13 @@ const StudentProfilePage = ({ onNavigatePage }) => {
                     {/* Mother Details */}
                     <div className="bg-gray-50/50 rounded-[1.5rem] p-5 border border-gray-100">
                       <h3 className="text-[10px] font-black text-pink-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                         <User size={12} /> Mother Details
+                         <User size={12} /> {t("profile.motherDetails", { fallback: "Mother Details" })}
                       </h3>
                       <div className="space-y-4">
-                        <InfoField label="Name" value={data.family?.mother?.name || "N/A"} density="compact" />
+                        <InfoField label={t("profile.name", { fallback: "Name" })} value={data.family?.mother?.name || "N/A"} density="compact" />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InfoField label="Phone" value={data.family?.mother?.phoneNumber || "N/A"} icon={Smartphone} density="compact" />
-                          <InfoField label="Occupation" value={data.family?.mother?.occupation || "N/A"} density="compact" />
+                          <InfoField label={t("profile.phone", { fallback: "Phone" })} value={data.family?.mother?.phoneNumber || "N/A"} icon={Smartphone} density="compact" />
+                          <InfoField label={t("profile.occupation", { fallback: "Occupation" })} value={data.family?.mother?.occupation || "N/A"} density="compact" />
                         </div>
                       </div>
                     </div>
@@ -344,14 +344,14 @@ const StudentProfilePage = ({ onNavigatePage }) => {
                   {/* Guardian Info */}
                   <div className="pt-6 border-t border-gray-100">
                     <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-6 flex items-center gap-2">
-                      <ShieldCheck size={14} /> Emergency Guardian
+                      <ShieldCheck size={14} /> {t("profile.guardian", { fallback: "Emergency Guardian" })}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
-                      <InfoField label="Guardian Name" value={data.family?.guardian?.name || "N/A"} />
-                      <InfoField label="Relation" value={data.family?.guardian?.relation || "N/A"} />
-                      <InfoField label="Contact" value={data.family?.guardian?.phoneNumber || "N/A"} icon={Phone} />
+                      <InfoField label={t("profile.guardianName", { fallback: "Guardian Name" })} value={data.family?.guardian?.name || "N/A"} />
+                      <InfoField label={t("profile.relation", { fallback: "Relation" })} value={data.family?.guardian?.relation || "N/A"} />
+                      <InfoField label={t("profile.contact", { fallback: "Contact" })} value={data.family?.guardian?.phoneNumber || "N/A"} icon={Phone} />
                       <div className="md:col-span-2">
-                        <InfoField label="Residential Address" value={data.family?.guardian?.address || "N/A"} icon={MapPin} />
+                        <InfoField label={t("profile.residentialAddr", { fallback: "Residential Address" })} value={data.family?.guardian?.address || "N/A"} icon={MapPin} />
                       </div>
                     </div>
                   </div>
@@ -360,11 +360,11 @@ const StudentProfilePage = ({ onNavigatePage }) => {
             </ProfileSection>
 
             {/* 3. Co-Curricular & Club Participation */}
-            <ProfileSection icon={Award} title="Co-Curricular & Club Participation">
+            <ProfileSection icon={Award} title={t("profile.coCurricular", { fallback: "Co-Curricular & Club Participation" })}>
               <MainCard borderColor="#00b4d8" className="p-6 md:p-8">
                 {data.activityParticipations?.length === 0 ? (
                   <div className="text-center py-6 text-xs font-bold text-gray-400 italic bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-                    No activity participation history found.
+                    {t("profile.noActivity", { fallback: "No activity participation history found." })}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 gap-4">
@@ -393,7 +393,7 @@ const StudentProfilePage = ({ onNavigatePage }) => {
           <div className="lg:col-span-4 flex flex-col gap-8 md:gap-10">
             
             {/* 1. Support & Contacts (Combined) */}
-            <ProfileSection icon={MessageSquare} title="Support & Contacts">
+            <ProfileSection icon={MessageSquare} title={t("profile.supportContacts", { fallback: "Support & Contacts" })}>
               <MainCard borderColor="#00b4d8" className="p-5">
                 <div className="space-y-4">
                   {/* Coordinator */}
@@ -403,7 +403,7 @@ const StudentProfilePage = ({ onNavigatePage }) => {
                            <User size={18} />
                         </div>
                         <div className="min-w-0">
-                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Coordinator</p>
+                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{t("profile.coordinator", { fallback: "Coordinator" })}</p>
                            <p className="text-sm font-black text-[#03045e] truncate leading-tight">{data.academic.classTeacher}</p>
                         </div>
                      </div>
@@ -421,7 +421,7 @@ const StudentProfilePage = ({ onNavigatePage }) => {
                            <Building2 size={18} />
                         </div>
                         <div className="min-w-0">
-                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Administration</p>
+                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{t("profile.administration", { fallback: "Administration" })}</p>
                            <p className="text-sm font-black text-[#03045e] truncate leading-tight">Admin Support Desk</p>
                         </div>
                      </div>
@@ -436,7 +436,7 @@ const StudentProfilePage = ({ onNavigatePage }) => {
             {/* 2. Medical Information (Compact Utility) */}
             <ProfileSection 
               icon={HeartPulse} 
-              title="Medical Registry" 
+              title={t("profile.medicalRegistry", { fallback: "Medical Registry" })} 
             >
               <MainCard borderColor="#00b4d8" className="p-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 mb-6">
@@ -444,16 +444,16 @@ const StudentProfilePage = ({ onNavigatePage }) => {
                      <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center font-black text-lg">
                         {data.medical?.bloodGroup || "N/A"}
                      </div>
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Blood Group</span>
+                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t("profile.bloodGroup", { fallback: "Blood Group" })}</span>
                   </div>
-                  <InfoField label="Height" value={data.medical?.height || "N/A"} density="compact" />
-                  <InfoField label="Weight" value={data.medical?.weight || "N/A"} density="compact" />
-                  <InfoField label="Medical Mark" value={data.medical?.identificationMark || "N/A"} density="compact" />
+                  <InfoField label={t("profile.height", { fallback: "Height" })} value={data.medical?.height || "N/A"} density="compact" />
+                  <InfoField label={t("profile.weight", { fallback: "Weight" })} value={data.medical?.weight || "N/A"} density="compact" />
+                  <InfoField label={t("profile.medicalMark", { fallback: "Medical Mark" })} value={data.medical?.identificationMark || "N/A"} density="compact" />
                 </div>
                 
                 <div className="space-y-5 pt-5 border-t border-gray-100">
                   <div>
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2.5">Active Allergies</span>
+                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2.5">{t("profile.activeAllergies", { fallback: "Active Allergies" })}</span>
                      <div className="flex flex-wrap gap-1.5">
                         {(data.medical?.allergies || []).map((item, i) => (
                           <span key={i} className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-500 text-[9px] font-black uppercase border border-rose-100">
@@ -476,13 +476,13 @@ const StudentProfilePage = ({ onNavigatePage }) => {
             {/* 3. Residency / Address (Compact) */}
             <ProfileSection 
               icon={MapPin} 
-              title="Residency" 
+              title={t("profile.residency", { fallback: "Residency" })} 
             >
               <MainCard borderColor="#00b4d8" className="p-5">
                 <div className="space-y-6">
                   <div className="space-y-3">
                      <h4 className="text-[10px] font-black text-cyan-600 uppercase tracking-widest flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-600" /> Current Address
+                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-600" /> {t("profile.currentAddress", { fallback: "Current Address" })}
                      </h4>
                      <p className="text-sm font-bold text-[#03045e] leading-relaxed">
                        {data.address?.current?.address || "N/A"}, {data.address?.current?.city || "N/A"}, {data.address?.current?.state || "N/A"} - {data.address?.current?.postalCode || "N/A"}
@@ -491,10 +491,10 @@ const StudentProfilePage = ({ onNavigatePage }) => {
 
                   <div className="pt-6 border-t border-gray-100 space-y-3 opacity-60">
                      <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-gray-400" /> Permanent Address
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-400" /> {t("profile.permanentAddress", { fallback: "Permanent Address" })}
                      </h4>
                      <p className="text-xs font-bold text-gray-500 leading-relaxed italic">
-                       Same as correspondence address
+                       {t("profile.sameAsCurrent", { fallback: "Same as correspondence address" })}
                      </p>
                   </div>
                 </div>

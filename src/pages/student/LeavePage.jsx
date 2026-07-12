@@ -144,7 +144,7 @@ const LeavePage = () => {
     const e = new Date(end);
     const diff = e - s;
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
-    return days === 1 ? "1 Day" : `${days} Days`;
+    return days === 1 ? t("leave.oneDay", { fallback: "1 Day" }) : t("leave.daysCount", { count: days, fallback: `${days} Days` });
   };
 
   return (
@@ -157,9 +157,9 @@ const LeavePage = () => {
               <CalendarDays size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-[#03045e]">Leave Management</h1>
+              <h1 className="text-2xl font-black text-[#03045e]">{t("leave.title", { fallback: "Leave Management" })}</h1>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Apply for Institutional Leave & Track Approval Status
+                {t("leave.subtitle", { fallback: "Apply for Institutional Leave & Track Approval Status" })}
               </p>
             </div>
           </div>
@@ -175,10 +175,10 @@ const LeavePage = () => {
             
             <h2 className="text-lg font-black text-[#03045e] mb-2 flex items-center gap-2">
               <PlusCircle size={20} className="text-[#0077b6]" />
-              New Leave Application
+              {t("leave.newApplication", { fallback: "New Leave Application" })}
             </h2>
             <p className="text-xs font-semibold text-gray-400 mb-6 uppercase tracking-wider">
-              All applications route to your assigned class teacher.
+              {t("leave.routeInfo", { fallback: "All applications route to your assigned class teacher." })}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -209,7 +209,7 @@ const LeavePage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">From Date</label>
+                  <label className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">{t("leave.fromDate", { fallback: "From Date" })}</label>
                   <input
                     type="date"
                     required
@@ -219,7 +219,7 @@ const LeavePage = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">To Date</label>
+                  <label className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">{t("leave.toDate", { fallback: "To Date" })}</label>
                   <input
                     type="date"
                     required
@@ -231,13 +231,13 @@ const LeavePage = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">Reason for Leave</label>
+                <label className="text-[10px] font-black text-[#03045e] uppercase tracking-wider">{t("leave.reasonForLeave", { fallback: "Reason for Leave" })}</label>
                 <textarea
                   required
                   rows={4}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Provide a specific and genuine explanation (e.g. retroactive sick leave, family emergency)..."
+                  placeholder={t("leave.reasonPlaceholder", { fallback: "Provide a specific and genuine explanation (e.g. retroactive sick leave, family emergency)..." })}
                   className="w-full px-3 py-2 text-xs font-bold text-[#03045e] bg-gray-50 border border-gray-100 hover:border-gray-200 focus:border-[#00b4d8] focus:bg-white rounded-xl outline-none resize-none transition-all placeholder:text-gray-300"
                 />
               </div>
@@ -250,7 +250,7 @@ const LeavePage = () => {
                     onChange={(e) => setHasMedicalNote(e.target.checked)}
                     className="rounded text-[#00b4d8] focus:ring-[#00b4d8] w-4 h-4 border-gray-300"
                   />
-                  <span className="text-xs font-bold text-gray-500">I have a Medical Certificate</span>
+                  <span className="text-xs font-bold text-gray-500">{t("leave.medicalCert", { fallback: "I have a Medical Certificate" })}</span>
                 </label>
 
                 {/* Mock Upload Section */}
@@ -262,11 +262,11 @@ const LeavePage = () => {
                   />
                   <Paperclip size={18} className="text-gray-400 group-hover:text-[#00b4d8] transition-colors" />
                   <span className="text-[10px] font-extrabold text-gray-400 group-hover:text-gray-500 uppercase tracking-wider">
-                    {mockFile ? mockFile.name : "Attach Supporting Documents"}
+                    {mockFile ? mockFile.name : t("leave.attachDocs", { fallback: "Attach Supporting Documents" })}
                   </span>
                   {mockFile && (
                     <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-full">
-                      Mock Uploaded ({mockFile.size})
+                      {t("leave.mockUploaded", { fallback: "Mock Uploaded" })} ({mockFile.size})
                     </span>
                   )}
                 </div>
@@ -282,7 +282,7 @@ const LeavePage = () => {
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  "Submit Application"
+                  t("leave.submit", { fallback: "Submit Application" })
                 )}
               </motion.button>
             </form>
@@ -296,7 +296,7 @@ const LeavePage = () => {
             <MainCard className="p-6 h-[500px] flex flex-col">
               <h2 className="text-lg font-black text-[#03045e] mb-4 flex items-center gap-2">
                 <FileText size={20} className="text-[#0077b6]" />
-                Application History
+                {t("leave.history", { fallback: "Application History" })}
               </h2>
 
               {historyLoading ? (
@@ -306,9 +306,9 @@ const LeavePage = () => {
               ) : leaves.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
                   <CalendarDays size={36} className="text-gray-300 mb-3" />
-                  <p className="text-xs font-black text-[#03045e]">No applications found</p>
+                  <p className="text-xs font-black text-[#03045e]">{t("leave.noApplications", { fallback: "No applications found" })}</p>
                   <p className="text-[10px] text-gray-400 font-bold max-w-xs mt-1">
-                    Apply using the form on the left to start your leave application process.
+                    {t("leave.noAppMsg", { fallback: "Apply using the form on the left to start your leave application process." })}
                   </p>
                 </div>
               ) : (
@@ -340,19 +340,19 @@ const LeavePage = () => {
                           {leave.status === "PENDING" && (
                             <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[8px] font-black uppercase tracking-wider flex items-center gap-1">
                               <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
-                              Pending
+                              {t("common.pending", { fallback: "Pending" })}
                             </span>
                           )}
                           {leave.status === "APPROVED" && (
                             <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black uppercase tracking-wider flex items-center gap-1">
                               <CheckCircle2 size={8} />
-                              Approved
+                              {t("common.approved", { fallback: "Approved" })}
                             </span>
                           )}
                           {leave.status === "REJECTED" && (
                             <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 text-[8px] font-black uppercase tracking-wider flex items-center gap-1">
                               <XCircle size={8} />
-                              Rejected
+                              {t("common.rejected", { fallback: "Rejected" })}
                             </span>
                           )}
                           <ChevronRight size={14} className="text-gray-400" />
@@ -369,13 +369,13 @@ const LeavePage = () => {
               <div>
                 <h2 className="text-lg font-black text-[#03045e] mb-6 flex items-center gap-2">
                   <UserCheck size={20} className="text-[#0077b6]" />
-                  Application Details
+                  {t("leave.applicationDetails", { fallback: "Application Details" })}
                 </h2>
 
                 {selectedLeave ? (
                   <div className="space-y-5 text-left">
                     <div>
-                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">Leave Duration</span>
+                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">{t("leave.leaveDuration", { fallback: "Leave Duration" })}</span>
                       <p className="text-sm font-black text-[#03045e] mt-0.5">
                         {formatDate(selectedLeave.fromDate)} - {formatDate(selectedLeave.toDate)}
                       </p>
@@ -385,7 +385,7 @@ const LeavePage = () => {
                     </div>
 
                     <div>
-                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">Reason Submitted</span>
+                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">{t("leave.reasonSubmitted", { fallback: "Reason Submitted" })}</span>
                       <p className="text-xs font-semibold text-[#03045e] mt-1 leading-relaxed bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
                         {selectedLeave.reason}
                       </p>
@@ -393,24 +393,24 @@ const LeavePage = () => {
 
                     <div className="border-t border-gray-100 pt-4 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">Review Status</span>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">{t("leave.reviewStatus", { fallback: "Review Status" })}</span>
                         <div>
                           {selectedLeave.status === "PENDING" && (
                             <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
                               <Clock size={10} />
-                              Under Review
+                              {t("leave.underReview", { fallback: "Under Review" })}
                             </span>
                           )}
                           {selectedLeave.status === "APPROVED" && (
                             <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
                               <CheckCircle2 size={10} />
-                              Approved
+                              {t("common.approved", { fallback: "Approved" })}
                             </span>
                           )}
                           {selectedLeave.status === "REJECTED" && (
                             <span className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100 text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
                               <XCircle size={10} />
-                              Rejected
+                              {t("common.rejected", { fallback: "Rejected" })}
                             </span>
                           )}
                         </div>
@@ -418,7 +418,7 @@ const LeavePage = () => {
 
                       {selectedLeave.attachmentUrl && (
                         <div>
-                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">Attachment</span>
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider">{t("leave.attachment", { fallback: "Attachment" })}</span>
                           <div className="mt-1">
                             <a 
                               href={selectedLeave.attachmentUrl} 
@@ -426,7 +426,7 @@ const LeavePage = () => {
                               rel="noreferrer"
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#caf0f8] text-[#03045e] hover:bg-[#00b4d8] hover:text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors"
                             >
-                              <Paperclip size={12} /> View Document
+                              <Paperclip size={12} /> {t("leave.viewDoc", { fallback: "View Document" })}
                             </a>
                           </div>
                         </div>
@@ -434,12 +434,12 @@ const LeavePage = () => {
 
                       {selectedLeave.status !== "PENDING" && (
                         <div className="space-y-2 bg-[#caf0f8]/20 p-4 rounded-3xl border border-[#caf0f8]/30">
-                          <span className="text-[9px] font-black text-[#0077b6] uppercase tracking-wider">Teacher Feedback</span>
+                          <span className="text-[9px] font-black text-[#0077b6] uppercase tracking-wider">{t("leave.teacherFeedback", { fallback: "Teacher Feedback" })}</span>
                           <p className="text-xs font-bold text-[#03045e] leading-relaxed">
-                            {selectedLeave.teacherComment || "No comment provided."}
+                            {selectedLeave.teacherComment || t("leave.noComment", { fallback: "No comment provided." })}
                           </p>
                           <div className="flex items-center justify-between text-[9px] font-bold text-gray-400 uppercase mt-2 pt-2 border-t border-[#caf0f8]/40">
-                            <span>Reviewed At:</span>
+                            <span>{t("leave.reviewedAt", { fallback: "Reviewed At:" })}</span>
                             <span>{new Date(selectedLeave.reviewedAt).toLocaleDateString()}</span>
                           </div>
                         </div>
@@ -450,7 +450,7 @@ const LeavePage = () => {
                   <div className="h-64 flex flex-col items-center justify-center text-center p-6">
                     <Clock size={36} className="text-gray-200 mb-3 animate-pulse" />
                     <p className="text-xs font-black text-gray-400 uppercase tracking-wider">
-                      Select an application to view details
+                      {t("leave.selectApp", { fallback: "Select an application to view details" })}
                     </p>
                   </div>
                 )}
@@ -458,7 +458,7 @@ const LeavePage = () => {
 
               {selectedLeave && (
                 <div className="text-[8px] font-black text-gray-400 uppercase tracking-widest text-center border-t border-gray-100 pt-3">
-                  Applied At: {new Date(selectedLeave.appliedAt).toLocaleString()}
+                  {t("leave.appliedAt", { fallback: "Applied At:" })} {new Date(selectedLeave.appliedAt).toLocaleString()}
                 </div>
               )}
             </MainCard>

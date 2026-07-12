@@ -120,7 +120,7 @@ function ClassBlock({ cls }) {
   );
 }
 
-function DayColumn({ day, classes }) {
+function DayColumn({ day, classes, t }) {
   const isEmpty = !classes || classes.length === 0;
 
   return (
@@ -129,7 +129,7 @@ function DayColumn({ day, classes }) {
         className="rounded-xl px-3 py-2 text-center font-extrabold text-sm sticky top-0 z-10"
         style={{ backgroundColor: NAVY, color: LIME }}
       >
-        {day}
+        {t(`timetable.day_${day}`, { fallback: day })}
       </div>
 
       {isEmpty ? (
@@ -137,7 +137,7 @@ function DayColumn({ day, classes }) {
           className="rounded-2xl p-4 text-center text-xs font-semibold text-gray-400 border-2 border-dashed"
           style={{ borderColor: LIME }}
         >
-          No classes
+          {t("timetable.noClasses", { fallback: "No classes" })}
         </div>
       ) : (
         <motion.div
@@ -158,27 +158,27 @@ function DayColumn({ day, classes }) {
   );
 }
 
-function WeekendCard({ day }) {
+function WeekendCard({ day, t }) {
   return (
     <div className="flex flex-col gap-3 min-w-0">
       <div
         className="rounded-xl px-3 py-2 text-center font-extrabold text-sm"
         style={{ backgroundColor: "#e5e7eb", color: "#9ca3af" }}
       >
-        {day}
+        {t(`timetable.day_${day}`, { fallback: day })}
       </div>
       <div
         className="rounded-2xl p-5 flex flex-col items-center gap-2 border-2 border-dashed"
         style={{ borderColor: "#e5e7eb" }}
       >
         <CalendarDays size={31} className="text-gray-300" aria-hidden="true" />
-        <p className="text-xs font-bold text-gray-400">Holiday</p>
+        <p className="text-xs font-bold text-gray-400">{t("timetable.holiday", { fallback: "Holiday" })}</p>
       </div>
     </div>
   );
 }
 
-function MobileView({ weeklyTimetable }) {
+function MobileView({ weeklyTimetable, t }) {
   const [activeDay, setActiveDay] = useState("Monday");
 
   return (
@@ -196,7 +196,7 @@ function MobileView({ weeklyTimetable }) {
                 color: isActive ? LIME : NAVY,
               }}
             >
-              {day.slice(0, 3)}
+              {t(`timetable.dayShort_${day}`, { fallback: day.slice(0, 3) })}
             </button>
           );
         })}
@@ -207,7 +207,7 @@ function MobileView({ weeklyTimetable }) {
             className="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-extrabold opacity-40 cursor-not-allowed"
             style={{ backgroundColor: "#e5e7eb", color: "#9ca3af" }}
           >
-            {day.slice(0, 3)}
+            {t(`timetable.dayShort_${day}`, { fallback: day.slice(0, 3) })}
           </button>
         ))}
       </div>
@@ -231,7 +231,7 @@ function MobileView({ weeklyTimetable }) {
             className="rounded-2xl p-6 text-center text-sm font-semibold text-gray-400 border-2 border-dashed"
             style={{ borderColor: LIME }}
           >
-            No classes scheduled
+            {t("timetable.noClassesScheduled", { fallback: "No classes scheduled" })}
           </div>
         )}
       </motion.div>
@@ -304,10 +304,10 @@ function WeeklyTimetablePage() {
               <CalendarDays size={40} className="text-[#03045e]" />
             </div>
             <h2 className="text-xl font-black text-[#03045e] mb-2">
-              No Timetable Available
+              {t("timetable.noTimetableTitle", { fallback: "No Timetable Available" })}
             </h2>
             <p className="text-gray-500 font-semibold max-w-md">
-              Timetable has not been set yet.
+              {t("timetable.noTimetableDesc", { fallback: "Timetable has not been set yet." })}
             </p>
           </div>
         ) : (
@@ -322,15 +322,16 @@ function WeeklyTimetablePage() {
                     key={day}
                     day={day}
                     classes={weeklyTimetable[day]}
+                    t={t}
                   />
                 ))}
-                <WeekendCard day="Saturday" />
-                <WeekendCard day="Sunday" />
+                <WeekendCard day="Saturday" t={t} />
+                <WeekendCard day="Sunday" t={t} />
               </div>
             </div>
 
             <div className="md:hidden">
-              <MobileView weeklyTimetable={weeklyTimetable} />
+              <MobileView weeklyTimetable={weeklyTimetable} t={t} />
             </div>
 
             <div
@@ -344,7 +345,7 @@ function WeeklyTimetablePage() {
                   aria-hidden="true"
                 />
                 <p className="text-sm font-extrabold" style={{ color: NAVY }}>
-                  Subject Color Guide
+                  {t("timetable.colorGuide", { fallback: "Subject Color Guide" })}
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">

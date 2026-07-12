@@ -15,6 +15,9 @@ export const curriculumTranslations = {
     "curriculum.mainBook": "Main Textbook",
     "curriculum.refBook": "Reference Book",
     "curriculum.author": "Author",
+    "courses.defaultDescription": "Course curriculum and objectives are available on the subject details page.",
+    "courses.regularSchedule": "Regular Schedule",
+    "curriculum.subjectDetails": "Subject Details"
   },
   hi: {
     "curriculum.info": "पाठ्यक्रम की जानकारी",
@@ -32,5 +35,9 @@ export const curriculumTranslations = {
     "curriculum.mainBook": "मुख्य पाठ्यपुस्तक",
     "curriculum.refBook": "संदर्भ पुस्तक",
     "curriculum.author": "लेखक",
+    "courses.defaultDescription": "पाठ्यक्रम और उद्देश्य विषय विवरण पृष्ठ पर उपलब्ध हैं।",
+    "courses.regularSchedule": "नियमित अनुसूची",
+    "curriculum.subjectDetails": "विषय विवरण"
+
   }
 };

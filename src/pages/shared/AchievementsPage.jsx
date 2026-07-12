@@ -47,7 +47,7 @@ const HELPER_HI = "यह अनुभाग आपकी सभी शैक्
 
 const BLANK_FORM = { title: "", category: "academic", date: "", organization: "", description: "" };
 
-function AddAchievementModal({ isOpen, onClose, onAdd, lang }) {
+function AddAchievementModal({ isOpen, onClose, onAdd, lang, t }) {
   const [form, setForm] = useState(BLANK_FORM);
   const [errors, setErrors] = useState({});
 
@@ -80,7 +80,7 @@ function AddAchievementModal({ isOpen, onClose, onAdd, lang }) {
   const field = (key, labelEn, labelHi, type = "text") => (
     <div className="flex flex-col gap-1">
       <label className="text-xs font-bold uppercase tracking-wide" style={{ color: "#0077b6" }}>
-        {lang === "hi" ? labelHi : labelEn}
+        {t(`achievements.${key}Label`, { fallback: labelEn })}
       </label>
       <input
         type={type}
@@ -89,7 +89,7 @@ function AddAchievementModal({ isOpen, onClose, onAdd, lang }) {
         className="w-full px-3 py-2.5 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-[#00b4d8]"
         style={{ backgroundColor: "#f8fafc", border: `1px solid ${errors[key] ? "#dc2626" : "#e2e8f0"}`, color: "#03045e" }}
       />
-      {errors[key] && <span className="text-[10px] text-red-500 font-semibold">{lang === "hi" ? "यह फ़ील्ड आवश्यक है" : "This field is required"}</span>}
+      {errors[key] && <span className="text-[10px] text-red-500 font-semibold">{t("achievements.fieldRequired", { fallback: "This field is required" })}</span>}
     </div>
   );
 
@@ -108,7 +108,7 @@ function AddAchievementModal({ isOpen, onClose, onAdd, lang }) {
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-extrabold" style={{ color: "#03045e" }}>
               <Plus size={18} className="inline mr-2" />
-              {lang === "hi" ? "उपलब्धि जोड़ें" : "Add Achievement"}
+              {t("achievements.addTitle", { fallback: "Add Achievement" })}
             </h2>
             <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: "#caf0f8", color: "#03045e" }} aria-label="Close">
               <X size={15} />
@@ -117,7 +117,7 @@ function AddAchievementModal({ isOpen, onClose, onAdd, lang }) {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             {field("title", "Achievement Title", "उपलब्धि शीर्षक")}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold uppercase tracking-wide" style={{ color: "#0077b6" }}>{lang === "hi" ? "श्रेणी" : "Category"}</label>
+              <label className="text-xs font-bold uppercase tracking-wide" style={{ color: "#0077b6" }}>{t("achievements.category", { fallback: "Category" })}</label>
               <select
                 value={form.category}
                 onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
@@ -132,7 +132,7 @@ function AddAchievementModal({ isOpen, onClose, onAdd, lang }) {
             {field("date", "Date Achieved", "उपलब्धि की तारीख", "date")}
             {field("organization", "Issuing Organization", "जारी करने वाली संस्था")}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold uppercase tracking-wide" style={{ color: "#0077b6" }}>{lang === "hi" ? "विवरण" : "Description"}</label>
+              <label className="text-xs font-bold uppercase tracking-wide" style={{ color: "#0077b6" }}>{t("achievements.description", { fallback: "Description" })}</label>
               <textarea
                 rows={3}
                 value={form.description}
@@ -142,7 +142,7 @@ function AddAchievementModal({ isOpen, onClose, onAdd, lang }) {
               />
             </div>
             <button type="submit" className="w-full py-3 rounded-2xl text-sm font-extrabold text-white transition-colors" style={{ backgroundColor: "#03045e" }}>
-              {lang === "hi" ? "उपलब्धि सहेजें" : "Save Achievement"}
+              {t("achievements.save", { fallback: "Save Achievement" })}
             </button>
           </form>
         </div>
@@ -151,7 +151,7 @@ function AddAchievementModal({ isOpen, onClose, onAdd, lang }) {
   );
 }
 
-function AchievementCard({ ach, index, lang }) {
+function AchievementCard({ ach, index, lang, t }) {
   const [expanded, setExpanded] = useState(false);
   const rank = RANK_CONFIG[ach.rank] || RANK_CONFIG.certificate;
   const RankIcon = rank.icon;
@@ -193,7 +193,7 @@ function AchievementCard({ ach, index, lang }) {
               >
                 <RankIcon size={10} />
                 <span className="text-[10px] font-extrabold uppercase tracking-wide">
-                  {lang === "hi" ? rank.labelHi : rank.labelEn}
+                  {t(`achievements.rank_${ach.rank}`, { fallback: rank.labelEn })}
                 </span>
               </div>
             </div>
@@ -223,8 +223,8 @@ function AchievementCard({ ach, index, lang }) {
         >
           {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           {expanded
-            ? (lang === "hi" ? "कम दिखाएं" : "Show less")
-            : (lang === "hi" ? "अधिक देखें" : "Read more")}
+            ? t("achievements.showLess", { fallback: "Show less" })
+            : t("achievements.readMore", { fallback: "Read more" })}
         </button>
 
         {expanded && (
@@ -237,7 +237,7 @@ function AchievementCard({ ach, index, lang }) {
           <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl mt-auto" style={{ backgroundColor: "#d1fae5" }}>
             <FileCheck size={13} className="text-[#059669]" aria-hidden="true" />
             <span className="text-[10px] font-extrabold text-[#059669]">
-              {lang === "hi" ? "प्रमाणपत्र उपलब्ध है" : "Certificate available"}
+              {t("achievements.certAvailable", { fallback: "Certificate available" })}
             </span>
           </div>
         )}
@@ -287,12 +287,12 @@ export default function AchievementsPage() {
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-black truncate" style={{ color: "#03045e" }}>
-                {lang === "hi" ? "उपलब्धियां" : "Achievements"}
+                {t("achievements.title", { fallback: "Achievements" })}
               </h1>
               <p className="text-sm text-gray-500 truncate">
                 {isParentMode
-                  ? (lang === "hi" ? "आपके बच्चे की शैक्षणिक और पाठ्येतर उपलब्धियां।" : "Academic and extracurricular achievements of your child.")
-                  : (lang === "hi" ? "आपकी सभी उपलब्धियां और पुरस्कार यहां हैं।" : "Your awards, medals & milestones — all in one place.")}
+                  ? t("achievements.subtitleParent", { fallback: "Academic and extracurricular achievements of your child." })
+                  : t("achievements.subtitleStudent", { fallback: "Your awards, medals & milestones — all in one place." })}
               </p>
             </div>
           </div>
@@ -306,7 +306,7 @@ export default function AchievementsPage() {
                 style={{ backgroundColor: "#03045e" }}
               >
                 <Plus size={16} />
-                {lang === "hi" ? "जोड़ें" : "Add"}
+                {t("achievements.add", { fallback: "Add" })}
               </button>
             )}
             <HelperButton onClick={() => setShowHelper(true)} />
@@ -315,11 +315,11 @@ export default function AchievementsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
           {[
-            { id: "gold", count: allAchievements.filter(a => a.rank === "gold").length, labelEn: "Gold", labelHi: "स्वर्ण", color: "#b45309", bg: "#fef3c7", icon: Trophy },
-            { id: "silver", count: allAchievements.filter(a => a.rank === "silver").length, labelEn: "Silver", labelHi: "रजत", color: "#475569", bg: "#f1f5f9", icon: Medal },
-            { id: "others", count: allAchievements.filter(a => ["bronze","participation"].includes(a.rank)).length, labelEn: "Medals", labelHi: "पदक", color: "#6d28d9", bg: "#ede9fe", icon: Award },
-            { id: "certs", count: allAchievements.filter(a => a.hasCertificate).length, labelEn: "Certs", labelHi: "प्रमाण", color: "#059669", bg: "#d1fae5", icon: FileCheck },
-          ].map(({ id, count, labelEn, labelHi, color, bg, icon: Icon }) => (
+            { id: "gold", count: allAchievements.filter(a => a.rank === "gold").length, labelEn: "Gold", color: "#b45309", bg: "#fef3c7", icon: Trophy },
+            { id: "silver", count: allAchievements.filter(a => a.rank === "silver").length, labelEn: "Silver", color: "#475569", bg: "#f1f5f9", icon: Medal },
+            { id: "others", count: allAchievements.filter(a => ["bronze","participation"].includes(a.rank)).length, labelEn: "Medals", color: "#6d28d9", bg: "#ede9fe", icon: Award },
+            { id: "certs", count: allAchievements.filter(a => a.hasCertificate).length, labelEn: "Certs", color: "#059669", bg: "#d1fae5", icon: FileCheck },
+          ].map(({ id, count, labelEn, color, bg, icon: Icon }) => (
             <div
               key={id}
               className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-[#caf0f8]"
@@ -330,7 +330,7 @@ export default function AchievementsPage() {
               <div>
                 <span className="text-xl font-black block leading-none" style={{ color }}>{count}</span>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wide mt-1 block">
-                  {lang === "hi" ? labelHi : labelEn}
+                  {t(`achievements.stat_${id}`, { fallback: labelEn })}
                 </span>
               </div>
             </div>
@@ -349,7 +349,7 @@ export default function AchievementsPage() {
                   ? { backgroundColor: cat.color, color: "white" }
                   : { backgroundColor: "white", color: "#6b7280", border: "1px solid #e5e7eb" }}
               >
-                {lang === "hi" ? cat.labelHi : cat.labelEn}
+                {t(`achievements.cat_${cat.id}`, { fallback: cat.labelEn })}
               </button>
             );
           })}
@@ -359,13 +359,13 @@ export default function AchievementsPage() {
           <div className="flex flex-col items-center gap-3 py-16 bg-white rounded-2xl" style={{ border: "1px solid #caf0f8" }}>
             <Star size={48} className="text-gray-300" aria-hidden="true" />
             <p className="text-sm font-bold text-gray-400">
-              {lang === "hi" ? "इस श्रेणी में कोई उपलब्धि नहीं।" : "No achievements in this category yet."}
+              {t("achievements.noAchievements", { fallback: "No achievements in this category yet." })}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((ach, i) => (
-              <AchievementCard key={ach.id} ach={ach} index={i} lang={lang} />
+              <AchievementCard key={ach.id} ach={ach} index={i} lang={lang} t={t} />
             ))}
           </div>
         )}
@@ -377,12 +377,10 @@ export default function AchievementsPage() {
           <Sparkles size={32} className="text-[#caf0f8] flex-shrink-0" aria-hidden="true" />
           <div>
             <p className="text-sm font-extrabold text-white">
-              {lang === "hi" ? "हर उपलब्धि मायने रखती है!" : "Every achievement matters!"}
+              {t("achievements.promoTitle", { fallback: "Every achievement matters!" })}
             </p>
             <p className="text-xs text-white/70 font-medium mt-0.5">
-              {lang === "hi"
-                ? "अपनी उपलब्धियां यहां जोड़ें और अपनी यात्रा दर्ज करें।"
-                : "Keep adding your milestones here and track your incredible journey."}
+              {t("achievements.promoDesc", { fallback: "Keep adding your milestones here and track your incredible journey." })}
             </p>
           </div>
         </div>
@@ -400,6 +398,7 @@ export default function AchievementsPage() {
         onClose={() => setShowAddModal(false)}
         onAdd={handleAdd}
         lang={lang}
+        t={t}
       />
     </>
   );

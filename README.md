@@ -148,6 +148,7 @@ Recently completed:
 - ✅ Academic Report Cards
 - ✅ Academic Calendar (Frozen)
 - ✔ Student Examination Synchronization
+- ✅ Translation Subsystem (Frozen)
 
 ## 🗺️ Roadmap
 

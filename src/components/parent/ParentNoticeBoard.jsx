@@ -22,6 +22,7 @@ import {
 import { markNoticeRead } from "../../services/noticeService";
 import { useAuth } from "../../context/AuthContext";
 import { useStudent } from "../../context/StudentContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -43,6 +44,7 @@ const FILTER_OPTIONS = [
 
 // eslint-disable-next-line react/prop-types
 function NoticeCard({ notice, onRead, isRead, index }) {
+  const { t } = useLanguage();
   const priorityColors = {
     [NOTICE_PRIORITIES.INFO]: "bg-blue-50 text-blue-600 border-blue-200",
     [NOTICE_PRIORITIES.IMPORTANT]:
@@ -102,7 +104,7 @@ function NoticeCard({ notice, onRead, isRead, index }) {
             {!isRead && <span className="w-2 h-2 rounded-full bg-[#0077b6]" />}
             {notice.requiresAction && (
               <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 border border-rose-200">
-                Action Required
+                {t("notices.actionRequired", { fallback: "Action Required" })}
               </span>
             )}
             <span
@@ -121,7 +123,7 @@ function NoticeCard({ notice, onRead, isRead, index }) {
             <span>{new Date(notice.createdAt).toLocaleDateString()}</span>
             {notice.expiresAt && (
               <span>
-                • Expires: {new Date(notice.expiresAt).toLocaleDateString()}
+                • {t("notices.expires", { fallback: "Expires:" })} {new Date(notice.expiresAt).toLocaleDateString()}
               </span>
             )}
           </div>
@@ -157,6 +159,7 @@ function NoticeSection({ notices, onRead, readNoticeIds, emptyMessage }) {
 }
 
 export default function ParentNoticeBoard() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { activeStudentId } = useStudent();
   const parentId = user?.linkedEntityId || "parent-001";
@@ -166,6 +169,15 @@ export default function ParentNoticeBoard() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [readNoticeIds, setReadNoticeIds] = useState(new Set());
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+
+  const FILTER_OPTIONS = useMemo(() => [
+    { id: "all", label: t("notices.filterAll", { fallback: "All Notices" }) },
+    { id: "unread", label: t("notices.filterUnread", { fallback: "Unread" }) },
+    { id: "urgent", label: t("notices.filterUrgent", { fallback: "Urgent" }) },
+    { id: "fees", label: t("notices.filterFees", { fallback: "Fee Alerts" }) },
+    { id: "exams", label: t("notices.filterExams", { fallback: "Exams" }) },
+    { id: "attendance", label: t("notices.filterAttendance", { fallback: "Attendance" }) },
+  ], [t]);
 
   const loadNotices = useCallback(async () => {
     setLoading(true);
@@ -282,7 +294,7 @@ export default function ParentNoticeBoard() {
     return (
       <div className="p-8 text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0077b6] mx-auto mb-2" />
-        <p className="text-xs text-gray-400">Loading notices...</p>
+        <p className="text-xs text-gray-400">{t("notices.loading", { fallback: "Loading notices..." })}</p>
       </div>
     );
   }
@@ -296,20 +308,20 @@ export default function ParentNoticeBoard() {
           </div>
           <div>
             <h2 className="text-lg font-extrabold text-[#03045e]">
-              Parent Notice Board
+              {t("notices.title", { fallback: "Parent Notice Board" })}
             </h2>
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400">
-                Institutional Updates
+                {t("notices.subtitle", { fallback: "Institutional Updates" })}
               </span>
               {unreadCount > 0 && (
                 <span className="text-[10px] font-black bg-[#0077b6] text-white px-2 py-0.5 rounded-full">
-                  {unreadCount} unread
+                  {unreadCount} {t("notices.unreadSuffix", { fallback: "unread" })}
                 </span>
               )}
               {actionRequiredCount > 0 && (
                 <span className="text-[10px] font-black bg-rose-500 text-white px-2 py-0.5 rounded-full">
-                  {actionRequiredCount} actions
+                  {actionRequiredCount} {t("notices.actionsSuffix", { fallback: "actions" })}
                 </span>
               )}
             </div>
@@ -369,7 +381,7 @@ export default function ParentNoticeBoard() {
           <div className="flex items-center gap-2 mb-3">
             <Wallet size={18} className="text-rose-500" />
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-              Fee Alerts
+              {t("notices.feeAlertsTitle", { fallback: "Fee Alerts" })}
             </h3>
             <span className="text-[10px] font-black bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full">
               {feeAlerts.length}
@@ -379,7 +391,7 @@ export default function ParentNoticeBoard() {
             notices={feeAlerts}
             onRead={handleMarkAsRead}
             readNoticeIds={readNoticeIds}
-            emptyMessage="No fee alerts"
+            emptyMessage={t("notices.noFeeAlerts", { fallback: "No fee alerts" })}
           />
         </div>
       )}
@@ -389,7 +401,7 @@ export default function ParentNoticeBoard() {
           <div className="flex items-center gap-2 mb-3">
             <GraduationCap size={18} className="text-[#0077b6]" />
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-              Examination Notices
+              {t("notices.examNoticesTitle", { fallback: "Examination Notices" })}
             </h3>
             <span className="text-[10px] font-black bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
               {examNotices.length}
@@ -399,7 +411,7 @@ export default function ParentNoticeBoard() {
             notices={examNotices}
             onRead={handleMarkAsRead}
             readNoticeIds={readNoticeIds}
-            emptyMessage="No exam notices"
+            emptyMessage={t("notices.noExamNotices", { fallback: "No exam notices" })}
           />
         </div>
       )}
@@ -409,7 +421,7 @@ export default function ParentNoticeBoard() {
           <div className="flex items-center gap-2 mb-3">
             <Clock size={18} className="text-amber-500" />
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-              Attendance Alerts
+              {t("notices.attendanceAlertsTitle", { fallback: "Attendance Alerts" })}
             </h3>
             <span className="text-[10px] font-black bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full">
               {attendanceAlerts.length}
@@ -419,7 +431,7 @@ export default function ParentNoticeBoard() {
             notices={attendanceAlerts}
             onRead={handleMarkAsRead}
             readNoticeIds={readNoticeIds}
-            emptyMessage="No attendance alerts"
+            emptyMessage={t("notices.noAttendanceAlerts", { fallback: "No attendance alerts" })}
           />
         </div>
       )}
@@ -429,7 +441,7 @@ export default function ParentNoticeBoard() {
           <div className="flex items-center gap-2 mb-3">
             <Users size={18} className="text-emerald-500" />
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-              Parent-Teacher Meetings
+              {t("notices.ptmTitle", { fallback: "Parent-Teacher Meetings" })}
             </h3>
             <span className="text-[10px] font-black bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full">
               {ptm.length}
@@ -439,7 +451,7 @@ export default function ParentNoticeBoard() {
             notices={ptm}
             onRead={handleMarkAsRead}
             readNoticeIds={readNoticeIds}
-            emptyMessage="No PTM scheduled"
+            emptyMessage={t("notices.noPtm", { fallback: "No PTM scheduled" })}
           />
         </div>
       )}
@@ -449,7 +461,7 @@ export default function ParentNoticeBoard() {
           <div className="flex items-center gap-2 mb-3">
             <Bus size={18} className="text-teal-500" />
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-              Transport Updates
+              {t("notices.transportTitle", { fallback: "Transport Updates" })}
             </h3>
             <span className="text-[10px] font-black bg-teal-100 text-teal-600 px-2 py-0.5 rounded-full">
               {transport.length}
@@ -459,7 +471,7 @@ export default function ParentNoticeBoard() {
             notices={transport}
             onRead={handleMarkAsRead}
             readNoticeIds={readNoticeIds}
-            emptyMessage="No transport updates"
+            emptyMessage={t("notices.noTransport", { fallback: "No transport updates" })}
           />
         </div>
       )}
@@ -469,7 +481,7 @@ export default function ParentNoticeBoard() {
           <div className="flex items-center gap-2 mb-3">
             <FileText size={18} className="text-purple-500" />
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-              Results
+              {t("notices.resultsTitle", { fallback: "Results" })}
             </h3>
             <span className="text-[10px] font-black bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">
               {results.length}
@@ -479,7 +491,7 @@ export default function ParentNoticeBoard() {
             notices={results}
             onRead={handleMarkAsRead}
             readNoticeIds={readNoticeIds}
-            emptyMessage="No result announcements"
+            emptyMessage={t("notices.noResults", { fallback: "No result announcements" })}
           />
         </div>
       )}
@@ -489,7 +501,7 @@ export default function ParentNoticeBoard() {
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle size={18} className="text-gray-500" />
             <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider">
-              Administrative Notices
+              {t("notices.adminNoticesTitle", { fallback: "Administrative Notices" })}
             </h3>
             <span className="text-[10px] font-black bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
               {administrative.length}
@@ -499,7 +511,7 @@ export default function ParentNoticeBoard() {
             notices={administrative}
             onRead={handleMarkAsRead}
             readNoticeIds={readNoticeIds}
-            emptyMessage="No administrative notices"
+            emptyMessage={t("notices.noAdminNotices", { fallback: "No administrative notices" })}
           />
         </div>
       )}
@@ -513,11 +525,11 @@ export default function ParentNoticeBoard() {
         administrative.length === 0 && (
           <div className="p-8 text-center bg-gray-50 rounded-2xl border border-gray-200">
             <Bell size={32} className="text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-400 font-bold">No notices found</p>
+            <p className="text-sm text-gray-400 font-bold">{t("notices.noNotices", { fallback: "No notices found" })}</p>
             <p className="text-xs text-gray-400 mt-1">
               {activeFilter === "all"
-                ? "You're all caught up!"
-                : "Try a different filter"}
+                ? t("notices.caughtUp", { fallback: "You're all caught up!" })
+                : t("notices.tryFilter", { fallback: "Try a different filter" })}
             </p>
           </div>
         )}

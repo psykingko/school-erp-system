@@ -64,6 +64,7 @@ const AssignmentsManagementPage = lazy(
   () => import("./pages/teacher/AssignmentsManagementPage"),
 );
 const TeacherExaminationWorkspace = lazy(() => import("./pages/teacher/examinations/TeacherExaminationWorkspace"));
+const QuestionPapersPage = lazy(() => import("./pages/teacher/QuestionPapersPage"));
 const ClassTimetablePage = lazy(
   () => import("./pages/teacher/ClassTimetablePage"),
 );
@@ -746,6 +747,10 @@ function AppContent() {
           path="examinations"
           element={<LazyRoute Component={ExaminationPage} />}
         />
+        <Route
+          path="academic-results"
+          element={<LazyRoute Component={AcademicResultsPage} />}
+        />
         <Route path="fees" element={<LazyRoute Component={FeeDetailsPage} />} />
         <Route
           path="transport"
@@ -839,6 +844,10 @@ function AppContent() {
           path="examinations"
           element={<LazyRoute Component={ExaminationPage} />}
         />
+        <Route
+          path="academic-results"
+          element={<LazyRoute Component={AcademicResultsPage} />}
+        />
         <Route path="fees" element={<LazyRoute Component={FeeDetailsPage} />} />
         <Route
           path="transport"
@@ -902,6 +911,10 @@ function AppContent() {
         <Route
           path="examinations"
           element={<LazyRoute Component={TeacherExaminationWorkspace} />}
+        />
+        <Route
+          path="question-papers"
+          element={<LazyRoute Component={QuestionPapersPage} />}
         />
         <Route
           path="timetable"

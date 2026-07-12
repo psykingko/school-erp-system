@@ -95,9 +95,9 @@ export default function TransportPage() {
           </div>
           <div className="min-w-0">
             <h1 className="text-2xl font-black truncate" style={{ color: NAVY }}>
-              {t("transport.title") || "Student Transport"}
+              {t("transport.title", { fallback: "Student Transport" })}
             </h1>
-            <p className="text-sm text-gray-500 truncate">{t("transport.subtitle") || "Track your route, vehicle, and personnel details."}</p>
+            <p className="text-sm text-gray-500 truncate">{t("transport.subtitle", { fallback: "Track your route, vehicle, and personnel details." })}</p>
           </div>
         </div>
 
@@ -111,7 +111,7 @@ export default function TransportPage() {
           <div className="col-span-12 lg:col-span-8">
             <SectionHeader
               icon={<Map size={16} />}
-              title={t("transport.assigned_route") || "Assigned Route"}
+              title={t("transport.assigned_route", { fallback: "Assigned Route" })}
             />
             <MainCard
               className="p-6 flex flex-col gap-5 h-[calc(100%-3.25rem)]"
@@ -121,8 +121,8 @@ export default function TransportPage() {
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#00b4d8] mb-1">
                     {summary?.activeDirection === "DROP_ROUTE"
-                      ? (lang === "hi" ? "वापसी मार्ग • स्कूल से प्रस्थान" : "Return Drop Route • Heading Home")
-                      : (lang === "hi" ? "प्रस्थान मार्ग • स्कूल की ओर" : "Morning Pickup Route • Heading to School")}
+                      ? t("transport.returnDropTitle", { fallback: "Return Drop Route • Heading Home" })
+                      : t("transport.morningPickupTitle", { fallback: "Morning Pickup Route • Heading to School" })}
                   </p>
                   <h2 className="text-4xl font-black leading-none" style={{ color: NAVY }}>
                     {summary?.routeNo}
@@ -132,8 +132,8 @@ export default function TransportPage() {
                   <div className="text-right">
                     <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-1">
                       {summary?.activeDirection === "DROP_ROUTE"
-                        ? (lang === "hi" ? "ड्रॉप स्टॉप" : "Drop Stop")
-                        : (t("transport.pickup") || "Pickup Stop")}
+                        ? t("transport.dropStop", { fallback: "Drop Stop" })
+                        : t("transport.pickup", { fallback: "Pickup Stop" })}
                     </p>
                     <p className="text-sm font-bold" style={{ color: NAVY }}>
                       {summary?.pickupStop}
@@ -142,8 +142,8 @@ export default function TransportPage() {
                   <div className="text-right">
                     <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-1">
                       {summary?.activeDirection === "DROP_ROUTE"
-                        ? (lang === "hi" ? "ड्रॉप समय" : "Drop Time")
-                        : (t("transport.departure") || "Pickup Time")}
+                        ? t("transport.dropTime", { fallback: "Drop Time" })
+                        : t("transport.departure", { fallback: "Pickup Time" })}
                     </p>
                     <p className="text-sm font-bold" style={{ color: NAVY }}>
                       {summary?.pickupTime}
@@ -154,9 +154,9 @@ export default function TransportPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {[
-                  { label: "Vehicle No", value: summary?.vehicleNo },
-                  { label: "Pass ID",    value: summary?.passId,    accent: true },
-                  { label: "Status",     value: summary?.status,    green: true },
+                  { label: t("transport.vehicleNo", { fallback: "Vehicle No" }), value: summary?.vehicleNo },
+                  { label: t("transport.passId", { fallback: "Pass ID" }),    value: summary?.passId,    accent: true },
+                  { label: t("transport.status", { fallback: "Status" }),     value: summary?.status,    green: true },
                 ].map(({ label, value, accent, green }) => (
                   <div
                     key={label}
@@ -176,21 +176,21 @@ export default function TransportPage() {
               <div className="pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3 mt-auto">
                 <div className="flex gap-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wide">
-                    <Zap size={10} /> GPS Active
+                    <Zap size={10} /> {t("transport.gpsActive", { fallback: "GPS Active" })}
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#0077b6] text-[10px] font-black uppercase tracking-wide">
-                    <Clock size={10} /> On Time
+                    <Clock size={10} /> {t("transport.onTime", { fallback: "On Time" })}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-gray-400">
-                    Next: <span className="font-black" style={{ color: NAVY }}>{summary?.nextStop || "Main Gate"}</span>
+                    {t("transport.next", { fallback: "Next:" })} <span className="font-black" style={{ color: NAVY }}>{summary?.nextStop || t("transport.mainGate", { fallback: "Main Gate" })}</span>
                   </span>
                   <button
                     className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest opacity-60"
                     style={{ backgroundColor: NAVY, color: LIME }}
                   >
-                    Track
+                    {t("transport.track", { fallback: "Track" })}
                   </button>
                 </div>
               </div>
@@ -198,27 +198,27 @@ export default function TransportPage() {
           </div>
 
           <div className="col-span-12 lg:col-span-4">
-            <SectionHeader icon={<Bus size={16} />} title={t("transport.details") || "Vehicle Details"} />
+            <SectionHeader icon={<Bus size={16} />} title={t("transport.details", { fallback: "Vehicle Details" })} />
             <MainCard borderColor={CYAN} className="p-6 flex flex-col gap-4 h-[calc(100%-3.25rem)]">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-0.5">Model / Type</p>
+                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-0.5">{t("transport.modelType", { fallback: "Model / Type" })}</p>
                   <p className="text-sm font-black" style={{ color: NAVY }}>{vehicle?.model}</p>
                   <p className="text-[10px] font-bold uppercase" style={{ color: CYAN }}>{vehicle?.type}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-0.5">Capacity</p>
+                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-0.5">{t("transport.capacity", { fallback: "Capacity" })}</p>
                   <p className="text-sm font-black" style={{ color: NAVY }}>{vehicle?.capacity}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-0.5">Fuel Type</p>
+                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-0.5">{t("transport.fuelType", { fallback: "Fuel Type" })}</p>
                   <p className="text-xs font-bold" style={{ color: NAVY }}>{vehicle?.fuelType}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-0.5">Route Zone</p>
+                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400 mb-0.5">{t("transport.routeZone", { fallback: "Route Zone" })}</p>
                   <p className="text-xs font-bold" style={{ color: NAVY }}>{vehicle?.zone}</p>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export default function TransportPage() {
 
               <div className="pt-3 mt-auto border-t border-gray-100 flex items-center justify-between">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400">Supervisor</p>
+                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400">{t("transport.supervisor", { fallback: "Supervisor" })}</p>
                   <p className="text-xs font-bold" style={{ color: NAVY }}>{vehicle?.coordinator}</p>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
@@ -252,7 +252,7 @@ export default function TransportPage() {
           <div className="col-span-12 lg:col-span-8">
             <SectionHeader
               icon={<Map size={16} />}
-              title={t("transport.timeline") || "Route Timeline"}
+              title={t("transport.timeline", { fallback: "Route Timeline" })}
               aside={
                 <div className="flex items-center gap-2">
                   <span
@@ -264,14 +264,14 @@ export default function TransportPage() {
                     }}
                   >
                     {summary?.activeDirection === "DROP_ROUTE"
-                      ? (lang === "hi" ? "वापसी मार्ग (दोपहर)" : "Return Drop Route")
-                      : (lang === "hi" ? "प्रस्थान मार्ग (सुबह)" : "Morning Pickup Route")}
+                      ? t("transport.returnDrop", { fallback: "Return Drop Route" })
+                      : t("transport.morningPickup", { fallback: "Morning Pickup Route" })}
                   </span>
                   <span
                     className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg"
                     style={{ backgroundColor: LIME, color: TEAL }}
                   >
-                    ETA {routeList[routeList.length - 1]?.time || "08:10 AM"}
+                    {t("transport.eta", { fallback: "ETA" })} {routeList[routeList.length - 1]?.time || "08:10 AM"}
                   </span>
                 </div>
               }
@@ -337,7 +337,7 @@ export default function TransportPage() {
           </div>
 
           <div className="col-span-12 lg:col-span-4">
-            <SectionHeader icon={<User size={16} />} title={t("transport.driver") || "Driver Info"} />
+            <SectionHeader icon={<User size={16} />} title={t("transport.driver", { fallback: "Driver Info" })} />
             <MainCard borderColor={CYAN} className="p-6 flex flex-col gap-5 h-[calc(100%-3.25rem)]">
               <div className="flex items-center gap-4">
                 <div
@@ -352,20 +352,20 @@ export default function TransportPage() {
                   </h4>
                   <p className="text-xs text-gray-400 font-bold flex items-center gap-1 mt-0.5">
                     <Zap size={10} className="text-emerald-500" />
-                    {personnel?.driver?.rating || "4.8"} Rating • {personnel?.driver?.shift || "Morning Shift"}
+                    {personnel?.driver?.rating || "4.8"} • {personnel?.driver?.shift || "Morning Shift"}
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-col gap-0">
-                <MetaRow label="Emergency" value={personnel?.driver?.contact} />
-                <MetaRow label="License Valid" value="Dec 2028" />
-                <MetaRow label="Experience" value={personnel?.driver?.experience} />
+                <MetaRow label={t("transport.emergency", { fallback: "Emergency" })} value={personnel?.driver?.contact} />
+                <MetaRow label={t("transport.licenseValid", { fallback: "License Valid" })} value="Dec 2028" />
+                <MetaRow label={t("transport.experience", { fallback: "Experience" })} value={personnel?.driver?.experience} />
               </div>
 
               <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400">Attendant</p>
+                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-400">{t("transport.attendant", { fallback: "Attendant" })}</p>
                   <p className="text-xs font-bold mt-0.5" style={{ color: NAVY }}>
                     {personnel?.attendant?.name}
                   </p>
@@ -383,7 +383,7 @@ export default function TransportPage() {
 
         <div className="grid grid-cols-12 gap-6 items-stretch">
           <div className="col-span-12 lg:col-span-8">
-            <SectionHeader icon={<ShieldCheck size={16} />} title={t("transport.safety") || "Safety First"} />
+            <SectionHeader icon={<ShieldCheck size={16} />} title={t("transport.safety", { fallback: "Safety First" })} />
             <div
               className="rounded-3xl p-7 text-white shadow-xl relative overflow-hidden h-[calc(100%-3.25rem)]"
               style={{ backgroundColor: NAVY }}
@@ -393,7 +393,7 @@ export default function TransportPage() {
               </div>
               <div className="relative z-10">
                 <p className="text-[10px] font-extrabold uppercase tracking-widest mb-5" style={{ color: CYAN }}>
-                  Security Protocol Checklist
+                  {t("transport.securityChecklist", { fallback: "Security Protocol Checklist" })}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                   {(guidelines || []).map((g) => (
@@ -413,7 +413,7 @@ export default function TransportPage() {
           </div>
 
           <div className="col-span-12 lg:col-span-4">
-            <SectionHeader icon={<AlertCircle size={16} />} title={t("transport.alerts") || "Transport Alerts"} />
+            <SectionHeader icon={<AlertCircle size={16} />} title={t("transport.alerts", { fallback: "Transport Alerts" })} />
             <MainCard borderColor={CYAN} className="p-6 flex flex-col h-[calc(100%-3.25rem)]">
               <div className="flex-1 space-y-0">
                 {(notices || []).map((n) => (
@@ -442,7 +442,7 @@ export default function TransportPage() {
                 className="w-full mt-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors hover:opacity-90"
                 style={{ backgroundColor: LIME, color: TEAL }}
               >
-                View All Alerts
+                {t("transport.viewAllAlerts", { fallback: "View All Alerts" })}
               </button>
             </MainCard>
           </div>
@@ -452,7 +452,7 @@ export default function TransportPage() {
       <HelperPopup
         isOpen={showHelper}
         onClose={() => setShowHelper(false)}
-        titleKey="Student Transport"
+        titleKey="transport.moduleHelper"
         contentEn="The Student Transport dashboard provides real-time information regarding your assigned route, vehicle, and personnel."
         contentHi="छात्र परिवहन डैशबोर्ड आपके असाइन किए गए मार्ग, वाहन और कर्मियों के संबंध में वास्तविक समय की जानकारी प्रदान करता है।"
       />
@@ -473,10 +473,10 @@ export default function TransportPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-black leading-tight">
-                    {lang === "hi" ? "परिवहन अलर्ट इतिहास" : "Transport Alert History"}
+                    {t("transport.alertHistory", { fallback: "Transport Alert History" })}
                   </h3>
                   <p className="text-xs text-white/70 font-semibold mt-0.5">
-                    {summary?.routeNo} • {summary?.activeDirection === "DROP_ROUTE" ? (lang === "hi" ? "वापसी मार्ग" : "Return Drop") : (lang === "hi" ? "प्रस्थान मार्ग" : "Morning Pickup")}
+                    {summary?.routeNo} • {summary?.activeDirection === "DROP_ROUTE" ? t("transport.returnDropShort", { fallback: "Return Drop" }) : t("transport.morningPickupShort", { fallback: "Morning Pickup" })}
                   </p>
                 </div>
               </div>
@@ -484,7 +484,7 @@ export default function TransportPage() {
                 onClick={() => setShowAlertsModal(false)}
                 className="text-white/60 hover:text-white text-xs font-black uppercase tracking-widest bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-xl transition-all"
               >
-                {lang === "hi" ? "बंद करें" : "Close"}
+                {t("transport.close", { fallback: "Close" })}
               </button>
             </div>
 
@@ -512,14 +512,14 @@ export default function TransportPage() {
                             color: n.priority === "high" ? "#991b1b" : "#0369a1"
                           }}
                         >
-                          {n.priority === "high" ? (lang === "hi" ? "गंभीर" : "Critical") : (lang === "hi" ? "सामान्य" : "Normal")}
+                          {n.priority === "high" ? t("transport.critical", { fallback: "Critical" }) : t("transport.normal", { fallback: "Normal" })}
                         </span>
                       </div>
                       <p className="text-xs font-semibold text-gray-500 mt-1.5 leading-relaxed">
                         {n.message}
                       </p>
                       <p className="text-[9px] font-black text-gray-400 mt-2 uppercase tracking-wide">
-                        {lang === "hi" ? "सक्रिय अलर्ट" : "Active Alert"} • {summary?.vehicleNo}
+                        {t("transport.activeAlert", { fallback: "Active Alert" })} • {summary?.vehicleNo}
                       </p>
                     </div>
                   </div>
@@ -528,7 +528,7 @@ export default function TransportPage() {
                 <div className="py-12 text-center">
                   <AlertCircle size={40} className="mx-auto text-gray-300 mb-3" />
                   <p className="text-sm font-bold text-gray-400">
-                    {lang === "hi" ? "इस मार्ग के लिए कोई सक्रिय अलर्ट नहीं हैं।" : "No active alerts for this route."}
+                    {t("transport.noActiveAlerts", { fallback: "No active alerts for this route." })}
                   </p>
                 </div>
               )}
@@ -536,10 +536,10 @@ export default function TransportPage() {
             
             <div className="p-5 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
               <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">
-                System Status: Active & Operational
+                {t("transport.systemStatus", { fallback: "System Status: Active & Operational" })}
               </span>
               <span className="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> GPS Live
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> {t("transport.gpsLive", { fallback: "GPS Live" })}
               </span>
             </div>
           </div>

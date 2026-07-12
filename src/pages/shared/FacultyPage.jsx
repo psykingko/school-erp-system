@@ -32,7 +32,7 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
-function FeedbackModal({ faculty, onClose }) {
+function FeedbackModal({ faculty, onClose, t }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -95,10 +95,10 @@ function FeedbackModal({ faculty, onClose }) {
                 <CheckCircle size={42} style={{ color: SAGE }} />
               </div>
               <p className="text-lg font-extrabold" style={{ color: NAVY }}>
-                Feedback Submitted!
+                {t("faculty.feedbackSubmitted", { fallback: "Feedback Submitted!" })}
               </p>
               <p className="text-sm text-gray-500 text-center">
-                Thank you for your feedback on {faculty.name}.
+                {t("faculty.feedbackThanks", { fallback: "Thank you for your feedback on" })} {faculty.name}.
               </p>
             </motion.div>
           ) : (
@@ -140,7 +140,7 @@ function FeedbackModal({ faculty, onClose }) {
                     className="text-xs font-extrabold uppercase tracking-wide mb-2"
                     style={{ color: TEAL }}
                   >
-                    Rating
+                    {t("faculty.rating", { fallback: "Rating" })}
                   </p>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -166,13 +166,13 @@ function FeedbackModal({ faculty, onClose }) {
                     className="text-xs font-extrabold uppercase tracking-wide mb-2"
                     style={{ color: TEAL }}
                   >
-                    Comments (optional)
+                    {t("faculty.commentsOptional", { fallback: "Comments (optional)" })}
                   </p>
                   <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     rows={3}
-                    placeholder="Share your experience..."
+                    placeholder={t("faculty.commentsPlaceholder", { fallback: "Share your experience..." })}
                     className="w-full px-4 py-3 rounded-2xl text-sm resize-none outline-none border"
                     style={{
                       backgroundColor: LIME,
@@ -189,7 +189,7 @@ function FeedbackModal({ faculty, onClose }) {
                   style={{ backgroundColor: NAVY, color: LIME }}
                 >
                   <Send size={20} aria-hidden="true" />
-                  Submit Feedback
+                  {t("faculty.submitFeedback", { fallback: "Submit Feedback" })}
                 </button>
               </form>
             </>
@@ -200,7 +200,7 @@ function FeedbackModal({ faculty, onClose }) {
   );
 }
 
-function FacultyCard({ faculty }) {
+function FacultyCard({ faculty, t }) {
   const [showFeedback, setShowFeedback] = useState(false);
 
   return (
@@ -240,7 +240,7 @@ function FacultyCard({ faculty }) {
                 className="text-[10px] font-extrabold uppercase tracking-wide"
                 style={{ color: TEAL }}
               >
-                Subjects
+                {t("faculty.subjects", { fallback: "Subjects" })}
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -292,7 +292,7 @@ function FacultyCard({ faculty }) {
             aria-label={`Give feedback for ${faculty.name}`}
           >
             <MessageSquare size={20} aria-hidden="true" />
-            Give Feedback
+            {t("faculty.giveFeedback", { fallback: "Give Feedback" })}
           </button>
         </div>
       </MainCard>
@@ -302,6 +302,7 @@ function FacultyCard({ faculty }) {
           <FeedbackModal
             faculty={faculty}
             onClose={() => setShowFeedback(false)}
+            t={t}
           />
         )}
       </AnimatePresence>
@@ -331,10 +332,10 @@ function FacultyPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black" style={{ color: NAVY }}>
-              My Teachers
+              {t("faculty.myTeachers", { fallback: "My Teachers" })}
             </h1>
             <p className="text-sm text-gray-500">
-              All assigned teachers for this academic year
+              {t("faculty.myTeachersDesc", { fallback: "All assigned teachers for this academic year" })}
             </p>
           </div>
           <div className="ml-auto">
@@ -352,7 +353,7 @@ function FacultyPage() {
           animate="visible"
         >
           {(faculty || []).map((f) => (
-            <FacultyCard key={f.id} faculty={f} />
+            <FacultyCard key={f.id} faculty={f} t={t} />
           ))}
         </motion.div>
       </div>

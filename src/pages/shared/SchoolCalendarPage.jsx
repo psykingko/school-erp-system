@@ -13,6 +13,7 @@ import {
   X
 } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAuth } from "../../context/AuthContext";
 import { getSchoolCalendar } from "../../services/sharedService";
 import { useService } from "../../hooks/useService";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
@@ -60,7 +61,7 @@ const MONTHS = [
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 
 
-function AgendaView({ events, hoveredEventId, onHover, onClickEvent }) {
+function AgendaView({ events, hoveredEventId, onHover, onClickEvent, tr }) {
   const now = new Date();
   now.setHours(0,0,0,0);
   const tomorrow = new Date(now);
@@ -68,15 +69,20 @@ function AgendaView({ events, hoveredEventId, onHover, onClickEvent }) {
   const nextWeek = new Date(now);
   nextWeek.setDate(nextWeek.getDate() + 7);
 
-  const sections = { Today: [], Tomorrow: [], 'This Week': [], Upcoming: [] };
+  const sections = { 
+    [tr("calendar.today", "Today")]: [], 
+    [tr("calendar.tomorrow", "Tomorrow")]: [], 
+    [tr("calendar.thisWeek", "This Week")]: [], 
+    [tr("calendar.upcoming", "Upcoming")]: [] 
+  };
 
   (events || []).forEach(e => {
     const d = new Date(e.date);
     d.setHours(0,0,0,0);
-    if (d.getTime() === now.getTime()) sections.Today.push(e);
-    else if (d.getTime() === tomorrow.getTime()) sections.Tomorrow.push(e);
-    else if (d.getTime() > tomorrow.getTime() && d.getTime() <= nextWeek.getTime()) sections['This Week'].push(e);
-    else if (d.getTime() > nextWeek.getTime()) sections.Upcoming.push(e);
+    if (d.getTime() === now.getTime()) sections[tr("calendar.today", "Today")].push(e);
+    else if (d.getTime() === tomorrow.getTime()) sections[tr("calendar.tomorrow", "Tomorrow")].push(e);
+    else if (d.getTime() > tomorrow.getTime() && d.getTime() <= nextWeek.getTime()) sections[tr("calendar.thisWeek", "This Week")].push(e);
+    else if (d.getTime() > nextWeek.getTime()) sections[tr("calendar.upcoming", "Upcoming")].push(e);
   });
 
   return (
@@ -100,6 +106,7 @@ function AgendaView({ events, hoveredEventId, onHover, onClickEvent }) {
                     const parts = event.date.split(" ");
                     onClickEvent(parseInt(parts[0]), parts[1], [event]);
                   }}
+                  tr={tr}
                 />
               ))}
             </div>
@@ -111,7 +118,7 @@ function AgendaView({ events, hoveredEventId, onHover, onClickEvent }) {
 }
 
 
-function MiniMonth({ year, monthIndex, events, hoveredEventId, onDateClick, isCurrent }) {
+function MiniMonth({ year, monthIndex, events, hoveredEventId, onDateClick, isCurrent, tr }) {
   const days = useMemo(() => getMonthData(year, monthIndex), [year, monthIndex]);
   const monthName = MONTHS[monthIndex];
 
@@ -136,16 +143,16 @@ function MiniMonth({ year, monthIndex, events, hoveredEventId, onDateClick, isCu
     `}>
       <div className="flex items-center justify-between mb-1.5 border-b border-[#caf0f8] pb-1">
         <h4 className={`text-[10px] font-black uppercase tracking-wider ${isCurrent ? "text-[#0077b6]" : "text-[#03045e]"}`}>
-          {monthName}
+          {tr(`calendar.month_${monthName}`, monthName)}
         </h4>
         {isCurrent && (
-          <span className="text-[7px] font-black bg-[#00b4d8] text-white px-1 rounded-sm uppercase tracking-tighter">Current</span>
+          <span className="text-[7px] font-black bg-[#00b4d8] text-white px-1 rounded-sm uppercase tracking-tighter">{tr("calendar.current", "Current")}</span>
         )}
       </div>
       <div className="grid grid-cols-7 gap-0.5">
         {WEEKDAYS.map((d, i) => (
           <span key={i} className="text-[7px] font-bold text-gray-400 text-center mb-0.5">
-            {d}
+            {tr(`calendar.weekday_${i}`, d)}
           </span>
         ))}
         {days.map((day, i) => {
@@ -184,7 +191,7 @@ function MiniMonth({ year, monthIndex, events, hoveredEventId, onDateClick, isCu
   );
 }
 
-function EventRow({ event, index, isHovered, onHover, onClick }) {
+function EventRow({ event, index, isHovered, onHover, onClick, tr }) {
   const cfg = TYPE_CONFIG[event.type] ?? TYPE_CONFIG.event;
   const IconComponent = cfg.icon;
   const parts = event.date.split(" ");
@@ -210,7 +217,7 @@ function EventRow({ event, index, isHovered, onHover, onClick }) {
     >
       <div className="flex-shrink-0 w-12 text-center">
         <p className={`text-[10px] font-black uppercase ${isHovered ? "text-[#00b4d8]" : "text-[#0077b6]"}`}>
-          {month}
+          {tr(`calendar.month_${month}`, month)}
         </p>
         <p className={`text-2xl font-black leading-none ${isHovered ? "text-white" : "text-[#03045e]"}`}>
           {day}
@@ -232,7 +239,7 @@ function EventRow({ event, index, isHovered, onHover, onClick }) {
             style={!isHovered ? { backgroundColor: cfg.bg, color: cfg.color } : {}}
           >
             <IconComponent size={10} />
-            {cfg.label}
+            {tr(`calendar.${event.type}`, cfg.label)}
           </span>
         </div>
         <p className={`text-[11px] leading-snug line-clamp-1 ${isHovered ? "text-white/80" : "text-gray-500 font-medium"}`}>
@@ -246,6 +253,10 @@ function EventRow({ event, index, isHovered, onHover, onClick }) {
 function SchoolCalendarPage() {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const { t } = useLanguage();
+  const { role } = useAuth();
+  const isParentOrTeacher = role === 'TEACHER' || role === 'PARENT';
+  const tr = (k, f) => isParentOrTeacher ? t(k, { fallback: f || k }) : (f || k);
+  
   const [showHelper, setShowHelper] = useState(false);
   const [activeFilter, setActiveFilter] = useState("upcoming");
   const [hoveredEventId, setHoveredEventId] = useState(null);
@@ -357,7 +368,7 @@ function SchoolCalendarPage() {
             <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase
               ${term.status === "ongoing" ? "bg-[#00b4d8]/10 text-[#00b4d8]" : "bg-gray-100 text-gray-400"}
             `}>
-              {term.status === "ongoing" ? "Active" : "Done"}
+              {term.status === "ongoing" ? tr("calendar.active", "Active") : tr("calendar.done", "Done")}
             </span>
           </motion.div>
         ))}
@@ -368,10 +379,10 @@ function SchoolCalendarPage() {
           <div className="flex items-center justify-between px-2">
             <h2 className="text-lg font-black text-[#03045e] flex items-center gap-2">
               <BookOpen size={20} className="text-[#00b4d8]" />
-              Event Timeline
+              {tr("calendar.eventTimeline", "Event Timeline")}
             </h2>
             <span className="text-[11px] font-black text-gray-400 uppercase bg-gray-50 px-2.5 py-1 rounded-full">
-              {filtered.length} Events Listed
+              {filtered.length} {tr("calendar.eventsListed", "Events Listed")}
             </span>
           </div>
 
@@ -392,7 +403,7 @@ function SchoolCalendarPage() {
                         ${isActive ? "bg-[#03045e] text-white shadow-lg shadow-[#03045e]/20" : "bg-[#caf0f8]/50 text-[#03045e] hover:bg-[#caf0f8]"}
                       `}
                     >
-                      {type === "all" ? "All Events" : type === "upcoming" ? "Upcoming" : (cfg?.label ?? type)}
+                      {type === "all" ? tr("calendar.allEvents", "All Events") : type === "upcoming" ? tr("calendar.upcoming", "Upcoming") : tr(`calendar.${type}`, cfg?.label ?? type)}
                     </button>
                   );
                 })}
@@ -407,7 +418,7 @@ function SchoolCalendarPage() {
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-gray-300">
                   <Star size={48} className="mb-4 opacity-20" />
-                  <p className="font-bold">No events match your filter</p>
+                  <p className="font-bold">{tr("calendar.noEvents", "No events match your filter")}</p>
                 </div>
               ) : (
                 filtered.map((event, i) => (
@@ -421,6 +432,7 @@ function SchoolCalendarPage() {
                       const parts = event.date.split(" ");
                       handleDateClick(parseInt(parts[0]), parts[1], [event]);
                     }}
+                    tr={tr}
                   />
                 ))
               )}
@@ -433,7 +445,7 @@ function SchoolCalendarPage() {
           <div className="flex items-center justify-between px-2">
             <h2 className="text-lg font-black text-[#03045e] flex items-center gap-2">
               <CalendarDays size={20} className="text-[#00b4d8]" />
-              Academic Planner
+              {tr("calendar.academicPlanner", "Academic Planner")}
               <span className="ml-2 px-2 py-0.5 rounded-md bg-[#03045e] text-white text-[9px] font-black tracking-widest uppercase">
                 {academicYear}
               </span>
@@ -451,7 +463,7 @@ function SchoolCalendarPage() {
           <div className="bg-white rounded-[2rem] p-5 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full relative overflow-hidden"
                style={{ borderTop: "6px solid #00b4d8" }}>
             {isMobile ? (
-              <AgendaView events={schoolCalendar.events} hoveredEventId={hoveredEventId} onHover={setHoveredEventId} onClickEvent={handleDateClick} />
+              <AgendaView events={schoolCalendar.events} hoveredEventId={hoveredEventId} onHover={setHoveredEventId} onClickEvent={handleDateClick} tr={tr} />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-2">
                 {calendarMonths.map((m, idx) => (
@@ -463,6 +475,7 @@ function SchoolCalendarPage() {
                   hoveredEventId={hoveredEventId}
                   onDateClick={handleDateClick}
                   isCurrent={m.year === currentYearIdx && m.month === currentMonthIdx}
+                  tr={tr}
                 />
               ))}
             </div>
@@ -474,8 +487,8 @@ function SchoolCalendarPage() {
       <MainCard borderColor="#00b4d8" className="p-6 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#03045e] mb-1">Schedule Key</h3>
-            <p className="text-[11px] font-bold text-gray-400">Academic & Activity Color Coding</p>
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#03045e] mb-1">{tr("calendar.scheduleKey", "Schedule Key")}</h3>
+            <p className="text-[11px] font-bold text-gray-400">{tr("calendar.colorCoding", "Academic & Activity Color Coding")}</p>
           </div>
           <div className="flex flex-wrap gap-x-8 gap-y-4">
             {Object.entries(TYPE_CONFIG).map(([key, cfg]) => {
@@ -489,8 +502,8 @@ function SchoolCalendarPage() {
                     <IconComponent size={18} />
                   </div>
                   <div>
-                    <p className="text-[11px] font-black text-[#03045e] leading-none mb-1">{cfg.label}</p>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">System Code: {key}</p>
+                    <p className="text-[11px] font-black text-[#03045e] leading-none mb-1">{tr(`calendar.${key}`, cfg.label)}</p>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">{tr("calendar.systemCode", "System Code:")} {key}</p>
                   </div>
                 </div>
               );
@@ -499,7 +512,7 @@ function SchoolCalendarPage() {
           <div className="hidden xl:flex items-center gap-2 bg-[#caf0f8] px-4 py-2 rounded-2xl">
             <Info size={16} className="text-[#0077b6]" />
             <p className="text-[10px] font-bold text-[#0077b6] leading-tight">
-              Calendar reflects official <br/> School Board dates
+              {tr("calendar.officialBoard", "Calendar reflects official")} <br/> {tr("calendar.officialBoard2", "School Board dates")}
             </p>
           </div>
         </div>
@@ -527,8 +540,8 @@ function SchoolCalendarPage() {
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl font-black text-[#00b4d8]">{selectedDayInfo.day}</div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00b4d8] leading-none mb-1">{selectedDayInfo.month}</p>
-                  <p className="text-sm font-extrabold">{selectedDayInfo.events.length} Event{selectedDayInfo.events.length > 1 ? "s" : ""}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00b4d8] leading-none mb-1">{tr(`calendar.month_${selectedDayInfo.month}`, selectedDayInfo.month)}</p>
+                  <p className="text-sm font-extrabold">{selectedDayInfo.events.length} {selectedDayInfo.events.length > 1 ? tr("calendar.eventsCount", "Events") : tr("calendar.eventCount", "Event")}</p>
                 </div>
               </div>
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">

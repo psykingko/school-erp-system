@@ -1,5 +1,6 @@
 import React from 'react';
 import MainCard from "../MainCard";
+import { useLanguage } from "../../context/LanguageContext";
 
 const ProgressCard = ({ icon: Icon, title, value, progress, colorClass = "blue", className = "" }) => {
   const colorMap = {
@@ -11,6 +12,7 @@ const ProgressCard = ({ icon: Icon, title, value, progress, colorClass = "blue",
   };
 
   const colors = colorMap[colorClass] || colorMap.blue;
+  const { t } = useLanguage();
 
   return (
     <MainCard className={`p-5 flex flex-col justify-center gap-4 ${className}`}>
@@ -29,7 +31,7 @@ const ProgressCard = ({ icon: Icon, title, value, progress, colorClass = "blue",
       {progress !== undefined && (
         <div className="w-full mt-auto">
           <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-            <span>Progress</span>
+            <span>{t("common.progress")}</span>
             <span className="text-[#03045e]">{progress}%</span>
           </div>
           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">

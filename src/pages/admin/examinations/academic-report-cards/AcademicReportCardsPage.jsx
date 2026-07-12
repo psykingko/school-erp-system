@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Printer, CheckCircle, ShieldAlert, ArrowLeft, Save, X } from 'lucide-react';
+import { Printer, CheckCircle, ShieldAlert, ArrowLeft, Save } from 'lucide-react';
 import AdminPageHeader from '../../../../components/admin/AdminPageHeader';
 import MainCard from '../../../../components/MainCard';
-import Modal from '../../../../components/common/Modal';
 import Drawer from '../../../../components/common/Drawer';
 import { getDataProvider } from '../../../../data';
 
@@ -16,7 +15,8 @@ import {
   commitGeneratedReportCards, 
   publishReportCards, 
   freezeReportCards, 
-  getReportCardsForClass 
+  getReportCardsForClass,
+  validateGovernanceCompleteness
 } from '../../../../services/reportCardService';
 
 const AcademicReportCardsPage = () => {
@@ -34,9 +34,26 @@ const AcademicReportCardsPage = () => {
     fetchInst();
   }, []);
 
-  const handleGenerate = async (classId, sessionId, selectedExamIds) => {
+  const handleGenerate = async (classId, sessionId, selectedExamIds, reportType) => {
+    if (reportType === 'final') {
+      try {
+        const validation = await validateGovernanceCompleteness(selectedExamIds);
+        if (!validation.isComplete) {
+          const missingList = validation.missingCategories.map(c => `• ${c}`).join('\n');
+          const message = `Final Academic Report cannot be fully validated.\n\nAssessment Governance is incomplete.\n\nMissing Assessment Categories:\n${missingList}\n\nApplied Weightage:\n${validation.appliedWeightage}%\n\nRequired Weightage:\n${validation.requiredWeightage}%\n\nThis report may not represent the final institutional result.\n\nContinue anyway?`;
+          
+          if (!window.confirm(message)) {
+            return;
+          }
+        }
+      } catch (e) {
+        alert(e.message);
+        return;
+      }
+    }
+
     try {
-      const preview = await previewReportCards(classId, sessionId, selectedExamIds);
+      const preview = await previewReportCards(classId, sessionId, selectedExamIds, reportType);
       setGeneratedCards(preview);
       setActiveStep('preview');
     } catch (e) {

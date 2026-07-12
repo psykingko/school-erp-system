@@ -122,7 +122,7 @@ function SubjectCard({ course, onNavigatePage }) {
         </div>
 
         <p className="text-sm text-gray-500 leading-relaxed">
-          {course.description || "Course curriculum and objectives are available on the subject details page."}
+          {course.description || t("courses.defaultDescription", { fallback: "Course curriculum and objectives are available on the subject details page." })}
         </p>
 
         <div
@@ -131,7 +131,7 @@ function SubjectCard({ course, onNavigatePage }) {
         >
           <Clock size={17} style={{ color: TEAL }} aria-hidden="true" />
           <span className="text-xs font-semibold" style={{ color: NAVY }}>
-            {course.schedule || "Regular Schedule"}
+            {course.schedule || t("courses.regularSchedule", { fallback: "Regular Schedule" })}
           </span>
         </div>
 

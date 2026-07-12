@@ -2,8 +2,10 @@ import React, { useState, useMemo } from "react";
 import PerformanceStatusBadge from "./PerformanceStatusBadge";
 import { Search, SlidersHorizontal, AlertCircle, FileSpreadsheet, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function StudentPerformanceTable({ studentsData, onSelectStudent }) {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClass, setSelectedClass] = useState("ALL");
   const [selectedStream, setSelectedStream] = useState("ALL");
@@ -51,7 +53,7 @@ export default function StudentPerformanceTable({ studentsData, onSelectStudent 
             </span>
             <input
               type="text"
-              placeholder="Search by student name or admission number..."
+              placeholder={t("perf.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold text-sm focus:outline-none focus:border-indigo-200 transition-colors"
@@ -68,7 +70,7 @@ export default function StudentPerformanceTable({ studentsData, onSelectStudent 
               onChange={(e) => setSelectedClass(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold text-xs cursor-pointer focus:outline-none focus:border-indigo-100"
             >
-              <option value="ALL">All Classes</option>
+              <option value="ALL">{t("perf.allClasses")}</option>
               {classOptions.map(c => <option key={c} value={c}>Class {c}</option>)}
             </select>
 
@@ -77,7 +79,7 @@ export default function StudentPerformanceTable({ studentsData, onSelectStudent 
               onChange={(e) => setSelectedStream(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold text-xs cursor-pointer focus:outline-none focus:border-indigo-100 w-full flex-1 min-w-0 md:max-w-[180px] truncate"
             >
-              <option value="ALL">All Streams</option>
+              <option value="ALL">{t("perf.allStreams")}</option>
               {streamOptions.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
 
@@ -86,11 +88,11 @@ export default function StudentPerformanceTable({ studentsData, onSelectStudent 
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-100 bg-gray-50/50 text-[#03045e] font-bold text-xs cursor-pointer focus:outline-none focus:border-indigo-100"
             >
-              <option value="ALL">All Statuses</option>
-              <option value="Excellent">Excellent</option>
-              <option value="Good">Good</option>
-              <option value="Warning">Warning</option>
-              <option value="At Risk">At Risk</option>
+              <option value="ALL">{t("perf.allStatuses")}</option>
+              <option value="Excellent">{t("status.Excellent")}</option>
+              <option value="Good">{t("status.Good")}</option>
+              <option value="Warning">{t("status.Warning")}</option>
+              <option value="At Risk">{t("status.At Risk")}</option>
             </select>
           </div>
         </div>
@@ -137,11 +139,11 @@ export default function StudentPerformanceTable({ studentsData, onSelectStudent 
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Student info</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Attendance</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Assignments</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Avg marks</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("perf.colStudentInfo")}</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t("perf.colAttendance")}</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t("perf.colAssignments")}</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t("perf.colAvgMarks")}</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("perf.colStatus")}</th>
                   <th className="px-6 py-4 w-12"></th>
                 </tr>
               </thead>
@@ -165,7 +167,7 @@ export default function StudentPerformanceTable({ studentsData, onSelectStudent 
                             {student.name}
                           </span>
                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                            Adm: {student.admissionNo} • Class {student.className}
+                            {t("perf.adm")} {student.admissionNo} • {t("common.class")} {student.className}
                           </span>
                         </div>
                       </td>
@@ -197,8 +199,8 @@ export default function StudentPerformanceTable({ studentsData, onSelectStudent 
                           </span>
                           <span className="text-[9px] font-black uppercase tracking-wider mt-0.5 text-gray-400">
                             {summary.overdueAssignments > 0 ? (
-                              <span className="text-rose-500 font-bold">{summary.overdueAssignments} Overdue</span>
-                            ) : "Complete"}
+                              <span className="text-rose-500 font-bold">{summary.overdueAssignments} {t("perf.overdue")}</span>
+                            ) : t("perf.complete")}
                           </span>
                         </div>
                       </td>

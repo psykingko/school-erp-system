@@ -7,6 +7,7 @@ import MainCard from '../MainCard';
 
 const DailyAttendanceWidget = () => {
   const { activeStudentId } = useStudent();
+  const { t } = useLanguage();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [status, setStatus] = useState("UNMARKED"); // PRESENT, ABSENT, UNMARKED
   const [loading, setLoading] = useState(false);
@@ -64,8 +65,8 @@ const DailyAttendanceWidget = () => {
     <MainCard className="p-6 overflow-hidden relative group h-full flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-xl font-black text-[#03045e]">Daily Attendance</h2>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Status Timeline</p>
+          <h2 className="text-xl font-black text-[#03045e]">{t("attendance.dailyAttendance")}</h2>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">{t("attendance.statusTimeline")}</p>
         </div>
         <div className="flex items-center gap-2 bg-[#caf0f8]/30 px-2 py-1 rounded-xl">
           <button onClick={handlePrevDay} className="p-1.5 hover:bg-[#caf0f8] rounded-lg transition-colors text-[#0077b6]">
@@ -91,8 +92,8 @@ const DailyAttendanceWidget = () => {
                   <CheckCircle2 size={32} />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-emerald-600">Present</h3>
-                  <p className="text-sm font-semibold text-emerald-600/70">Marked by Class Teacher</p>
+                  <h3 className="text-2xl font-black text-emerald-600">{t("attendance.present")}</h3>
+                  <p className="text-sm font-semibold text-emerald-600/70">{t("attendance.markedByTeacher")}</p>
                 </div>
               </>
             )}
@@ -102,8 +103,8 @@ const DailyAttendanceWidget = () => {
                   <XCircle size={32} />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-rose-600">Absent</h3>
-                  <p className="text-sm font-semibold text-rose-600/70">Marked by Class Teacher</p>
+                  <h3 className="text-2xl font-black text-rose-600">{t("attendance.absent")}</h3>
+                  <p className="text-sm font-semibold text-rose-600/70">{t("attendance.markedByTeacher")}</p>
                 </div>
               </>
             )}
@@ -113,8 +114,8 @@ const DailyAttendanceWidget = () => {
                   <Clock size={32} />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-amber-600">Not Marked Yet</h3>
-                  <p className="text-sm font-semibold text-amber-600/70">Attendance pending submission</p>
+                  <h3 className="text-2xl font-black text-amber-600">{t("attendance.notMarkedYet")}</h3>
+                  <p className="text-sm font-semibold text-amber-600/70">{t("attendance.pendingSubmission")}</p>
                 </div>
               </>
             )}

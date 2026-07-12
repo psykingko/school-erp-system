@@ -7,8 +7,6 @@ import TeacherExaminationNav from "./components/TeacherExaminationNav";
 // Tabs
 import OverviewTab from "./tabs/OverviewTab";
 import MarksExamsPage from "../MarksExamsPage";
-import QuestionPapersPage from "../QuestionPapersPage";
-import TeacherPublishedResultsTab from "./tabs/TeacherPublishedResultsTab";
 
 const TeacherExaminationWorkspace = () => {
   const { t } = useLanguage();
@@ -19,8 +17,8 @@ const TeacherExaminationWorkspace = () => {
       <TeacherModuleHeader
         titleKey="teacherExaminations.title"
         descriptionKey="teacherExaminations.desc"
-        helperContentEn="Manage your assigned examination tasks including marks entry, question papers, and evaluation progress."
-        helperContentHi="अंक प्रविष्टि, प्रश्न पत्र और मूल्यांकन प्रगति सहित अपने निर्दिष्ट परीक्षा कार्यों का प्रबंधन करें।"
+        helperContentEn="Manage your assigned examination tasks including marks entry and evaluation progress."
+        helperContentHi="अंक प्रविष्टि और मूल्यांकन प्रगति सहित अपने निर्दिष्ट परीक्षा कार्यों का प्रबंधन करें।"
       />
 
       <TeacherExaminationNav activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -28,8 +26,6 @@ const TeacherExaminationWorkspace = () => {
       <div className="mt-6">
         {activeTab === "overview" && <OverviewTab />}
         {activeTab === "marks" && <MarksExamsPage isEmbedded={true} />}
-        {activeTab === "papers" && <QuestionPapersPage isEmbedded={true} />}
-        {activeTab === "results" && <TeacherPublishedResultsTab />}
       </div>
     </div>
   );

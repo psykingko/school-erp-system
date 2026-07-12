@@ -86,6 +86,8 @@ export function getRouteForNavItem(id, role) {
         return "/parent/withdrawal_request";
       case "duty_records":
         return "/parent/duty-records";
+      case "calendar":
+        return "/parent/calendar";
       default:
         return "/parent/dashboard";
     }
@@ -104,6 +106,8 @@ export function getRouteForNavItem(id, role) {
         return "/teacher/assignments";
       case "teacher_examinations":
         return "/teacher/examinations";
+      case "teacher_question_papers":
+        return "/teacher/question-papers";
       case "teacher_academic_results":
         return "/teacher/academic-results";
       case "class_timetable":
@@ -225,7 +229,7 @@ export function isNavItemActive(id, role, pathname) {
     return pathname === targetRoute || pathname.startsWith(`${targetRoute}/`);
   }
   if (id === "admin_exams") {
-    return pathname.startsWith("/admin/examinations");
+    return pathname.startsWith("/admin/examinations/cycles");
   }
 
   return pathname === targetRoute;

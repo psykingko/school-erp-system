@@ -258,7 +258,7 @@ function AttendanceCard({ studentId }) {
             <h2 className="text-lg font-black text-[#03045e]">
               Attendance Overview
             </h2>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Centralized ERP Insights</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("attendance.centralizedInsights", { fallback: "Centralized ERP Insights" })}</p>
           </div>
         </div>
 
@@ -327,13 +327,13 @@ function AttendanceCard({ studentId }) {
           {/* Quick Metrics */}
           <div className="flex flex-col gap-3 text-center sm:text-left min-w-[120px]">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Attendance Status</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t("attendance.statusTitle", { fallback: "Attendance Status" })}</p>
               <div className={`mt-1 px-3 py-1 rounded-full text-xs font-black inline-block capitalize ${bgClass} ${colorClass}`}>
                 {status}
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Present Days</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t("attendance.presentDays", { fallback: "Present Days" })}</p>
               <p className="text-lg font-black text-[#03045e]">{summary.attended} <span className="text-xs text-gray-400 font-bold">/ {summary.totalClasses} classes</span></p>
             </div>
           </div>
@@ -342,7 +342,7 @@ function AttendanceCard({ studentId }) {
         {/* Lower Section: Daily Status & Historical Navigation */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Daily History & Status</h3>
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">{t("attendance.dailyHistoryStatus", { fallback: "Daily History & Status" })}</h3>
             
             {/* Navigation & Calendar Picker */}
             <div className="flex items-center gap-1.5 bg-[#caf0f8]/30 p-1 rounded-xl">
@@ -393,7 +393,7 @@ function AttendanceCard({ studentId }) {
                     </div>
                     <div>
                       <h4 className="text-sm font-black text-emerald-600">Present</h4>
-                      <p className="text-[10px] font-bold text-emerald-600/70">Verified Homeroom Attendance</p>
+                      <p className="text-[10px] font-bold text-emerald-600/70">{t("attendance.verifiedHomeroom", { fallback: "Verified Homeroom Attendance" })}</p>
                     </div>
                   </>
                 )}
@@ -404,7 +404,7 @@ function AttendanceCard({ studentId }) {
                     </div>
                     <div>
                       <h4 className="text-sm font-black text-rose-600">Absent</h4>
-                      <p className="text-[10px] font-bold text-rose-600/70">Marked Absent by Homeroom Teacher</p>
+                      <p className="text-[10px] font-bold text-rose-600/70">{t("attendance.markedAbsent", { fallback: "Marked Absent by Homeroom Teacher" })}</p>
                     </div>
                   </>
                 )}
@@ -415,7 +415,7 @@ function AttendanceCard({ studentId }) {
                     </div>
                     <div>
                       <h4 className="text-sm font-black text-sky-600">On Leave</h4>
-                      <p className="text-[10px] font-bold text-sky-600/70">Approved Institutional Leave</p>
+                      <p className="text-[10px] font-bold text-sky-600/70">{t("attendance.approvedLeave", { fallback: "Approved Institutional Leave" })}</p>
                     </div>
                   </>
                 )}
@@ -437,7 +437,7 @@ function AttendanceCard({ studentId }) {
                     </div>
                     <div>
                       <h4 className="text-sm font-black text-indigo-600">{dailyStatusTitle}</h4>
-                      <p className="text-[10px] font-bold text-indigo-600/70">School Academic Calendar Break</p>
+                      <p className="text-[10px] font-bold text-indigo-600/70">{t("attendance.schoolBreak", { fallback: "School Academic Calendar Break" })}</p>
                     </div>
                   </>
                 )}
@@ -450,7 +450,7 @@ function AttendanceCard({ studentId }) {
       <HelperPopup
         isOpen={showHelper}
         onClose={() => setShowHelper(false)}
-        titleKey="attendance.title"
+        titleKey="attendance.overviewHelper"
         contentEn={HELPER_CONTENT_EN}
         contentHi={HELPER_CONTENT_HI}
         colorLegend={ATTENDANCE_COLOR_LEGEND}

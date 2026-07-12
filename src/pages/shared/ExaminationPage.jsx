@@ -5,7 +5,8 @@ import {
   CalendarDays,
   ClipboardList,
   Clock,
-  Info
+  Info,
+  Award
 } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import HelperButton from "../../components/HelperButton";
@@ -17,6 +18,7 @@ import { useStudent } from "../../context/StudentContext";
 import ChildScopeSwitcher from "../../components/parent/ChildScopeSwitcher";
 import EmptyState from "../../components/common/EmptyState";
 import CycleSelector from "../../components/examinations/CycleSelector";
+
 
 const NAVY = "#03045e";
 const TEAL = "#0077b6";
@@ -50,13 +52,13 @@ function ScheduleSection({ schedule = [], examName }) {
             <h3 className="text-base font-extrabold" style={{ color: NAVY }}>
               {t("exam.schedule")}
             </h3>
-            <p className="text-xs text-gray-400">{examName || "Upcoming Examinations"}</p>
+            <p className="text-xs text-gray-400">{examName || t("exam.upcomingExams", { fallback: "Upcoming Examinations" })}</p>
           </div>
         </div>
 
         {schedule.length === 0 ? (
           <div className="py-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
-            <p className="text-sm font-bold text-gray-500">Date Sheet has not been published yet.</p>
+            <p className="text-sm font-bold text-gray-500">{t("exam.noDateSheet", { fallback: "Date Sheet has not been published yet." })}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -89,9 +91,7 @@ function ScheduleSection({ schedule = [], examName }) {
                   aria-hidden="true"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate" style={{ color: NAVY }}>
-                    {exam.subject}
-                  </p>
+                  <p className="text-sm font-bold truncate" style={{ color: NAVY }}>{t(`subjects.${(exam.subject || "").toLowerCase().replace(/\s+/g, "")}`, { fallback: exam.subject })}</p>
                   <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                     <span className="text-xs text-gray-400 flex items-center gap-1">
                       <Clock size={13} aria-hidden="true" />
@@ -144,9 +144,9 @@ function InstructionsSection({ instructions }) {
             <div className="w-10 h-10 rounded-full mb-3 flex items-center justify-center bg-white border border-gray-100 shadow-sm">
               <Info size={20} className="text-gray-400" />
             </div>
-            <p className="text-sm font-bold text-gray-700 mb-1">No Special Instructions</p>
+            <p className="text-sm font-bold text-gray-700 mb-1">{t("exam.noSpecialInstructions", { fallback: "No Special Instructions" })}</p>
             <p className="text-xs text-gray-500 max-w-[220px] mx-auto leading-relaxed">
-              No additional examination instructions have been provided for this examination. Please follow your school's standard examination guidelines.
+              {t("exam.noSpecialInstructionsDesc", { fallback: "No additional examination instructions have been provided for this examination. Please follow your school's standard examination guidelines." })}
             </p>
           </div>
         ) : (
@@ -193,6 +193,9 @@ function ExaminationPage() {
   const activeCycleId = manualCycleId || examination?.defaultCycleId;
   const activeCycle = examination?.cycles?.find(c => c.id === activeCycleId);
 
+  const hasSchedule = Array.isArray(activeCycle?.dateSheet) && activeCycle.dateSheet.length > 0;
+  const hasInstructions = true; // Always show Instructions card to gracefully display its built-in empty state
+
   if (!examination || !examination.cycles || examination.cycles.length === 0) {
     return (
       <div className="relative">
@@ -219,8 +222,8 @@ function ExaminationPage() {
         <MainCard className="h-[400px] flex items-center justify-center bg-white border border-dashed border-gray-300">
           <EmptyState 
             icon={FileText}
-            title="No Upcoming Examinations"
-            description="No examinations are currently available."
+            title={t("exam.noUpcomingExams", { fallback: "No Upcoming Examinations" })}
+            description={t("exam.noExamsAvailable", { fallback: "No examinations are currently available." })}
           />
         </MainCard>
       </div>
@@ -262,21 +265,30 @@ function ExaminationPage() {
 
         {activeCycle && (
           <motion.div
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            className="flex flex-col gap-8"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            <div className="flex flex-col gap-6">
-              <ScheduleSection 
-                schedule={activeCycle.dateSheet} 
-                examName={activeCycle.name} 
-              />
-            </div>
+            {(hasSchedule || hasInstructions) && (
+              <div className={`grid grid-cols-1 ${hasSchedule && hasInstructions ? 'lg:grid-cols-2' : ''} gap-8`}>
+                {hasSchedule && (
+                  <div className="flex flex-col h-full">
+                    <ScheduleSection 
+                      schedule={activeCycle.dateSheet} 
+                      examName={activeCycle.name} 
+                    />
+                  </div>
+                )}
+                {hasInstructions && (
+                  <div className="flex flex-col h-full">
+                    <InstructionsSection instructions={activeCycle.generalInstructions} />
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div className="flex flex-col gap-6 h-full">
-              <InstructionsSection instructions={activeCycle.generalInstructions} />
-            </div>
+
           </motion.div>
         )}
       </div>

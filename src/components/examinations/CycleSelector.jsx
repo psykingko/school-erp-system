@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../context/LanguageContext";
 
 const NAVY = "#03045e";
 const TEAL = "#0077b6";
@@ -7,6 +8,7 @@ const SAGE = "#00b4d8";
 const LIME = "#caf0f8";
 
 function CycleSelector({ cycles, selectedCycleId, onSelectCycle }) {
+  const { t } = useLanguage();
   if (!cycles || cycles.length === 0) return null;
 
   return (
@@ -27,7 +29,7 @@ function CycleSelector({ cycles, selectedCycleId, onSelectCycle }) {
               color: isSelected ? "white" : "#4b5563",
             }}
           >
-            {cycle.name}
+            {t(`exam.${cycle.name.toLowerCase().replace(/\s+/g, "")}`, { fallback: t(cycle.name, { fallback: cycle.name }) })}
             {isSelected && (
               <motion.div
                 layoutId="cycle-selector-active-bg"

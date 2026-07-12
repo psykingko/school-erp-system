@@ -181,7 +181,7 @@ export default function SubjectDetailPage({ subjectId, onBack }) {
             {data.title}
           </h1>
           <p className="text-sm text-gray-500">
-            {lang === "hi" ? "विषय का विवरण" : "Subject Details"}
+            {t("curriculum.subjectDetails", { fallback: "Subject Details" })}
           </p>
         </div>
       </div>
@@ -200,7 +200,7 @@ export default function SubjectDetailPage({ subjectId, onBack }) {
             <div>
               <span className="text-base font-black block leading-none" style={{ color: "#03045e" }}>{info.value}</span>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mt-1 block">
-                {t(info.labelKey)}
+                {t(info.labelKey, { fallback: info.labelKey.split('.').pop() })}
               </span>
             </div>
           </div>
@@ -216,25 +216,25 @@ export default function SubjectDetailPage({ subjectId, onBack }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
               <p className="text-xs font-bold text-gray-400 mb-1 flex items-center gap-1.5">
-                <Hash size={14} /> {t("curriculum.code")}
+                <Hash size={14} /> {t("curriculum.code", { fallback: "Subject Code" })}
               </p>
               <p className="font-bold text-[#03045e]">{data.code}</p>
             </div>
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
               <p className="text-xs font-bold text-gray-400 mb-1 flex items-center gap-1.5">
-                <GraduationCap size={14} /> {t("curriculum.class")}
+                <GraduationCap size={14} /> {t("curriculum.class", { fallback: "Class" })}
               </p>
               <p className="font-bold text-[#03045e]">{data.classLevel}</p>
             </div>
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
               <p className="text-xs font-bold text-gray-400 mb-1 flex items-center gap-1.5">
-                <Calendar size={14} /> {t("curriculum.session")}
+                <Calendar size={14} /> {t("curriculum.session", { fallback: "Academic Session" })}
               </p>
               <p className="font-bold text-[#03045e]">{data.academicSession}</p>
             </div>
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
               <p className="text-xs font-bold text-gray-400 mb-1 flex items-center gap-1.5">
-                <User size={14} /> {t("curriculum.teacher")}
+                <User size={14} /> {t("curriculum.teacher", { fallback: "Course Teacher" })}
               </p>
               <p className="font-bold text-[#03045e]">{data.teacher}</p>
             </div>
@@ -262,13 +262,13 @@ export default function SubjectDetailPage({ subjectId, onBack }) {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="py-3 px-4 font-bold text-gray-600 text-sm w-16 text-center">
-                    {t("curriculum.sno")}
+                    {t("curriculum.sno", { fallback: "S.No" })}
                   </th>
                   <th className="py-3 px-4 font-bold text-gray-600 text-sm w-1/3">
-                    {t("curriculum.unit")}
+                    {t("curriculum.unit", { fallback: "Unit Name" })}
                   </th>
                   <th className="py-3 px-4 font-bold text-gray-600 text-sm">
-                    {t("curriculum.topics")}
+                    {t("curriculum.topics", { fallback: "Topics Covered" })}
                   </th>
                 </tr>
               </thead>
@@ -334,11 +334,11 @@ export default function SubjectDetailPage({ subjectId, onBack }) {
                       : "bg-[#03045e]/10 text-[#03045e]"
                   }`}
                 >
-                  {book.type === "main" ? t("curriculum.mainBook") : t("curriculum.refBook")}
+                  {book.type === "main" ? t("curriculum.mainBook", { fallback: "Main Textbook" }) : t("curriculum.refBook", { fallback: "Reference Book" })}
                 </span>
                 <h4 className="font-bold text-gray-800 leading-snug">{book.title}</h4>
                 <p className="text-sm font-semibold text-gray-500 mt-auto">
-                  {t("curriculum.author")}: {book.author}
+                  {t("curriculum.author", { fallback: "Author" })}: {book.author}
                 </p>
               </div>
             ))}

@@ -113,7 +113,7 @@ export default function ClubsCommitteesPage() {
       await loadStudentData();
       setActiveTab("requests");
     } catch (err) {
-      setErrorMsg(err.message || "Failed to submit request.");
+      setErrorMsg(err.message || t("clubs.errorSubmitRequest", { fallback: "Failed to submit request." }));
     }
   };
 
@@ -123,7 +123,7 @@ export default function ClubsCommitteesPage() {
       await clubsService.withdrawClubMembershipRequest(requestId);
       await loadStudentData();
     } catch (err) {
-      setErrorMsg(err.message || "Failed to withdraw request.");
+      setErrorMsg(err.message || t("clubs.errorWithdrawRequest", { fallback: "Failed to withdraw request." }));
     }
   };
 
@@ -133,7 +133,7 @@ export default function ClubsCommitteesPage() {
       await clubsService.leaveClub(studentId, clubId);
       await loadStudentData();
     } catch (err) {
-      setErrorMsg(err.message || "Failed to leave club.");
+      setErrorMsg(err.message || t("clubs.errorLeaveClub", { fallback: "Failed to leave club." }));
     }
   };
 
@@ -161,7 +161,7 @@ export default function ClubsCommitteesPage() {
       setProposalForm({ clubName: "", category: "Academic", purpose: "" });
       setActiveTab("proposals");
     } catch (err) {
-      setErrorMsg(err.message || "Failed to submit proposal.");
+      setErrorMsg(err.message || t("clubs.errorSubmitProposal", { fallback: "Failed to submit proposal." }));
     } finally {
       setProposing(false);
     }
@@ -217,10 +217,10 @@ export default function ClubsCommitteesPage() {
               {/* Tabs Navigation */}
               <div className="flex items-center gap-6 border-b border-gray-100 mb-6 overflow-x-auto pb-1">
                 {[
-                  { id: "memberships", label: "My Memberships" },
-                  { id: "discover", label: "Discover Clubs" },
-                  { id: "requests", label: "My Requests" },
-                  { id: "proposals", label: "My Proposals" }
+                  { id: "memberships", label: t("clubs.tabMemberships", { fallback: "My Memberships" }) },
+                  { id: "discover", label: t("clubs.tabDiscover", { fallback: "Discover Clubs" }) },
+                  { id: "requests", label: t("clubs.tabRequests", { fallback: "My Requests" }) },
+                  { id: "proposals", label: t("clubs.tabProposals", { fallback: "My Proposals" }) }
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -250,14 +250,14 @@ export default function ClubsCommitteesPage() {
                 {t("clubs.memberships") || "My Memberships"}
               </h2>
               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-xl">
-                {joinedClubs.length} / 2 Active
+                {joinedClubs.length} / 2 {t("clubs.activeText", { fallback: "Active" })}
               </span>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 gap-4">
               {joinedClubs.length === 0 ? (
                 <div className="col-span-2 p-8 bg-gray-50/50 rounded-3xl border border-dashed border-gray-200 text-center font-bold text-xs text-gray-400 italic">
-                  You are not enrolled in any clubs. Discover and join up to 2 clubs below!
+                  {t("clubs.noEnrolled", { fallback: "You are not enrolled in any clubs. Discover and join up to 2 clubs below!" })}
                 </div>
               ) : (
                 joinedClubs.map((club) => {
@@ -281,7 +281,7 @@ export default function ClubsCommitteesPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-[0.1em]">Status: {club.status || "Active"}</p>
+                        <p className="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-[0.1em]">{t("common.status", { fallback: "Status" })}: {club.status || t("common.active", { fallback: "Active" })}</p>
                         <p className="text-xs text-gray-500 line-clamp-2 mb-4 leading-relaxed font-medium">
                           {club.description}
                         </p>
@@ -289,14 +289,14 @@ export default function ClubsCommitteesPage() {
                         <div className="flex items-center gap-5 mb-4">
                           <div className="flex items-center gap-1.5">
                             <Calendar size={15} color="#8C9EB5" strokeWidth={2.5} />
-                            <span className="text-[11px] font-black text-[#8C9EB5] uppercase tracking-wider pt-[2px]">Activities</span>
+                            <span className="text-[11px] font-black text-[#8C9EB5] uppercase tracking-wider pt-[2px]">{t("clubs.activities", { fallback: "Activities" })}</span>
                             <span className="flex items-center justify-center min-w-[22px] h-[22px] rounded-full bg-slate-50 text-[10px] font-black text-[#8C9EB5] border border-slate-100 ml-1">
                               {club.activitiesCount || 0}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Megaphone size={15} color="#8C9EB5" strokeWidth={2.5} />
-                            <span className="text-[11px] font-black text-[#8C9EB5] uppercase tracking-wider pt-[2px]">Advisories</span>
+                            <span className="text-[11px] font-black text-[#8C9EB5] uppercase tracking-wider pt-[2px]">{t("clubs.advisories", { fallback: "Advisories" })}</span>
                             <span className="flex items-center justify-center min-w-[22px] h-[22px] rounded-full bg-slate-50 text-[10px] font-black text-[#8C9EB5] border border-slate-100 ml-1">
                               {club.advisoriesCount || 0}
                             </span>
@@ -307,14 +307,14 @@ export default function ClubsCommitteesPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-50 mt-auto">
                         <div className="flex items-center gap-8">
                           <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-black text-gray-400 uppercase">Coordinator</span>
+                            <span className="text-[9px] font-black text-gray-400 uppercase">{t("clubs.coordinator", { fallback: "Coordinator" })}</span>
                             <div className="flex items-center gap-1.5">
                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                               <span className="text-[10px] font-bold text-gray-700 truncate">{club.coordinator}</span>
                             </div>
                           </div>
                           <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-black text-gray-400 uppercase">Joined Date</span>
+                            <span className="text-[9px] font-black text-gray-400 uppercase">{t("clubs.joinedDate", { fallback: "Joined Date" })}</span>
                             <div className="flex items-center gap-1.5">
                               <Clock size={10} className="text-[#00b4d8]" />
                               <span className="text-[10px] font-bold text-gray-700 truncate">
@@ -328,13 +328,13 @@ export default function ClubsCommitteesPage() {
                             onClick={() => setSelectedClub(club)}
                             className="text-[10px] font-black px-4 py-2 rounded-xl bg-[#03045e] text-white uppercase tracking-wider hover:bg-[#0077b6] shadow-sm transition-colors"
                           >
-                            View Details
+                            {t("clubs.viewDetails", { fallback: "View Details" })}
                           </button>
                           <button
                             onClick={() => setClubToLeave(club)}
                             className="text-[10px] font-black px-4 py-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 uppercase tracking-wider hover:bg-rose-500 hover:text-white shadow-sm transition-colors"
                           >
-                            Leave Club
+                            {t("clubs.leaveClub", { fallback: "Leave Club" })}
                           </button>
                         </div>
                       </div>
@@ -359,21 +359,21 @@ export default function ClubsCommitteesPage() {
                   </div>
                   {t("clubs.discover") || "Discover Clubs"}
                 </h2>
-                <p className="text-[10px] text-gray-500 font-bold mt-1 ml-9">Note: Students can maintain a maximum of 2 active club memberships.</p>
+                <p className="text-[10px] text-gray-500 font-bold mt-1 ml-9">{t("clubs.maxMembershipsNote", { fallback: "Note: Students can maintain a maximum of 2 active club memberships." })}</p>
               </div>
               <button
                 onClick={() => setIsProposeModalOpen(true)}
                 className="h-8 px-4 bg-[#00b4d8] text-white rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-[#0096c7] transition-colors flex items-center gap-1.5 shadow-sm"
               >
                 <PlusCircle size={14} />
-                Propose New Club
+                {t("clubs.proposeNewClub", { fallback: "Propose New Club" })}
               </button>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-3">
               {discoverClubs.length === 0 ? (
                 <div className="col-span-2 p-8 bg-gray-50/50 rounded-3xl border border-dashed border-gray-200 text-center font-bold text-xs text-gray-400 italic">
-                  No other clubs available to join at this time.
+                  {t("clubs.noOtherClubs", { fallback: "No other clubs available to join at this time." })}
                 </div>
               ) : (
                 discoverClubs.map((club) => {
@@ -387,7 +387,7 @@ export default function ClubsCommitteesPage() {
                         <div>
                           <h4 className="text-sm font-black text-[#03045e] group-hover:text-[#0077b6] transition-colors leading-tight mb-1">{club.name}</h4>
                           <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-bold text-gray-400">{club.membershipCount || 0} Members</span>
+                            <span className="text-[9px] font-bold text-gray-400">{club.membershipCount || 0} {t("clubs.members", { fallback: "Members" })}</span>
                             <div className="w-1 h-1 rounded-full bg-gray-200" />
                             <span className="text-[9px] font-bold text-[#00b4d8] uppercase tracking-tighter">{club.category}</span>
                           </div>
@@ -398,7 +398,7 @@ export default function ClubsCommitteesPage() {
                         disabled={joinedClubs.length >= 2}
                         className="h-7 px-3 rounded-lg text-[10px] font-black text-[#0077b6] hover:bg-[#0077b6] hover:text-white border border-[#0077b6]/20 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#0077b6] transition-all uppercase tracking-tighter flex-shrink-0 ml-2"
                       >
-                        Request Membership
+                        {t("clubs.requestMembership", { fallback: "Request Membership" })}
                       </button>
                     </div>
                   );
@@ -415,17 +415,17 @@ export default function ClubsCommitteesPage() {
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-gray-50/50">
-                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100">Request ID</th>
-                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100">Club</th>
-                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100">Date</th>
-                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100">Status</th>
-                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100 text-right">Action</th>
+                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100">{t("clubs.requestId", { fallback: "Request ID" })}</th>
+                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100">{t("clubs.club", { fallback: "Club" })}</th>
+                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100">{t("common.date", { fallback: "Date" })}</th>
+                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100">{t("common.status", { fallback: "Status" })}</th>
+                            <th className="py-4 px-5 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100 text-right">{t("common.action", { fallback: "Action" })}</th>
                           </tr>
                         </thead>
                         <tbody>
                           {myRequests.length === 0 ? (
                             <tr>
-                              <td colSpan="5" className="py-8 text-center text-xs font-bold text-gray-400 italic">No membership requests found.</td>
+                              <td colSpan="5" className="py-8 text-center text-xs font-bold text-gray-400 italic">{t("clubs.noRequests", { fallback: "No membership requests found." })}</td>
                             </tr>
                           ) : (
                             myRequests.map((req) => (
@@ -454,11 +454,11 @@ export default function ClubsCommitteesPage() {
                                       onClick={() => handleWithdrawRequest(req.requestId)}
                                       className="text-[10px] font-black text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors uppercase tracking-wider"
                                     >
-                                      Withdraw
+                                      {t("clubs.withdraw", { fallback: "Withdraw" })}
                                     </button>
                                   ) : (
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
-                                      Closed
+                                      {t("clubs.closed", { fallback: "Closed" })}
                                     </span>
                                   )}
                                 </td>
@@ -485,7 +485,7 @@ export default function ClubsCommitteesPage() {
               <div className="flex items-center gap-2">
                 <PlusCircle className="w-5 h-5 text-[#00b4d8]" />
                 <h3 className="font-black text-sm text-[#03045e] uppercase tracking-wider">
-                  Propose New Club
+                  {t("clubs.proposeNewClub", { fallback: "Propose New Club" })}
                 </h3>
               </div>
               <button 
@@ -499,7 +499,7 @@ export default function ClubsCommitteesPage() {
             <form onSubmit={handleCreateProposal} className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">Club Name</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">{t("clubs.clubName", { fallback: "Club Name" })}</label>
                   <input
                     type="text"
                     required
@@ -507,32 +507,32 @@ export default function ClubsCommitteesPage() {
                     value={proposalForm.clubName}
                     onChange={(e) => setProposalForm({...proposalForm, clubName: e.target.value})}
                     className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-[#03045e] focus:outline-none focus:border-[#00b4d8] focus:ring-1 focus:ring-[#00b4d8] transition-all"
-                    placeholder="e.g. AI Club"
+                    placeholder={t("clubs.clubPlaceholder", { fallback: "e.g. AI Club" })}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">Category</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">{t("common.category", { fallback: "Category" })}</label>
                   <select
                     required
                     value={proposalForm.category}
                     onChange={(e) => setProposalForm({...proposalForm, category: e.target.value})}
                     className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-[#03045e] focus:outline-none focus:border-[#00b4d8] focus:ring-1 focus:ring-[#00b4d8] transition-all"
                   >
-                    <option value="Academic">Academic</option>
-                    <option value="Technology">Technology</option>
-                    <option value="Sports">Sports</option>
-                    <option value="Arts">Arts</option>
-                    <option value="Cultural">Cultural</option>
-                    <option value="Science & Tech">Science & Tech</option>
-                    <option value="Literary & Debate">Literary & Debate</option>
-                    <option value="Community Service">Community Service</option>
-                    <option value="Leadership">Leadership</option>
-                    <option value="STEM">STEM</option>
-                    <option value="Other">Other</option>
+                    <option value="Academic">{t("clubs.catAcademic", { fallback: "Academic" })}</option>
+                    <option value="Technology">{t("clubs.catTechnology", { fallback: "Technology" })}</option>
+                    <option value="Sports">{t("clubs.catSports", { fallback: "Sports" })}</option>
+                    <option value="Arts">{t("clubs.catArts", { fallback: "Arts" })}</option>
+                    <option value="Cultural">{t("clubs.catCultural", { fallback: "Cultural" })}</option>
+                    <option value="Science & Tech">{t("clubs.catScienceTech", { fallback: "Science & Tech" })}</option>
+                    <option value="Literary & Debate">{t("clubs.catLiterary", { fallback: "Literary & Debate" })}</option>
+                    <option value="Community Service">{t("clubs.catCommunity", { fallback: "Community Service" })}</option>
+                    <option value="Leadership">{t("clubs.catLeadership", { fallback: "Leadership" })}</option>
+                    <option value="STEM">{t("clubs.catSTEM", { fallback: "STEM" })}</option>
+                    <option value="Other">{t("clubs.catOther", { fallback: "Other" })}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">Purpose</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">{t("clubs.purpose", { fallback: "Purpose" })}</label>
                   <textarea
                     required
                     maxLength={300}
@@ -540,7 +540,7 @@ export default function ClubsCommitteesPage() {
                     value={proposalForm.purpose}
                     onChange={(e) => setProposalForm({...proposalForm, purpose: e.target.value})}
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:border-[#00b4d8] focus:ring-1 focus:ring-[#00b4d8] transition-all resize-none"
-                    placeholder="Describe the club's objectives and activities..."
+                    placeholder={t("clubs.purposePlaceholder", { fallback: "Describe the club's objectives and activities..." })}
                   />
                 </div>
               </div>
@@ -551,7 +551,7 @@ export default function ClubsCommitteesPage() {
                   onClick={() => setIsProposeModalOpen(false)}
                   className="flex-1 h-10 rounded-xl bg-gray-100 text-gray-500 font-black text-[11px] uppercase tracking-wider hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  {t("common.cancel", { fallback: "Cancel" })}
                 </button>
                 <button
                   type="submit"
@@ -560,7 +560,7 @@ export default function ClubsCommitteesPage() {
                 >
                   {proposing ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : "Submit Proposal"}
+                  ) : t("clubs.submitProposal", { fallback: "Submit Proposal" })}
                 </button>
               </div>
             </form>
@@ -576,7 +576,7 @@ export default function ClubsCommitteesPage() {
               <div className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-[#00b4d8]" />
                 <h3 className="font-black text-sm text-[#03045e] uppercase tracking-wider">
-                  Proposal Details
+                  {t("clubs.proposalDetails", { fallback: "Proposal Details" })}
                 </h3>
               </div>
               <button 
@@ -589,23 +589,23 @@ export default function ClubsCommitteesPage() {
             
             <div className="p-6">
               <div className="mb-4">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Proposal ID</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{t("clubs.proposalId", { fallback: "Proposal ID" })}</span>
                 <p className="text-sm font-bold text-[#03045e] mt-0.5">{selectedProposal.proposalId}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Club Name</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{t("clubs.clubName", { fallback: "Club Name" })}</span>
                   <p className="text-sm font-black text-[#03045e] mt-0.5">{selectedProposal.clubName}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Category</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{t("common.category", { fallback: "Category" })}</span>
                   <p className="text-xs font-bold text-gray-600 mt-1">{selectedProposal.category}</p>
                 </div>
               </div>
 
               <div className="mb-4">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Purpose</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{t("clubs.purpose", { fallback: "Purpose" })}</span>
                 <p className="text-xs font-medium text-gray-700 mt-1 bg-gray-50 p-3 rounded-xl border border-gray-100">
                   {selectedProposal.purpose}
                 </p>
@@ -613,13 +613,13 @@ export default function ClubsCommitteesPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Submitted On</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{t("clubs.submittedOn", { fallback: "Submitted On" })}</span>
                   <p className="text-xs font-bold text-gray-600 mt-0.5">
                     {new Date(selectedProposal.submittedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Status</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{t("common.status", { fallback: "Status" })}</span>
                   <div className="mt-1">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider ${
                       selectedProposal.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
@@ -634,7 +634,7 @@ export default function ClubsCommitteesPage() {
 
               {selectedProposal.remarks && (
                 <div className="mb-2">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Decision Remarks</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{t("clubs.decisionRemarks", { fallback: "Decision Remarks" })}</span>
                   <p className="text-xs font-bold text-gray-700 mt-1 bg-[#caf0f8]/30 p-3 rounded-xl border border-[#caf0f8]">
                     {selectedProposal.remarks}
                   </p>
@@ -653,7 +653,7 @@ export default function ClubsCommitteesPage() {
               <div className="flex items-center gap-2">
                 <Megaphone className="w-4 h-4 text-[#00b4d8]" />
                 <h3 className="font-black text-xs text-[#03045e] uppercase tracking-wider">
-                  Announcement Details
+                  {t("clubs.announcementDetails", { fallback: "Announcement Details" })}
                 </h3>
               </div>
               <button 
@@ -713,10 +713,10 @@ export default function ClubsCommitteesPage() {
         isOpen={!!clubToLeave}
         onCancel={() => setClubToLeave(null)}
         onConfirm={confirmLeaveClub}
-        title="Leave Club"
-        message={clubToLeave ? `Are you sure you want to leave ${clubToLeave.name}? You will lose access to its activities and announcements.` : ''}
-        confirmText="Yes, Leave Club"
-        cancelText="Cancel"
+        title={t("clubs.leaveClubTitle", { fallback: "Leave Club" })}
+        message={clubToLeave ? t("clubs.leaveClubMsg", { name: clubToLeave.name, fallback: `Are you sure you want to leave ${clubToLeave.name}? You will lose access to its activities and announcements.` }) : ''}
+        confirmText={t("clubs.leaveClubConfirm", { fallback: "Yes, Leave Club" })}
+        cancelText={t("common.cancel", { fallback: "Cancel" })}
         type="danger"
       />
     </div>

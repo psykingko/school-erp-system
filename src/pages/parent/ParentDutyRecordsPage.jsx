@@ -4,8 +4,10 @@ import studentDutyService from "../../services/studentDutyService";
 import MainCard from "../../components/MainCard";
 import DutyDetailsModal from "../../components/DutyDetailsModal";
 import { ClipboardCheck, CheckCircle, XCircle, Eye, Clock, ClipboardList, User } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ParentDutyRecordsPage() {
+  const { t } = useLanguage();
   const { activeStudentId, activeStudent, childrenList, setActiveStudentId, isMultiChild, isLoading: isStudentLoading } = useStudent();
   
   const [requests, setRequests] = useState([]);
@@ -51,11 +53,12 @@ export default function ParentDutyRecordsPage() {
     }, {});
 
     const historyStrings = Object.entries(categoryCounts).map(([cat, count]) => {
-      return `${count} ${cat} ${count === 1 ? 'Duty' : 'Duties'}`;
+      const dutyStr = count === 1 ? t("parentDuty.duty", { fallback: "Duty" }) : t("parentDuty.duties", { fallback: "Duties" });
+      return `${count} ${cat} ${dutyStr}`;
     });
 
-    return `Participated in: ${historyStrings.join(" • ")}`;
-  }, [requests]);
+    return `${t("parentDuty.participatedIn", { fallback: "Participated in:" })} ${historyStrings.join(" • ")}`;
+  }, [requests, t]);
 
   const filteredRequests = useMemo(() => {
     return requests.filter(req => {
@@ -79,15 +82,15 @@ export default function ParentDutyRecordsPage() {
   };
 
   if (isStudentLoading) {
-    return <div className="p-8 text-center text-gray-500">Loading student context...</div>;
+    return <div className="p-8 text-center text-gray-500">{t("common.loadingStudentContext", { fallback: "Loading student context..." })}</div>;
   }
 
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-[#03045e] tracking-tight">Duty Records</h1>
-        <p className="text-gray-500 font-medium mt-1">View duty participation records for your child.</p>
+        <h1 className="text-2xl font-black text-[#03045e] tracking-tight">{t("parentDuty.title", { fallback: "Duty Records" })}</h1>
+        <p className="text-gray-500 font-medium mt-1">{t("parentDuty.subtitle", { fallback: "View duty participation records for your child." })}</p>
       </div>
 
       {/* Child Selector */}
@@ -125,7 +128,7 @@ export default function ParentDutyRecordsPage() {
             <ClipboardCheck size={24} />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">Total Duties</p>
+            <p className="text-sm text-gray-500 font-medium">{t("parentDuty.totalDuties", { fallback: "Total Duties" })}</p>
             <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
           </div>
         </MainCard>
@@ -134,7 +137,7 @@ export default function ParentDutyRecordsPage() {
             <Clock size={24} />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">Active</p>
+            <p className="text-sm text-gray-500 font-medium">{t("common.active", { fallback: "Active" })}</p>
             <p className="text-2xl font-bold text-gray-800">{stats.active}</p>
           </div>
         </MainCard>
@@ -143,7 +146,7 @@ export default function ParentDutyRecordsPage() {
             <CheckCircle size={24} />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">Completed</p>
+            <p className="text-sm text-gray-500 font-medium">{t("common.completed", { fallback: "Completed" })}</p>
             <p className="text-2xl font-bold text-gray-800">{stats.completed}</p>
           </div>
         </MainCard>
@@ -152,7 +155,7 @@ export default function ParentDutyRecordsPage() {
             <XCircle size={24} />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">Cancelled</p>
+            <p className="text-sm text-gray-500 font-medium">{t("common.cancelled", { fallback: "Cancelled" })}</p>
             <p className="text-2xl font-bold text-gray-800">{stats.cancelled}</p>
           </div>
         </MainCard>
@@ -161,49 +164,49 @@ export default function ParentDutyRecordsPage() {
       {/* Records Table */}
       <MainCard className="overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-lg font-bold text-[#03045e]">Duty Records</h2>
+          <h2 className="text-lg font-bold text-[#03045e]">{t("parentDuty.title", { fallback: "Duty Records" })}</h2>
           <select 
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#00b4d8] bg-white font-medium text-gray-600"
           >
-            <option value="All">All Records</option>
-            <option value="Active & Completed">Active & Completed</option>
-            <option value="Cancelled">Cancelled Only</option>
+            <option value="All">{t("parentDuty.allRecords", { fallback: "All Records" })}</option>
+            <option value="Active & Completed">{t("parentDuty.activeAndCompleted", { fallback: "Active & Completed" })}</option>
+            <option value="Cancelled">{t("parentDuty.cancelledOnly", { fallback: "Cancelled Only" })}</option>
           </select>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                <th className="p-4 font-bold">Student</th>
-                <th className="p-4 font-bold">Duty Name</th>
-                <th className="p-4 font-bold">Category</th>
-                <th className="p-4 font-bold">Requested By</th>
-                <th className="p-4 font-bold">Date</th>
-                <th className="p-4 font-bold">Status</th>
-                <th className="p-4 font-bold text-right">Action</th>
+                <th className="p-4 font-bold">{t("common.student", { fallback: "Student" })}</th>
+                <th className="p-4 font-bold">{t("parentDuty.dutyName", { fallback: "Duty Name" })}</th>
+                <th className="p-4 font-bold">{t("common.category", { fallback: "Category" })}</th>
+                <th className="p-4 font-bold">{t("parentDuty.requestedBy", { fallback: "Requested By" })}</th>
+                <th className="p-4 font-bold">{t("common.date", { fallback: "Date" })}</th>
+                <th className="p-4 font-bold">{t("common.status", { fallback: "Status" })}</th>
+                <th className="p-4 font-bold text-right">{t("common.action", { fallback: "Action" })}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="p-8 text-center text-gray-400">Loading duty records...</td>
+                  <td colSpan="7" className="p-8 text-center text-gray-400">{t("parentDuty.loadingRecords", { fallback: "Loading duty records..." })}</td>
                 </tr>
               ) : filteredRequests.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="p-12 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <ClipboardList size={40} className="text-gray-300 mb-3" />
-                      <h3 className="text-lg font-bold text-gray-700">No Duty Records Found</h3>
-                      <p className="text-sm text-gray-500 mt-1">No duty participation records are available for the selected student.</p>
+                      <h3 className="text-lg font-bold text-gray-700">{t("parentDuty.noRecords", { fallback: "No Duty Records Found" })}</h3>
+                      <p className="text-sm text-gray-500 mt-1">{t("parentDuty.noRecordsMsg", { fallback: "No duty participation records are available for the selected student." })}</p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 filteredRequests.map(req => (
                   <tr key={req.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="p-4 text-sm font-bold text-gray-700">{activeStudent?.firstName || "Student"}</td>
+                    <td className="p-4 text-sm font-bold text-gray-700">{activeStudent?.firstName || t("common.student", { fallback: "Student" })}</td>
                     <td className="p-4 font-bold text-gray-800">{req.title}</td>
                     <td className="p-4">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">
@@ -214,7 +217,9 @@ export default function ParentDutyRecordsPage() {
                     <td className="p-4 text-sm font-medium text-gray-600">{req.dutyDate}</td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${getStatusColor(req.status)}`}>
-                        {req.status}
+                        {req.status === "Active" ? t("common.active", { fallback: "Active" }) : 
+                         req.status === "Completed" ? t("common.completed", { fallback: "Completed" }) : 
+                         req.status === "Cancelled" ? t("common.cancelled", { fallback: "Cancelled" }) : req.status}
                       </span>
                     </td>
                     <td className="p-4 text-right">
@@ -225,7 +230,7 @@ export default function ParentDutyRecordsPage() {
                         }}
                         className="text-sm font-bold text-[#0077b6] hover:text-[#023e8a] flex items-center justify-end gap-1.5 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors ml-auto"
                       >
-                        <Eye size={16} /> View
+                        <Eye size={16} /> {t("common.view", { fallback: "View" })}
                       </button>
                     </td>
                   </tr>

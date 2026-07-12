@@ -105,7 +105,7 @@ function CredentialField({ label, value, isPassword, accent }) {
         className="text-xs font-bold uppercase tracking-wide"
         style={{ color: accent.labelColor }}
       >
-        {label}
+        {t(label)}
       </span>
       <div className="flex items-center gap-2">
         <div className="flex-1">
@@ -187,7 +187,7 @@ function CredentialsCard({
                 className="text-base font-extrabold leading-tight"
                 style={{ color: "#03045e" }}
               >
-                {title}
+                {t(title)}
               </h3>
               <span
                 className="text-xs font-semibold"

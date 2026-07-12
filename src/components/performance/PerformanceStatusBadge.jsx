@@ -1,6 +1,8 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function PerformanceStatusBadge({ status }) {
+  const { t } = useLanguage();
   let badgeStyles = "";
 
   switch (status) {
@@ -27,7 +29,7 @@ export default function PerformanceStatusBadge({ status }) {
         status === "Good" ? "bg-sky-500" :
         status === "Warning" ? "bg-amber-500" : "bg-rose-500"
       }`}></span>
-      {status}
+      {t(`status.${status}`, { fallback: status })}
     </span>
   );
 }

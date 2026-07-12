@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../../context/AuthContext";
+import { useLanguage } from "../../../../context/LanguageContext";
 import { getTeacherProfile } from "../../../../services/teacherService";
 import { getExams, getExamPapers } from "../../../../services/examService";
 import { getDataProvider } from "../../../../data";
@@ -18,6 +19,7 @@ import Timeline from "../../../../components/common/Timeline";
 
 const OverviewTab = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState({ pending: 0, completed: 0, total: 0 });
@@ -106,11 +108,11 @@ const OverviewTab = () => {
       {progress.classProgress && (
         <div className="bg-[#03045e] p-6 rounded-2xl text-white flex items-center justify-between shadow-lg">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-wider text-blue-200">Class Teacher Overview</h3>
-            <p className="text-xl font-bold mt-1">Class {progress.classProgress.className}</p>
+            <h3 className="text-sm font-black uppercase tracking-wider text-blue-200">{t("teacherExams.overview.classTeacher")}</h3>
+            <p className="text-xl font-bold mt-1">{t("common.class")} {progress.classProgress.className}</p>
           </div>
           <div className="text-right">
-            <div className="text-[10px] font-black text-blue-200 uppercase tracking-widest">Evaluation Progress</div>
+            <div className="text-[10px] font-black text-blue-200 uppercase tracking-widest">{t("teacherExams.overview.evalProgress")}</div>
             <div className="text-3xl font-black text-[#00b4d8]">{progress.classProgress.percent}%</div>
           </div>
         </div>
@@ -120,24 +122,24 @@ const OverviewTab = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <ProgressCard 
           icon={BookOpen} 
-          title="Assigned Subjects" 
+          title={t("teacherExams.overview.assignedSubjects")} 
           value={assignedSubjects.length} 
           colorClass="blue" 
         />
         <ProgressCard 
           icon={CheckCircle} 
-          title="Completed Eval" 
+          title={t("teacherExams.overview.completedEval")} 
           value={progress.completed} 
           colorClass="emerald" 
         />
         <ProgressCard 
           icon={Clock} 
-          title="Pending Eval" 
+          title={t("teacherExams.overview.pendingEval")} 
           value={progress.pending} 
           colorClass="amber" 
         />
         <ProgressCard 
-          title="Overall Progress" 
+          title={t("teacherExams.overview.overallProgress")} 
           value={`${percentComplete}%`} 
           progress={percentComplete} 
           colorClass="blue" 
@@ -149,14 +151,14 @@ const OverviewTab = () => {
         <MainCard className="p-6">
           <h2 className="text-lg font-black text-[#03045e] mb-4 flex items-center gap-2">
             <FileText size={20} className="text-[#0077b6]" />
-            Your Assigned Subjects
+            {t("teacherExams.overview.yourSubjects")}
           </h2>
           
           {assignedSubjects.length === 0 ? (
             <EmptyState 
               icon={AlertCircle}
-              title="No subjects assigned"
-              description="You currently have no examination assignments."
+              title={t("teacherExams.overview.noSubjectsTitle")}
+              description={t("teacherExams.overview.noSubjectsDesc")}
             />
           ) : (
             <div className="space-y-3">
@@ -167,7 +169,7 @@ const OverviewTab = () => {
                       {sub.className?.substring(0,2) || "?"}
                     </div>
                     <div>
-                      <h4 className="font-bold text-[#03045e]">{sub.subjectName}</h4>
+                      <h4 className="font-bold text-[#03045e]">{t(sub.subjectName)}</h4>
                       <p className="text-xs text-gray-500">{sub.className}</p>
                     </div>
                   </div>
@@ -181,21 +183,21 @@ const OverviewTab = () => {
         <MainCard className="p-6">
           <h2 className="text-lg font-black text-[#03045e] mb-4 flex items-center gap-2">
             <Calendar size={20} className="text-[#0077b6]" />
-            Active Examinations Timeline
+            {t("teacherExams.overview.timelineTitle")}
           </h2>
           
           {activeExams.length === 0 ? (
              <EmptyState 
                icon={Calendar}
-               title="No active exams"
-               description="There are currently no active exams."
+               title={t("teacherExams.overview.noExamsTitle")}
+               description={t("teacherExams.overview.noExamsDesc")}
              />
           ) : (
             <Timeline 
               items={activeExams.map(exam => ({
-                title: exam.name,
-                subtitle: `Phase: ${exam.status}`,
-                description: "Please ensure all marks are submitted before this cycle completes.",
+                title: t(exam.name),
+                subtitle: t("teacherExams.overview.phase") + t(`status.${exam.status}`),
+                description: t("teacherExams.overview.timelineDesc"),
                 status: exam.status === 'evaluation' ? 'warning' : exam.status === 'ongoing' ? 'success' : 'info'
               }))}
             />

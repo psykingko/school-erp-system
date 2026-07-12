@@ -93,19 +93,17 @@ function FeeStructure({ structure }) {
                       className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide self-start w-fit"
                       style={{ backgroundColor: `${style.color}15`, color: style.color }}
                     >
-                      {item.status}
+                      {t(`feeDetails.billStatus_${(item.status || "").replace(/\s+/g, "")}`, { fallback: item.status })}
                     </div>
-                    {item.isVacationMonth && (
                       <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
-                        Vacation month
+                        {t("feeDetails.vacationMonth", { fallback: "Vacation month" })}
                       </span>
-                    )}
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block mr-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Planned Total</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{t("feeDetails.plannedTotal", { fallback: "Planned Total" })}</p>
                   <p className="font-black text-sm text-[#03045e]">₹{(item.total || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}</p>
                 </div>
                 {isExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
@@ -124,7 +122,7 @@ function FeeStructure({ structure }) {
                     {item.status === "Upcoming" && (
                       <div className="bg-[#caf0f8]/30 border border-[#00b4d8]/20 rounded-xl p-3 text-xs text-[#0077b6] flex items-center gap-2 font-bold">
                         <Calendar size={14} />
-                        <span>Planned Billing Cycle — Invoice will activate on {getActivationDate(item.label)}</span>
+                        <span>{t("feeDetails.plannedBillingCycle", { fallback: "Planned Billing Cycle — Invoice will activate on" })} {getActivationDate(item.label)}</span>
                       </div>
                     )}
 
@@ -132,12 +130,12 @@ function FeeStructure({ structure }) {
                     {item.isVacationMonth && (
                       <div className="bg-emerald-50/50 border border-emerald-100/50 rounded-xl p-3 text-xs text-emerald-700 flex flex-col gap-1 font-bold">
                         <span className="flex items-center gap-1.5 uppercase tracking-wide text-[9px] text-emerald-600 font-extrabold">
-                          🌴 {item.vacationType === "SUMMER" ? "Summer Vacation Break" : "Winter Vacation Adjustment"}
+                          🌴 {item.vacationType === "SUMMER" ? t("feeDetails.summerVacationBreak", { fallback: "Summer Vacation Break" }) : t("feeDetails.winterVacationAdj", { fallback: "Winter Vacation Adjustment" })}
                         </span>
                         <span>
                           {item.vacationType === "SUMMER" 
-                            ? "Tuition and tech core services remain fully active for academic continuity. Optional charges (Transport, Activity) are waived."
-                            : "Winter vacation partial adjustment. Optional charges (Transport, Activity) are discounted by 50%."}
+                            ? t("feeDetails.summerVacationDesc", { fallback: "Tuition and tech core services remain fully active for academic continuity. Optional charges (Transport, Activity) are waived." })
+                            : t("feeDetails.winterVacationDesc", { fallback: "Winter vacation partial adjustment. Optional charges (Transport, Activity) are discounted by 50%." })}
                         </span>
                       </div>
                     )}
@@ -145,19 +143,19 @@ function FeeStructure({ structure }) {
                     <div className="bg-white rounded-xl p-4 shadow-inner border border-gray-50 space-y-3">
                       {(item.components || []).map((comp, idx) => (
                         <div key={idx} className="flex justify-between items-center pb-2 border-b border-gray-50 last:border-0">
-                          <span className="text-sm font-semibold text-gray-600">{comp.head}</span>
+                          <span className="text-sm font-semibold text-gray-600">{t(`feeDetails.components.${(comp.head || "").toLowerCase().replace(/\s+/g, "")}`, { fallback: comp.head })}</span>
                           <span className="font-bold text-[#03045e]">
-                            {comp.amount === 0 ? "Waived / ₹0" : `₹${(comp.amount || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}`}
+                            {comp.amount === 0 ? `${t("feeDetails.waived", { fallback: "Waived" })} / ₹0` : `₹${(comp.amount || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}`}
                           </span>
                         </div>
                       ))}
                       <div className="pt-3 flex flex-col gap-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold text-gray-400 uppercase">Amount Already Paid</span>
+                          <span className="text-xs font-bold text-gray-400 uppercase">{t("feeDetails.amountAlreadyPaid", { fallback: "Amount Already Paid" })}</span>
                           <span className="text-sm font-bold text-emerald-600">₹{(item.paidAmount || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}</span>
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
-                          <span className="text-base font-bold text-[#03045e]">{t("feeDetails.structure.total") || "Total Invoice Amount"}</span>
+                          <span className="text-base font-bold text-[#03045e]">{t("feeDetails.structure.total", { fallback: "Total Invoice Amount" })}</span>
                           <span className="text-lg font-black text-[#00b4d8]">₹{(item.total || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}</span>
                         </div>
                       </div>
@@ -185,7 +183,7 @@ function FeeBill({ bills }) {
           <MainCard key={bill.id} className="p-5 flex flex-col gap-4 relative">
             {isPaid && (
               <div className="absolute top-0 right-0 bg-[#059669] text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase">
-                {bill.status}
+                {t(`feeDetails.billStatus_${bill.status.replace(/\\s+/g, '')}`, { fallback: bill.status })}
               </div>
             )}
             <div className="flex justify-between items-start">
@@ -194,7 +192,7 @@ function FeeBill({ bills }) {
                 <p className="text-[10px] font-black text-gray-400 mt-0.5 uppercase tracking-widest">{bill.invoiceNo}</p>
                 <div className="flex items-center gap-1.5 mt-2">
                    <Clock size={12} className="text-gray-400" />
-                   <p className="text-[11px] font-bold text-gray-500">{t("feeDetails.bill.dueDate")}: {bill.dueDate}</p>
+                   <p className="text-[11px] font-bold text-gray-500">{t("feeDetails.bill.dueDate", { fallback: "Due Date" })}: {bill.dueDate}</p>
                 </div>
               </div>
               <div className="p-2.5 rounded-xl" style={{ backgroundColor: `${style.color}15`, color: style.color }}>
@@ -203,25 +201,25 @@ function FeeBill({ bills }) {
             </div>
             
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-gray-400 uppercase">Invoice Amount</span>
+              <span className="text-[10px] font-black text-gray-400 uppercase">{t("feeDetails.invoiceAmount", { fallback: "Invoice Amount" })}</span>
               <span className="text-3xl font-black text-[#03045e]">₹{(bill.amount || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}</span>
             </div>
 
             <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 bg-gray-50/80 p-3 rounded-2xl border border-gray-100">
               <div className="flex-1">
-                <span className="block text-[10px] font-black text-gray-400 uppercase mb-0.5">Amount Paid</span>
+                <span className="block text-[10px] font-black text-gray-400 uppercase mb-0.5">{t("feeDetails.amountPaid", { fallback: "Amount Paid" })}</span>
                 <span className="text-emerald-600 font-black">₹{(bill.paidAmount || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}</span>
               </div>
               <div className="w-px h-8 bg-gray-200"></div>
               <div className="flex-1 text-right">
-                <span className="block text-[10px] font-black text-gray-400 uppercase mb-0.5">Outstanding</span>
+                <span className="block text-[10px] font-black text-gray-400 uppercase mb-0.5">{t("feeDetails.outstanding", { fallback: "Outstanding" })}</span>
                 <span className={`font-black ${isPaid ? "text-gray-400" : "text-[#dc2626]"}`}>₹{(bill.remainingAmount || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}</span>
               </div>
             </div>
 
             {!isPaid && (
               <button className="w-full bg-[#03045e] hover:bg-[#0077b6] text-white text-sm font-black py-3 rounded-xl transition-all shadow-lg shadow-[#03045e]/10 mt-1">
-                {t("feeDetails.bill.payNow") || "Pay Outstanding Amount"}
+                {t("feeDetails.bill.payNow", { fallback: "Pay Outstanding Amount" })}
               </button>
             )}
           </MainCard>
@@ -279,42 +277,42 @@ function ITCertificate({ cert }) {
           <div className="p-3 bg-[#03045e] rounded-2xl text-white mb-4 shadow-lg shadow-[#03045e]/20">
             <Award size={32} />
           </div>
-          <h2 className="text-xl md:text-2xl font-black text-[#03045e]">{t("feeDetails.tab.itCertificate")}</h2>
-          <p className="text-sm font-semibold text-gray-500 mt-1">{t("feeDetails.itCertificate.desc")}</p>
+          <h2 className="text-xl md:text-2xl font-black text-[#03045e]">{t("feeDetails.tab.itCertificate", { fallback: "Fee Payment Certificate" })}</h2>
+          <p className="text-sm font-semibold text-gray-500 mt-1">{t("feeDetails.itCertificate.desc", { fallback: "Generated for Income Tax declaration under Section 80C" })}</p>
         </div>
 
         <div className="relative z-10 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4 mb-8 text-left">
           <div>
-            <p className="text-xs font-black text-gray-400 mb-1 uppercase tracking-tighter">{t("feeDetails.itCertificate.studentName")}</p>
+            <p className="text-xs font-black text-gray-400 mb-1 uppercase tracking-tighter">{t("feeDetails.itCertificate.studentName", { fallback: "Student Name" })}</p>
             <p className="font-bold text-[#03045e]">{cert.studentName}</p>
           </div>
           <div>
-            <p className="text-xs font-black text-gray-400 mb-1 uppercase tracking-tighter">{t("feeDetails.itCertificate.rollNo")}</p>
+            <p className="text-xs font-black text-gray-400 mb-1 uppercase tracking-tighter">{t("feeDetails.itCertificate.rollNo", { fallback: "Roll No" })}</p>
             <p className="font-bold text-[#03045e]">{cert.rollNo}</p>
           </div>
           <div>
-            <p className="text-xs font-black text-gray-400 mb-1 uppercase tracking-tighter">{t("feeDetails.itCertificate.year")}</p>
+            <p className="text-xs font-black text-gray-400 mb-1 uppercase tracking-tighter">{t("feeDetails.itCertificate.year", { fallback: "Financial Year" })}</p>
             <p className="font-bold text-[#03045e]">{cert.year}</p>
           </div>
           <div>
-            <p className="text-xs font-black text-gray-400 mb-1 uppercase tracking-tighter">{t("feeDetails.itCertificate.dateGenerated")}</p>
+            <p className="text-xs font-black text-gray-400 mb-1 uppercase tracking-tighter">{t("feeDetails.itCertificate.dateGenerated", { fallback: "Date Generated" })}</p>
             <p className="font-bold text-[#03045e]">{cert.dateGenerated}</p>
           </div>
         </div>
 
         <div className="relative z-10 bg-[#f8fafc] rounded-2xl p-5 flex justify-between items-center mb-8 border border-gray-100">
-          <span className="font-bold text-[#03045e] uppercase text-sm tracking-tight">{t("feeDetails.itCertificate.totalPaid")}</span>
+          <span className="font-bold text-[#03045e] uppercase text-sm tracking-tight">{t("feeDetails.itCertificate.totalPaid", { fallback: "Total Amount Paid" })}</span>
           <span className="text-2xl font-black text-[#059669]">₹{(cert.totalPaid || 0).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN")}</span>
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row gap-3">
           <button className="flex-1 bg-[#00b4d8] hover:bg-[#0077b6] text-white font-black py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#00b4d8]/20">
             <Download size={20} />
-            {t("feeDetails.itCertificate.download")}
+            {t("feeDetails.itCertificate.download", { fallback: "Download PDF" })}
           </button>
           <button className="flex-1 bg-white hover:bg-gray-50 text-[#03045e] border-2 border-[#03045e]/10 font-black py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
             <Printer size={20} />
-            {t("feeDetails.itCertificate.print")}
+            {t("feeDetails.itCertificate.print", { fallback: "Print Certificate" })}
           </button>
         </div>
       </motion.div>
@@ -334,10 +332,10 @@ export default function FeeDetailsPage() {
   const { isParent: isParentMode } = useAuth();
 
   const tabs = [
-    { id: "structure", label: t("feeDetails.tab.structure") || "Billing Cycles", icon: Layers },
-    { id: "bill", label: t("feeDetails.tab.bill") || "Pending Bills", icon: FileText },
-    { id: "receipt", label: t("feeDetails.tab.receipt") || "Fee Receipts", icon: Receipt },
-    { id: "itCertificate", label: t("feeDetails.tab.itCertificate") || "Fee Payment Certificate", icon: Award },
+    { id: "structure", label: t("feeDetails.tab.structure", { fallback: "Billing Cycles" }), icon: Layers },
+    { id: "bill", label: t("feeDetails.tab.bill", { fallback: "Pending Bills" }), icon: FileText },
+    { id: "receipt", label: t("feeDetails.tab.receipt", { fallback: "Fee Receipts" }), icon: Receipt },
+    { id: "itCertificate", label: t("feeDetails.tab.itCertificate", { fallback: "Fee Payment Certificate" }), icon: Award },
   ];
 
   if (loading) {
@@ -407,8 +405,8 @@ export default function FeeDetailsPage() {
               </span>
               <span className="text-[10px] font-bold text-gray-400 block mt-1">
                 {lang === "hi" 
-                  ? `${summary.totalInvoicesCount || 12} बिलिंग चक्र नियोजित`
-                  : `${summary.totalInvoicesCount || 12} billing cycles configured`}
+                  ? `${summary.totalInvoicesCount || 12} ${t("feeDetails.billingCyclesConfigured", { fallback: "बिलिंग चक्र नियोजित" })}`
+                  : `${summary.totalInvoicesCount || 12} ${t("feeDetails.billingCyclesConfigured", { fallback: "billing cycles configured" })}`}
               </span>
             </div>
           </div>
@@ -427,8 +425,8 @@ export default function FeeDetailsPage() {
               </span>
               <span className="text-[10px] font-bold text-emerald-600 block mt-1">
                 {lang === "hi" 
-                  ? `${summary.releasedSettledCount || 0} सक्रिय इनवॉइस चुकता`
-                  : `${summary.releasedSettledCount || 0} released invoices settled`}
+                  ? `${summary.releasedSettledCount || 0} ${t("feeDetails.releasedInvoicesSettled", { fallback: "सक्रिय इनवॉइस चुकता" })}`
+                  : `${summary.releasedSettledCount || 0} ${t("feeDetails.releasedInvoicesSettled", { fallback: "released invoices settled" })}`}
               </span>
             </div>
           </div>
@@ -452,16 +450,16 @@ export default function FeeDetailsPage() {
                   </span>
                   <span className={`text-[10px] font-black uppercase tracking-widest block mt-1.5 ${outstandingTextColor}`}>
                     {outstandingIsZero 
-                      ? (t("feeDetails.summary.allPaymentsCleared") || "All Active Payments Cleared") 
-                      : (t("feeDetails.summary.outstandingBalance") || "Outstanding Balance")}
+                      ? t("feeDetails.summary.allPaymentsCleared", { fallback: "All Active Payments Cleared" }) 
+                      : t("feeDetails.summary.outstandingBalance", { fallback: "Outstanding Balance" })}
                   </span>
                   <span className={`text-[10px] font-bold block mt-1 ${outstandingIsZero ? "text-emerald-600" : "text-red-500"}`}>
                     {outstandingIsZero ? (
-                      lang === "hi" ? "कोई सक्रिय देयता नहीं" : "No active liabilities"
+                      t("feeDetails.noActiveLiabilities", { fallback: "No active liabilities" })
                     ) : (
                       lang === "hi" 
-                        ? `${summary.activeDuesCount || 0} इनवॉइस भुगतान लंबित`
-                        : `${summary.activeDuesCount || 0} invoices awaiting payment`
+                        ? `${summary.activeDuesCount || 0} ${t("feeDetails.invoicesAwaitingPayment", { fallback: "इनवॉइस भुगतान लंबित" })}`
+                        : `${summary.activeDuesCount || 0} ${t("feeDetails.invoicesAwaitingPayment", { fallback: "invoices awaiting payment" })}`
                     )}
                   </span>
                 </div>

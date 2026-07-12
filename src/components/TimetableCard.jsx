@@ -373,7 +373,7 @@ function TimetableCard({ weeklyTimetable = {}, isConfigured = true }) {
                 {isSelectedToday && (
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#00b4d8] flex items-center gap-1.5 mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00b4d8] animate-pulse" />
-                    Live Updates
+                    {t("timetable.liveUpdates", { fallback: "Live Updates" })}
                   </span>
                 )}
               </div>
@@ -440,7 +440,7 @@ function TimetableCard({ weeklyTimetable = {}, isConfigured = true }) {
                   onClick={() => setSelectedDate(new Date())}
                   className="text-[10px] font-black uppercase tracking-widest text-[#0077b6] hover:underline transition-colors px-2"
                 >
-                  Back to Today
+                  {t("timetable.backToToday", { fallback: "Back to Today" })}
                 </button>
               )}
             </div>
@@ -470,7 +470,7 @@ function TimetableCard({ weeklyTimetable = {}, isConfigured = true }) {
                 <CalendarIcon size={32} className="text-[#9ca3af]" />
               </div>
               <p className="text-sm font-semibold text-gray-400">
-                Timetable has not been set yet
+                {t("timetable.notSet", { fallback: "Timetable has not been set yet" })}
               </p>
             </div>
           )}

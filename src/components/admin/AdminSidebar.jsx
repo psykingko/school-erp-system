@@ -41,7 +41,6 @@ import {
   ChevronRight,
   GraduationCap
 } from "lucide-react";
-import { useLanguage } from "../../context/LanguageContext";
 import { useAuth } from "../../context/AuthContext";
 import { ADMIN_SECTIONS } from "../../auth/navigation";
 import permissionService from "../../services/permissionService";
@@ -101,10 +100,9 @@ const NavItem = React.memo(function NavItem({
   onClick,
   isCollapsed,
 }) {
-  const { t } = useLanguage();
   const IconComponent = iconMap[item.icon] || LayoutDashboard;
   const [showTooltip, setShowTooltip] = useState(false);
-  const label = t(`nav.${item.id}`);
+  const label = item.label;
 
   return (
     <div className="relative">
@@ -175,7 +173,6 @@ const SidebarContent = React.memo(function SidebarContent({
   isCollapsed,
   onToggleCollapse,
 }) {
-  const { t } = useLanguage();
   return (
     <div className="flex flex-col h-full">
       {/* Brand Header */}
@@ -206,7 +203,7 @@ const SidebarContent = React.memo(function SidebarContent({
                 EduDash
               </h1>
               <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider whitespace-nowrap mt-1">
-                {t("admin.center")}
+                Admin Center
               </p>
             </motion.div>
           )}
@@ -221,7 +218,7 @@ const SidebarContent = React.memo(function SidebarContent({
               isCollapsed ? "mt-0" : "ml-auto"
             }`}
             aria-label={
-              isCollapsed ? t("sidebar.expand") : t("sidebar.collapse")
+              isCollapsed ? "Expand sidebar" : "Collapse sidebar"
             }
           >
             {isCollapsed ? (
@@ -236,14 +233,14 @@ const SidebarContent = React.memo(function SidebarContent({
       {/* Grouped Sidebar Navigation */}
       <nav
         className="flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10"
-        aria-label={t("admin.nav")}
+        aria-label="Admin Navigation"
       >
         {sections.map((section, idx) => (
-          <div key={section.titleKey || section.title} className="space-y-1.5 px-3">
+          <div key={section.title} className="space-y-1.5 px-3">
             {/* Section Heading */}
             {!isCollapsed ? (
               <h3 className="text-[10px] uppercase font-black tracking-widest text-white/40 px-3 pt-2 pb-1">
-                {section.titleKey ? t(section.titleKey) : section.title}
+                {section.title}
               </h3>
             ) : (
               idx > 0 && <div className="border-t border-white/5 my-2 mx-1" />
@@ -278,7 +275,6 @@ function AdminSidebar({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, logout } = useAuth();
-  const { t } = useLanguage();
 
   useEffect(() => {
     if (openRef) {
@@ -334,7 +330,7 @@ function AdminSidebar({
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="hidden md:flex flex-col flex-shrink-0 fixed left-0 top-0 h-full z-30 shadow-xl overflow-hidden print:hidden"
         style={{ backgroundColor: "#03045e" }}
-        aria-label={t("admin.sidebar")}
+        aria-label="Admin Sidebar"
       >
         <SidebarContent
           sections={sectionsWithActive}
@@ -372,7 +368,7 @@ function AdminSidebar({
             <button
               className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
               onClick={() => setIsMobileOpen(false)}
-              aria-label={t("sidebar.close")}
+              aria-label="Close navigation menu"
             >
               <X size={16} />
             </button>

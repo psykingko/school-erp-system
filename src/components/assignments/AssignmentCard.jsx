@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import MainCard from "../MainCard";
 import { useStudent } from "../../context/StudentContext";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { submitAssignment } from "../../services/assignmentService";
 import { 
   Calendar, 
@@ -32,6 +33,7 @@ const STATUS_CONFIG = {
 const AssignmentCard = ({ assignment, onStatusUpdate }) => {
   const { activeStudentId: studentId } = useStudent();
   const { isParent } = useAuth();
+  const { t } = useLanguage();
   
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,10 +84,10 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter ${config.bg} ${config.color}`}>
-                    {assignment.type || "Assignment"}
+                    {assignment.type || t("assignments.active")}
                   </span>
                   <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                    {assignment.totalMarks ?? assignment.maxMarks} Marks • {assignment.subjectName}
+                    {assignment.totalMarks ?? assignment.maxMarks} {t("assignments.marks")} • {t(`subjects.${(assignment.subjectName || "").toLowerCase().replace(/\s+/g, "")}`, { fallback: assignment.subjectName })}
                   </span>
                 </div>
                 <h3 className="text-lg font-black text-[#03045e] group-hover:text-primary transition-colors line-clamp-1 leading-tight">
@@ -135,13 +137,13 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
               {assignment.status === "SUBMITTED" ? (
                 <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest">
                   <CheckCircle2 size={14} />
-                  <span>Submission Received</span>
+                  <span>{t("assignments.submissionReceived")}</span>
                 </div>
               ) : assignment.status === "REVIEWED" || assignment.status === "GRADED" ? (
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1 text-[10px] font-black text-indigo-600 uppercase tracking-widest">
                     <CheckCircle2 size={13} />
-                    <span>Graded: {assignment.submissionDetails?.score ?? assignment.submissionDetails?.marksAwarded ?? assignment.submissionDetails?.marksObtained} / {assignment.totalMarks ?? assignment.maxMarks}</span>
+                    <span>{t("assignments.graded")}: {assignment.submissionDetails?.score ?? assignment.submissionDetails?.marksAwarded ?? assignment.submissionDetails?.marksObtained} / {assignment.totalMarks ?? assignment.maxMarks}</span>
                   </div>
                   {(assignment.submissionDetails?.feedback || assignment.submissionDetails?.remarks) && (
                     <span className="text-[9px] font-bold text-gray-500 italic max-w-xs text-right line-clamp-1">
@@ -152,7 +154,7 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
               ) : isParent ? (
                 <div className="flex items-center gap-2 text-[10px] font-black text-rose-500 uppercase tracking-widest">
                   <AlertCircle size={14} />
-                  <span>Not Submitted</span>
+                  <span>{t("assignments.notSubmitted")}</span>
                 </div>
               ) : (
                 <button 
@@ -160,7 +162,7 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                   className="flex items-center gap-1 text-[10px] font-black text-primary bg-primary/5 px-4 py-2 rounded-xl uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm"
                 >
                   <Upload size={14} />
-                  <span>Submit Work</span>
+                  <span>{t("assignments.submitWork")}</span>
                 </button>
               )}
             </div>
@@ -182,19 +184,19 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[5rem] -mr-8 -mt-8 pointer-events-none" />
 
               <div className="relative z-10">
-                <h3 className="text-2xl font-black text-[#03045e] mb-2">Submit Assignment</h3>
+                <h3 className="text-2xl font-black text-[#03045e] mb-2">{t("assignments.submitAssignment")}</h3>
                 <p className="text-sm text-gray-500 font-bold mb-6">
-                  Upload your completed work for <span className="text-primary">{assignment.title}</span>.
+                  {t("assignments.uploadCompletedWork")} <span className="text-primary">{assignment.title}</span>.
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-4">
                     {/* Text Submission */}
                     <div className="space-y-2">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Submission Notes / Text Response</span>
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.submissionNotes")}</span>
                       <textarea 
                         className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
-                        placeholder="Type your complete answer, essay, or context here..."
+                        placeholder={t("assignments.typeResponse")}
                         rows={4}
                         value={submissionText}
                         onChange={(e) => setSubmissionText(e.target.value)}
@@ -203,14 +205,14 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
 
                     {/* File Attachment */}
                     <div className="space-y-2">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Upload File (Max 10MB)</span>
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.uploadFile")}</span>
                       <input 
                         type="file"
                         onChange={(e) => {
                           const file = e.target.files[0];
                           if (!file) return;
                           if (file.size > 10 * 1024 * 1024) {
-                            setFileError("File size exceeds 10MB limit.");
+                            setFileError(t("assignments.fileSizeExceeds"));
                             e.target.value = "";
                             return;
                           }
@@ -230,8 +232,7 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                         className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-3 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
                       />
                       {attachment && (
-                        <p className="text-xs text-emerald-600 font-bold ml-1">
-                          Attached: {attachment.fileName} ({(attachment.fileSize / 1024 / 1024).toFixed(2)} MB)
+                        <p className="text-xs text-emerald-600 font-bold ml-1"> {t("assignments.attached")} {attachment.fileName} ({(attachment.fileSize / 1024 / 1024).toFixed(2)} MB)
                         </p>
                       )}
                       {fileError && (
@@ -242,10 +243,10 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Comments for Teacher (Optional)</span>
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("assignments.commentsForTeacher")}</span>
                       <textarea 
                         className="w-full rounded-2xl border border-gray-150 bg-gray-50 p-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#03045e]"
-                        placeholder="Add any extra notes or clarification..."
+                        placeholder={t("assignments.addExtraNotes")}
                         rows={2}
                         value={comments}
                         onChange={(e) => setComments(e.target.value)}
@@ -258,9 +259,7 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                       type="button"
                       onClick={() => setShowSubmitModal(false)}
                       className="flex-1 px-6 py-4 rounded-2xl bg-gray-50 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-all"
-                    >
-                      Cancel
-                    </button>
+                    >{t("assignments.cancel")}</button>
                     <button 
                       type="submit"
                       disabled={isSubmitting || !isFormValid}
@@ -275,7 +274,7 @@ const AssignmentCard = ({ assignment, onStatusUpdate }) => {
                       ) : (
                         <>
                           <CheckCircle2 size={16} />
-                          <span>Submit Assignment</span>
+                          <span>{t("assignments.submitAssignment")}</span>
                         </>
                       )}
                     </button>

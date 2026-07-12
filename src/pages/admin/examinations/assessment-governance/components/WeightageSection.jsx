@@ -71,7 +71,7 @@ const WeightageSection = ({ governance, onUpdate }) => {
                   type="number"
                   min="0"
                   max="100"
-                  value={weightages[cat.id] === 0 && !Object.keys(weightages).length ? '' : weightages[cat.id]}
+                  value={weightages[cat.id] !== undefined ? weightages[cat.id] : ''}
                   onChange={(e) => handleChange(cat.id, e.target.value)}
                   className="w-full pl-4 pr-8 py-3 bg-gray-50 border border-gray-200 rounded-xl text-lg font-black text-[#03045e] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />

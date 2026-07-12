@@ -73,6 +73,8 @@ const getRoleString = (role) => {
 export default function SupportCenterPage() {
   const { user, role } = useAuth();
   const { t } = useLanguage();
+  const isAdmin = role === 'ADMIN';
+  const tr = (k, f) => !isAdmin ? t(k, f) : (f ? f.fallback : k);
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -189,10 +191,10 @@ export default function SupportCenterPage() {
         <div>
           <h1 className="text-2xl font-black text-[#03045e] flex items-center gap-3">
             <LifeBuoy className="text-[#0077b6]" size={28} />
-            {t("support.title", { fallback: "Support Center" })}
+            {tr("support.title", { fallback: "Support Center" })}
           </h1>
           <p className="text-sm text-gray-500 font-medium mt-1">
-            {t("support.subtitle", { fallback: "Manage your help requests, feedback, and complaints." })}
+            {tr("support.subtitle", { fallback: "Manage your help requests, feedback, and complaints." })}
           </p>
         </div>
         <motion.button
@@ -202,7 +204,7 @@ export default function SupportCenterPage() {
           className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#0077b6] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20"
         >
           <Plus size={18} />
-          {t("support.createRequest", { fallback: "Create Request" })}
+          {tr("support.createRequest", { fallback: "Create Request" })}
         </motion.button>
       </div>
 
@@ -211,7 +213,7 @@ export default function SupportCenterPage() {
         <MainCard className="p-5 border-l-4 border-[#03045e]">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("support.totalRequests", { fallback: "Total Requests" })}</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{tr("support.totalRequests", { fallback: "Total Requests" })}</p>
               <h3 className="text-2xl font-black text-[#03045e] mt-1">{summary.total}</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#03045e]">
@@ -223,7 +225,7 @@ export default function SupportCenterPage() {
         <MainCard className="p-5 border-l-4 border-blue-500">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("support.open", { fallback: "Open" })}</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{tr("support.open", { fallback: "Open" })}</p>
               <h3 className="text-2xl font-black text-blue-700 mt-1">{summary.open}</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
@@ -235,7 +237,7 @@ export default function SupportCenterPage() {
         <MainCard className="p-5 border-l-4 border-amber-500">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("support.inReview", { fallback: "In Review" })}</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{tr("support.inReview", { fallback: "In Review" })}</p>
               <h3 className="text-2xl font-black text-amber-700 mt-1">{summary.inReview}</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
@@ -247,7 +249,7 @@ export default function SupportCenterPage() {
         <MainCard className="p-5 border-l-4 border-emerald-500">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("support.resolved", { fallback: "Resolved" })}</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{tr("support.resolved", { fallback: "Resolved" })}</p>
               <h3 className="text-2xl font-black text-emerald-700 mt-1">{summary.resolved}</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
@@ -263,7 +265,7 @@ export default function SupportCenterPage() {
         <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row gap-4 justify-between items-center">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-[#03045e] font-bold text-sm w-full md:w-auto">
             <Filter size={18} />
-            <span>{t("common.filters", { fallback: "Filters:" })}</span>
+            <span>{tr("common.filters", { fallback: "Filters:" })}</span>
           </div>
           
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
@@ -272,8 +274,8 @@ export default function SupportCenterPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="bg-white border border-gray-200 text-sm font-semibold rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
             >
-              <option value="All">{t("support.allStatuses", { fallback: "All Statuses" })}</option>
-              {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+              <option value="All">{tr("support.allStatuses", { fallback: "All Statuses" })}</option>
+              {STATUSES.map(s => <option key={s} value={s}>{tr(`support.status_${s.replace(/\\s+/g, '')}`, { fallback: s })}</option>)}
             </select>
 
             <select
@@ -281,8 +283,8 @@ export default function SupportCenterPage() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="bg-white border border-gray-200 text-sm font-semibold rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
             >
-              <option value="All">{t("support.allCategories", { fallback: "All Categories" })}</option>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="All">{tr("support.allCategories", { fallback: "All Categories" })}</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{tr(`support.cat_${c.replace(/\\s+/g, '')}`, { fallback: c })}</option>)}
             </select>
 
             <select
@@ -290,8 +292,8 @@ export default function SupportCenterPage() {
               onChange={(e) => setPriorityFilter(e.target.value)}
               className="bg-white border border-gray-200 text-sm font-semibold rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
             >
-              <option value="All">{t("support.allPriorities", { fallback: "All Priorities" })}</option>
-              {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
+              <option value="All">{tr("support.allPriorities", { fallback: "All Priorities" })}</option>
+              {PRIORITIES.map(p => <option key={p} value={p}>{tr(`support.priority_${p}`, { fallback: p })}</option>)}
             </select>
           </div>
         </div>
@@ -305,21 +307,21 @@ export default function SupportCenterPage() {
           ) : filteredRequests.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-gray-400">
               <LifeBuoy size={48} className="mb-4 opacity-20" />
-              <p className="font-bold text-lg text-gray-500">{t("support.noRequests", { fallback: "No requests found" })}</p>
-              <p className="text-sm">{t("support.noRequestsSub", { fallback: "Try adjusting your filters or create a new request." })}</p>
+              <p className="font-bold text-lg text-gray-500">{tr("support.noRequests", { fallback: "No requests found" })}</p>
+              <p className="text-sm">{tr("support.noRequestsSub", { fallback: "Try adjusting your filters or create a new request." })}</p>
             </div>
           ) : (
             <div className="overflow-x-auto w-full">
               <table className="w-full min-w-[800px] text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-gray-100">
-                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{t("support.requestId", { fallback: "Request ID" })}</th>
-                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{t("common.category", { fallback: "Category" })}</th>
-                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{t("common.title", { fallback: "Title" })}</th>
-                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{t("common.priority", { fallback: "Priority" })}</th>
-                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{t("common.created", { fallback: "Created" })}</th>
-                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{t("common.status", { fallback: "Status" })}</th>
-                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider text-right">{t("common.actions", { fallback: "Actions" })}</th>
+                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{tr("support.requestId", { fallback: "Request ID" })}</th>
+                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{tr("common.category", { fallback: "Category" })}</th>
+                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{tr("common.title", { fallback: "Title" })}</th>
+                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{tr("common.priority", { fallback: "Priority" })}</th>
+                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{tr("common.created", { fallback: "Created" })}</th>
+                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">{tr("common.status", { fallback: "Status" })}</th>
+                    <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider text-right">{tr("common.actions", { fallback: "Actions" })}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -329,14 +331,14 @@ export default function SupportCenterPage() {
                         <span className="text-xs font-bold font-mono text-gray-500">{req.id}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-semibold text-[#03045e]">{req.category}</span>
+                        <span className="text-sm font-semibold text-[#03045e]">{tr(`support.cat_${req.category.replace(/\\s+/g, '')}`, { fallback: req.category })}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-bold text-gray-900 w-full flex-1 min-w-0 md:max-w-[250px] truncate">{req.title}</div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-md border ${getPriorityColor(req.priority)}`}>
-                          {req.priority}
+                          {tr(`support.priority_${req.priority}`, { fallback: req.priority })}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -346,7 +348,7 @@ export default function SupportCenterPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(req.status)}`}>
-                          {req.status}
+                          {tr(`support.status_${req.status.replace(/\\s+/g, '')}`, { fallback: req.status })}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -388,7 +390,7 @@ export default function SupportCenterPage() {
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 className="text-lg font-black text-[#03045e] flex items-center gap-2">
                   <Plus className="text-[#0077b6]" size={20} />
-                  {t("support.createTitle", { fallback: "Create Support Request" })}
+                  {tr("support.createTitle", { fallback: "Create Support Request" })}
                 </h3>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
@@ -401,34 +403,34 @@ export default function SupportCenterPage() {
               <form onSubmit={handleCreateSubmit} className="p-6 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("common.category", { fallback: "Category" })} <span className="text-rose-500">*</span></label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{tr("common.category", { fallback: "Category" })} <span className="text-rose-500">*</span></label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-[#0077b6] outline-none"
                     >
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      {CATEGORIES.map(c => <option key={c} value={c}>{tr(`support.cat_${c.replace(/\\s+/g, '')}`, { fallback: c })}</option>)}
                     </select>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("common.priority", { fallback: "Priority" })} <span className="text-rose-500">*</span></label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{tr("common.priority", { fallback: "Priority" })} <span className="text-rose-500">*</span></label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-[#0077b6] outline-none"
                     >
-                      {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
+                      {PRIORITIES.map(p => <option key={p} value={p}>{tr(`support.priority_${p}`, { fallback: p })}</option>)}
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("common.title", { fallback: "Title" })} <span className="text-rose-500">*</span></label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{tr("common.title", { fallback: "Title" })} <span className="text-rose-500">*</span></label>
                   <input
                     type="text"
                     required
-                    placeholder="Brief summary of the issue"
+                    placeholder={tr("support.titlePlaceholder", { fallback: "Brief summary of the issue" })}
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-[#0077b6] outline-none"
@@ -438,27 +440,27 @@ export default function SupportCenterPage() {
                 {formData.category === "Complaint" && (
                   <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100 space-y-4">
                     <h4 className="text-xs font-black text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
-                      <AlertCircle size={14} /> {t("support.complaintDetails", { fallback: "Complaint Details" })}
+                      <AlertCircle size={14} /> {tr("support.complaintDetails", { fallback: "Complaint Details" })}
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-rose-600">{t("support.complaintAgainstType", { fallback: "Complaint Against Type" })}</label>
+                        <label className="text-xs font-bold text-rose-600">{tr("support.complaintAgainstType", { fallback: "Complaint Against Type" })}</label>
                         <select
                           value={formData.complaintAgainstType}
                           onChange={(e) => setFormData({ ...formData, complaintAgainstType: e.target.value })}
                           className="w-full bg-white border border-rose-200 rounded-xl px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-rose-500 outline-none"
                         >
-                          {COMPLAINT_TARGETS.map(c => <option key={c} value={c}>{c}</option>)}
+                          {COMPLAINT_TARGETS.map(c => <option key={c} value={c}>{tr(`support.target_${c}`, { fallback: c })}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-rose-600">{t("support.againstDetails", { fallback: "Against ID / Name / Detail" })}</label>
+                        <label className="text-xs font-bold text-rose-600">{tr("support.againstDetails", { fallback: "Against ID / Name / Detail" })}</label>
                         <input
                           type="text"
                           required
                           value={formData.complaintAgainstId}
                           onChange={(e) => setFormData({ ...formData, complaintAgainstId: e.target.value })}
-                          placeholder="e.g. TCH-004 or Room 102"
+                          placeholder={tr("support.targetPlaceholder", { fallback: "e.g. TCH-004 or Room 102" })}
                           className="w-full bg-white border border-rose-200 rounded-xl px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-rose-500 outline-none"
                         />
                       </div>
@@ -467,11 +469,11 @@ export default function SupportCenterPage() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("support.description", { fallback: "Description" })} <span className="text-rose-500">*</span></label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{tr("support.description", { fallback: "Description" })} <span className="text-rose-500">*</span></label>
                   <textarea
                     required
                     rows={4}
-                    placeholder="Provide detailed information here..."
+                    placeholder={tr("support.descPlaceholder", { fallback: "Provide detailed information here..." })}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-[#0077b6] outline-none resize-none"
@@ -486,7 +488,7 @@ export default function SupportCenterPage() {
                       onChange={(e) => setFormData({ ...formData, anonymous: e.target.checked })}
                       className="w-4 h-4 text-[#0077b6] rounded border-gray-300 focus:ring-[#0077b6]"
                     />
-                    <span className="text-sm font-bold text-gray-700">{t("support.submitAnonymous", { fallback: "Submit Anonymously" })}</span>
+                    <span className="text-sm font-bold text-gray-700">{tr("support.submitAnonymous", { fallback: "Submit Anonymously" })}</span>
                   </label>
                 )}
 
@@ -496,7 +498,7 @@ export default function SupportCenterPage() {
                     onClick={() => setIsCreateModalOpen(false)}
                     className="px-5 py-2.5 rounded-xl font-bold text-sm text-gray-600 hover:bg-gray-100 transition-colors"
                   >
-                    {t("common.cancel", { fallback: "Cancel" })}
+                    {tr("common.cancel", { fallback: "Cancel" })}
                   </button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -507,7 +509,7 @@ export default function SupportCenterPage() {
                       submitting ? "bg-blue-400 cursor-not-allowed shadow-none" : "bg-[#0077b6] hover:bg-[#023e8a] shadow-blue-500/20"
                     }`}
                   >
-                    {submitting ? t("support.submitting", { fallback: "Submitting..." }) : t("support.submitRequest", { fallback: "Submit Request" })}
+                    {submitting ? tr("support.submitting", { fallback: "Submitting..." }) : tr("support.submitRequest", { fallback: "Submit Request" })}
                   </motion.button>
                 </div>
               </form>
@@ -539,7 +541,7 @@ export default function SupportCenterPage() {
                     <LifeBuoy size={20} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-[#03045e]">{t("support.requestDetails", { fallback: "Request Details" })}</h3>
+                    <h3 className="text-lg font-black text-[#03045e]">{tr("support.requestDetails", { fallback: "Request Details" })}</h3>
                     <p className="text-xs font-mono text-gray-500">{viewRequest.id}</p>
                   </div>
                 </div>
@@ -555,16 +557,16 @@ export default function SupportCenterPage() {
                 {/* Meta Row */}
                 <div className="flex flex-wrap gap-4">
                   <div className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${getPriorityColor(viewRequest.priority)}`}>
-                    Priority: {viewRequest.priority}
+                    {tr("common.priority", { fallback: "Priority" })}: {tr(`support.priority_${viewRequest.priority}`, { fallback: viewRequest.priority })}
                   </div>
                   <div className={`px-3 py-1.5 rounded-lg text-xs font-bold ${getStatusColor(viewRequest.status)}`}>
-                    Status: {viewRequest.status}
+                    {tr("common.status", { fallback: "Status" })}: {tr(`support.status_${viewRequest.status.replace(/\\s+/g, '')}`, { fallback: viewRequest.status })}
                   </div>
                   <div className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-700">
-                    Category: {viewRequest.category}
+                    {tr("common.category", { fallback: "Category" })}: {tr(`support.cat_${viewRequest.category.replace(/\\s+/g, '')}`, { fallback: viewRequest.category })}
                   </div>
                   <div className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-700">
-                    Created: {new Date(viewRequest.createdAt).toLocaleString()}
+                    {tr("common.created", { fallback: "Created" })}: {new Date(viewRequest.createdAt).toLocaleString()}
                   </div>
                 </div>
 
@@ -578,9 +580,9 @@ export default function SupportCenterPage() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100">
-                      <p className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">{t("support.requester", { fallback: "Requester" })}</p>
+                      <p className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">{tr("support.requester", { fallback: "Requester" })}</p>
                       {viewRequest.anonymous && (viewRequest.category === "Complaint" || viewRequest.category === "Feedback") ? (
-                        <p className="font-bold text-[#03045e]">{t("support.anonymousSubmission", { fallback: "Anonymous Submission" })}</p>
+                        <p className="font-bold text-[#03045e]">{tr("support.anonymousSubmission", { fallback: "Anonymous Submission" })}</p>
                       ) : (
                         <div>
                           <p className="font-bold text-[#03045e]">{viewRequest.requesterName}</p>
@@ -591,9 +593,9 @@ export default function SupportCenterPage() {
 
                     {viewRequest.category === "Complaint" && viewRequest.complaintAgainstType && (
                       <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100">
-                        <p className="text-xs font-bold text-rose-500 uppercase tracking-wider mb-1">{t("support.complaintAgainst", { fallback: "Complaint Against" })}</p>
+                        <p className="text-xs font-bold text-rose-500 uppercase tracking-wider mb-1">{tr("support.complaintAgainst", { fallback: "Complaint Against" })}</p>
                         <p className="font-bold text-rose-900">{viewRequest.complaintAgainstId}</p>
-                        <p className="text-xs font-medium text-rose-600">{viewRequest.complaintAgainstType}</p>
+                        <p className="text-xs font-medium text-rose-600">{tr(`support.target_${viewRequest.complaintAgainstType}`, { fallback: viewRequest.complaintAgainstType })}</p>
                       </div>
                     )}
                   </div>

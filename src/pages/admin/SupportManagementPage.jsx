@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import MainCard from "../../components/MainCard";
 import { useAuth } from "../../context/AuthContext";
-import { useLanguage } from "../../context/LanguageContext";
 import { getAllSupportRequests, updateSupportRequestStatus, addSupportRemark, getSupportStats, getSupportCategoryStats, getSupportHandler } from "../../services/supportService";
 import PermissionGate from "../../components/admin/PermissionGate";
 import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
@@ -58,7 +57,6 @@ const getPriorityColor = (priority) => {
 
 export default function SupportManagementPage() {
   const { user } = useAuth();
-  const { t } = useLanguage();
 
   const [requests, setRequests] = useState([]);
   const [handler, setHandler] = useState(null);

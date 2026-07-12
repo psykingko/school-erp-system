@@ -1,13 +1,11 @@
 import React from "react";
-import { LayoutDashboard, CheckSquare, FileText, Award } from "lucide-react";
+import { LayoutDashboard, CheckSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "../../../../context/LanguageContext";
 
 const tabs = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "marks", label: "Marks Entry", icon: CheckSquare },
-  { id: "papers", label: "Question Papers", icon: FileText },
-  { id: "results", label: "Published Results", icon: Award },
+  { id: "overview", label: "teacherExams.tab.overview", icon: LayoutDashboard },
+  { id: "marks", label: "teacherExams.tab.marks", icon: CheckSquare },
 ];
 
 const TeacherExaminationNav = ({ activeTab, setActiveTab }) => {
@@ -39,7 +37,7 @@ const TeacherExaminationNav = ({ activeTab, setActiveTab }) => {
               />
             )}
             <Icon size={18} className={`relative z-10 ${isActive ? "text-white" : ""}`} />
-            <span className="relative z-10">{tab.label}</span>
+            <span className="relative z-10">{t(tab.label)}</span>
           </button>
         );
       })}

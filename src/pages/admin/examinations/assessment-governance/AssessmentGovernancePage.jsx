@@ -8,10 +8,8 @@ import CategoriesSection from "./components/CategoriesSection";
 import WeightageSection from "./components/WeightageSection";
 import GradesSection from "./components/GradesSection";
 import PassingRulesSection from "./components/PassingRulesSection";
-import { useLanguage } from "../../../../context/LanguageContext";
 
 const AssessmentGovernancePage = () => {
-  const { t } = useLanguage();
   const [governance, setGovernance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -58,7 +56,7 @@ const AssessmentGovernancePage = () => {
         title="Assessment Governance"
         description="Define institutional academic policies, grading boundaries, and assessment categories."
         breadcrumbs={[
-          t("nav.admin_home", { fallback: "Admin Home" }),
+          "Admin Home",
           "Assessment Governance"
         ]}
       />

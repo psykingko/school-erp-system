@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Users, AlertTriangle, FileWarning, ShieldAlert } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function PerformanceSummaryCards({ stats }) {
   const {
@@ -9,35 +10,36 @@ export default function PerformanceSummaryCards({ stats }) {
     pendingAssignmentsCount = 0,
     alertsCount = 0
   } = stats || {};
+  const { t } = useLanguage();
 
   const cards = [
     {
-      title: "Students Monitored",
+      title: t("perf.monitored"),
       value: totalMonitored,
-      subtext: "Assigned roster size",
+      subtext: t("perf.rosterSize"),
       icon: <Users className="w-5 h-5 text-indigo-500" />,
       bgColor: "bg-indigo-50/60 border-indigo-100/50 text-indigo-900"
     },
     {
-      title: "Low Attendance",
+      title: t("perf.lowAttendance"),
       value: lowAttendanceCount,
-      subtext: "Below 75% threshold",
+      subtext: t("perf.belowThreshold"),
       icon: <AlertTriangle className="w-5 h-5 text-rose-500" />,
       bgColor: "bg-rose-50/60 border-rose-100/50 text-rose-900",
       alert: lowAttendanceCount > 0
     },
     {
-      title: "Overdue Assignments",
+      title: t("perf.overdueAssignments"),
       value: pendingAssignmentsCount,
-      subtext: "Unsubmitted deliverables",
+      subtext: t("perf.unsubmitted"),
       icon: <FileWarning className="w-5 h-5 text-amber-500" />,
       bgColor: "bg-amber-50/60 border-amber-100/50 text-amber-900",
       alert: pendingAssignmentsCount > 0
     },
     {
-      title: "Academic Concerns",
+      title: t("perf.academicConcerns"),
       value: alertsCount,
-      subtext: "Critical flag count",
+      subtext: t("perf.criticalFlag"),
       icon: <ShieldAlert className="w-5 h-5 text-red-500" />,
       bgColor: "bg-red-50/60 border-red-100/50 text-red-900",
       alert: alertsCount > 0

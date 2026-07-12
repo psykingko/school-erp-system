@@ -13,7 +13,41 @@ const getGradeFromPercentage = (percentage, gradeBoundaries = []) => {
   return { grade: matched ? matched.name : "F" };
 };
 
-export const previewReportCards = async (classId, sessionId, selectedExamIds) => {
+export const validateGovernanceCompleteness = async (selectedExamIds) => {
+  const governance = await getAssessmentGovernance();
+  const allExams = await getExams();
+  
+  const selectedExams = allExams.filter(e => selectedExamIds.includes(e.id));
+  const activeCats = (governance.categories || []).filter(c => c.isActive);
+  const weightages = governance.weightages || [];
+  
+  const selectedCatIds = new Set(selectedExams.map(e => e.assessmentCategoryId));
+  
+  let appliedWeightage = 0;
+  let requiredWeightage = 0;
+  const missingCategories = [];
+  
+  for (const cat of activeCats) {
+    const w = weightages.find(w => w.categoryId === cat.id)?.weightage || 0;
+    if (w > 0) {
+      requiredWeightage += w;
+      if (selectedCatIds.has(cat.id)) {
+        appliedWeightage += w;
+      } else {
+        missingCategories.push(cat.name);
+      }
+    }
+  }
+  
+  return {
+    isComplete: appliedWeightage >= requiredWeightage,
+    appliedWeightage,
+    requiredWeightage,
+    missingCategories
+  };
+};
+
+export const previewReportCards = async (classId, sessionId, selectedExamIds, reportType = 'final') => {
   if (!selectedExamIds || selectedExamIds.length === 0) {
     throw new Error("No exam cycles selected. Please select at least one published exam.");
   }
@@ -153,6 +187,7 @@ export const previewReportCards = async (classId, sessionId, selectedExamIds) =>
       rollNumber: student.rollNumber || 'N/A',
       classId: classId,
       sessionId: sessionId,
+      reportType: reportType,
       status: "Generated",
       governanceVersion: governance.version || 1,
       governanceSnapshot: governanceSnapshot,

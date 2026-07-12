@@ -23,6 +23,7 @@ const GenerationWizard = ({ onGenerate }) => {
   const [allExams, setAllExams] = useState([]);
   const [selectedExamIds, setSelectedExamIds] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [reportType, setReportType] = useState('final');
   
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -70,7 +71,7 @@ const GenerationWizard = ({ onGenerate }) => {
     if (!selectedClassId || selectedExamIds.length === 0) return;
     setIsGenerating(true);
     try {
-      await onGenerate(selectedClassId, academicYear, selectedExamIds);
+      await onGenerate(selectedClassId, academicYear, selectedExamIds, reportType);
     } catch (e) {
       alert(e.message);
     } finally {
@@ -165,6 +166,42 @@ const GenerationWizard = ({ onGenerate }) => {
               })}
             </div>
           )}
+
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-4 text-[#03045e]">
+              <h2 className="text-xl font-bold">3. Report Generation Mode</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${reportType === 'progress' ? 'border-blue-500 bg-blue-50/50' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
+                <input 
+                  type="radio"
+                  name="reportType"
+                  value="progress"
+                  checked={reportType === 'progress'}
+                  onChange={() => setReportType('progress')}
+                  className="mt-1 w-5 h-5 text-blue-600 rounded-full"
+                />
+                <div>
+                  <div className="font-bold text-[#03045e]">Progress Report</div>
+                  <div className="text-xs text-gray-500 mt-1">Represents academic performance based only on the selected examinations. Intended for interim reporting.</div>
+                </div>
+              </label>
+              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${reportType === 'final' ? 'border-blue-500 bg-blue-50/50' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
+                <input 
+                  type="radio"
+                  name="reportType"
+                  value="final"
+                  checked={reportType === 'final'}
+                  onChange={() => setReportType('final')}
+                  className="mt-1 w-5 h-5 text-blue-600 rounded-full"
+                />
+                <div>
+                  <div className="font-bold text-[#03045e]">Final Academic Report</div>
+                  <div className="text-xs text-gray-500 mt-1">Represents the institutional final report card. Subject to governance validation in future phases.</div>
+                </div>
+              </label>
+            </div>
+          </div>
 
           <div className="mt-8 flex justify-end pt-6 border-t border-gray-100">
             <button

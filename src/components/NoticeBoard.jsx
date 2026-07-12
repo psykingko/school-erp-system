@@ -118,7 +118,7 @@ function NoticeItem({ notice, index, isParentMode, isRead, onRead }) {
         isRead ? "bg-gray-50" : "bg-white hover:bg-[#caf0f8]"
       }`}
       role="listitem"
-      aria-label={`${priorityLabel} priority notice: ${t(title)} on ${date}`}
+      aria-label={`${priorityLabel} priority notice: ${title} on ${date}`}
     >
       <div
         className={`flex-shrink-0 p-2 rounded-xl ${bgClass}`}
@@ -139,7 +139,7 @@ function NoticeItem({ notice, index, isParentMode, isRead, onRead }) {
           className={`font-semibold leading-snug line-clamp-2 ${isParentMode ? "text-base" : "text-sm"}`}
           style={{ color: "#03045e" }}
         >
-          {t(title)}
+          {title}
         </p>
         {contentPreview && (
           <p

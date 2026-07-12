@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useStudent } from "../../context/StudentContext";
+import { useLanguage } from "../../context/LanguageContext";
 import ChildScopeSwitcher from "../../components/parent/ChildScopeSwitcher";
 import { useService } from "../../hooks/useService";
 import { getAcademicProgress, getStudentAssignments } from "../../services/assignmentService";
@@ -20,6 +21,7 @@ import MainCard from "../../components/MainCard";
  */
 const AssignmentsPage = () => {
   const { activeStudentId: studentId } = useStudent();
+  const { t } = useLanguage();
   const [showHelper, setShowHelper] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
@@ -100,12 +102,8 @@ const AssignmentsPage = () => {
               <ClipboardList size={22} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-[#03045e] leading-tight">
-                Assignments
-              </h1>
-              <p className="text-xs text-gray-500 font-bold">
-                Manage your academic tasks, research work, and submissions
-              </p>
+              <h1 className="text-xl font-black text-[#03045e] leading-tight">{t("assignments.title", { fallback: "Assignments" })}</h1>
+              <p className="text-xs text-gray-500 font-bold">{t("assignments.subtitle", { fallback: "Manage your academic tasks, research work, and submissions" })}</p>
             </div>
           </div>
 
@@ -126,7 +124,7 @@ const AssignmentsPage = () => {
               <Search size={16} className="text-gray-400" />
               <input 
                 type="text" 
-                placeholder="Search title, subject, or description keywords..."
+                placeholder={t("assignments.searchPlaceholder", { fallback: "Search title, subject, or description keywords..." })}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full text-[11px] font-bold bg-transparent outline-none text-[#03045e] placeholder-gray-400"
@@ -135,14 +133,12 @@ const AssignmentsPage = () => {
 
             {/* Status Pills */}
             <div className="flex items-center flex-wrap gap-1.5">
-              <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mr-2 lg:block hidden">
-                Status:
-              </span>
+              <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mr-2 lg:block hidden">{t("assignments.statusFilter", { fallback: "Status:" })}</span>
               {[
-                { id: "ALL", label: "All Tasks" },
-                { id: "PENDING", label: "Pending" },
-                { id: "SUBMITTED", label: "Submitted" },
-                { id: "OVERDUE", label: "Overdue" }
+                { id: "ALL", label: "All Tasks", key: "allTasks" },
+                { id: "PENDING", label: "Pending", key: "pendingTasks" },
+                { id: "SUBMITTED", label: "Submitted", key: "submittedTasks" },
+                { id: "OVERDUE", label: "Overdue", key: "overdueTasks" }
               ].map(statusOpt => {
                 const isActive = selectedStatus === statusOpt.id;
                 return (
@@ -156,9 +152,7 @@ const AssignmentsPage = () => {
                         ? "bg-[#03045e] border-[#03045e] text-white shadow-sm" 
                         : "bg-white border-gray-150 text-[#03045e] hover:bg-gray-50 hover:border-gray-200"
                     }`}
-                  >
-                    {statusOpt.label}
-                  </motion.button>
+                  >{t(`assignments.${statusOpt.key}`, { fallback: statusOpt.label })}</motion.button>
                 );
               })}
             </div>
@@ -169,15 +163,12 @@ const AssignmentsPage = () => {
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                 <BookOpen size={11} className="text-[#00b4d8]" />
-                Filter by Subject
-              </span>
+                {t("assignments.filterBySubject", { fallback: "Filter by Subject" })}</span>
               {selectedSubjectId && (
                 <button 
                   onClick={() => setSelectedSubjectId(null)}
                   className="text-[8px] font-black text-rose-500 uppercase tracking-widest hover:underline"
-                >
-                  Clear Filter
-                </button>
+                >{t("assignments.clearFilter", { fallback: "Clear Filter" })}</button>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -194,9 +185,7 @@ const AssignmentsPage = () => {
                         ? "bg-[#0077b6] border-[#0077b6] text-white shadow-sm shadow-blue-900/10" 
                         : "bg-gray-50/60 border-gray-150 text-gray-500 hover:bg-gray-100 hover:border-gray-200"
                     }`}
-                  >
-                    {sub.subjectName}
-                  </motion.button>
+                  >{t(`subjects.${sub.subjectName.toLowerCase().replace(/\s+/g, "")}`, { fallback: sub.subjectName })}</motion.button>
                 );
               })}
             </div>
@@ -208,7 +197,7 @@ const AssignmentsPage = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-extrabold text-[#03045e] flex items-center gap-2 uppercase tracking-wider">
               <ListTodo size={14} className="text-[#0077b6]" />
-              Assignment List ({filteredAssignments.length})
+              {t("assignments.assignmentList", { fallback: "Assignment List" })} ({filteredAssignments.length})
             </h2>
           </div>
           
@@ -232,10 +221,8 @@ const AssignmentsPage = () => {
               <div className="w-12 h-12 rounded-full bg-[#caf0f8]/60 flex items-center justify-center text-[#00b4d8] mb-3">
                 <ClipboardList size={22} />
               </div>
-              <h3 className="text-sm font-black text-[#03045e] mb-1">No assignments yet</h3>
-              <p className="text-xs text-gray-400 font-bold max-w-sm">
-                Your teacher hasn't published any assignments to this class yet. Check back later.
-              </p>
+              <h3 className="text-sm font-black text-[#03045e] mb-1">{t("assignments.noAssignmentsYet", { fallback: "No assignments yet" })}</h3>
+              <p className="text-xs text-gray-400 font-bold max-w-sm">{t("assignments.noAssignmentsYetDesc", { fallback: "Your teacher hasn't published any assignments to this class yet. Check back later." })}</p>
             </MainCard>
           ) : (
             /* Data exists but filters produce no matches */
@@ -243,10 +230,8 @@ const AssignmentsPage = () => {
               <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 mb-3">
                 <Search size={22} />
               </div>
-              <h3 className="text-sm font-black text-[#03045e] mb-1">No assignments match your filters</h3>
-              <p className="text-xs text-gray-400 font-bold max-w-sm">
-                Try clearing the subject filter or adjusting the status tab to see more results.
-              </p>
+              <h3 className="text-sm font-black text-[#03045e] mb-1">{t("assignments.noMatches", { fallback: "No assignments match your filters" })}</h3>
+              <p className="text-xs text-gray-400 font-bold max-w-sm">{t("assignments.noMatchesDesc", { fallback: "Try clearing the subject filter or adjusting the status tab to see more results." })}</p>
             </MainCard>
           )}
         </section>
@@ -255,7 +240,7 @@ const AssignmentsPage = () => {
       <HelperPopup
         isOpen={showHelper}
         onClose={() => setShowHelper(false)}
-        titleKey="Assignments Module"
+        titleKey="assignments.moduleHelper"
         contentEn="The restructured Assignments page allows you to search and filter tasks in real-time. Use the search input to search titles, subjects, and descriptions, filter by subjects, and filter operational statuses (All, Pending, Submitted, Overdue) in combinational views."
         contentHi="पुनर्गठित असाइनमेंट पृष्ठ आपको वास्तविक समय में कार्यों को खोजने और फ़िल्टर करने की अनुमति देता है। शीर्षकों और विवरणों को खोजने के लिए खोज इनपुट का उपयोग करें, विषयों के आधार पर फ़िल्टर करें, और संयोजन विचारों में परिचालन स्थितियों (सभी, लंबित, प्रस्तुत, अतिदेय) को फ़िल्टर करें।"
       />

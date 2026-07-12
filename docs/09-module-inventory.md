@@ -22,7 +22,7 @@ This document tracks the completion status of all modules across the ERP portals
 │   ├── Evaluation Center (✔ Complete)
 │   ├── Results Publication (✔ Complete)
 │   ├── Assessment Governance (✔ Complete)
-│   └── Report Card Generator (✔ Complete)
+│   └── Report Card Generator (✅ Complete / Frozen)
 ├── 📝 Question Papers (✔ Complete)
 ├── 💸 Fees (✔ Complete)
 ├── 🚌 Transport (✔ Complete)
@@ -55,6 +55,7 @@ This document tracks the completion status of all modules across the ERP portals
 ├── 🎧 Support Center (✔ Complete)
 ├── 🤝 Mentor Support (✔ Complete)
 ├── 📊 Reports & Analytics (✔ Complete)
+├── 🎯 Academic Results (✅ Complete / Frozen)
 ├── 📈 Student Performance (✔ Complete)
 ├── 📅 Attendance Management (✔ Complete)
 ├── 🎭 Clubs & Activities (✔ Complete)
@@ -79,6 +80,11 @@ This document tracks the completion status of all modules across the ERP portals
 └── 🛡️ Duty Records (✔ Complete)
 
 ## Shared UI Modules
+├── 🌐 Translation & Localization System (✅ Complete / Frozen)
+│   - Purpose: Unified multilingual system serving the Parent & Student Portals.
+│   - Entry points: Parent Portal, Student Portal, Shared Components.
+│   - Dependencies: LanguageProvider, translations/ dictionary files.
+
 ├── 🪪 Identity Card (✔ Complete)
     - Purpose: Unified presentation component for Student/Staff ID rendering and printing.
     - Entry points: Profile settings, Student360, Staff360, Admin Profile.

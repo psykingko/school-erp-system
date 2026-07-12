@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLanguage } from "../../context/LanguageContext";
 import {
   getNotices,
   updateNotice,
@@ -15,7 +14,6 @@ import PermissionGate from "../../components/admin/PermissionGate";
 import PageAuthorityBanner from "../../components/admin/PageAuthorityBanner";
 
 const NoticeManagementPage = () => {
-  const { language } = useLanguage();
   const [notices, setNotices] = useState([]);
   const [filteredNotices, setFilteredNotices] = useState([]);
   const [selectedNotices, setSelectedNotices] = useState([]);

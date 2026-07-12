@@ -8,12 +8,15 @@ import React, {
 } from "react";
 import { translations } from "../translations";
 import { getItem, setItem } from "../persistence/storage";
+import { useAuth } from "./AuthContext";
 
 const LanguageContext = createContext();
 
 const LANG_STORAGE_KEY = "edudash_lang_pref";
 
 export function LanguageProvider({ children }) {
+  const { role } = useAuth();
+
   // Initialize state directly from storage or default to English
   const [lang, setLang] = useState(() => {
     return getItem(LANG_STORAGE_KEY) || "en";
@@ -36,7 +39,7 @@ export function LanguageProvider({ children }) {
 
       // Missing key handling policy
       if (text === undefined) {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "development" && role !== "STUDENT") {
           console.warn(`Missing translation for key: "${key}" in lang: "${lang}"`);
         }
         text = params?.fallback || key; // Fallback to params.fallback or key
@@ -57,7 +60,7 @@ export function LanguageProvider({ children }) {
 
       return text;
     },
-    [lang],
+    [lang, role],
   );
 
   const value = useMemo(

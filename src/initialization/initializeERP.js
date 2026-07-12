@@ -166,8 +166,8 @@ export const initializeERP = () => {
         ],
         weightages: [
           { categoryId: "cat-1", weightage: 30 },
-          { categoryId: "cat-2", weightage: 50 },
-          { categoryId: "cat-3", weightage: 20 },
+          { categoryId: "cat-2", weightage: 70 },
+          { categoryId: "cat-3", weightage: 0 },
         ],
         gradeBoundaries: [
           { id: "gb-1", name: "A+", min: 90, max: 100, point: 10, order: 1 },

@@ -125,7 +125,7 @@ const HELPER_LEGEND = [
   { color: "#dc2626", labelEn: "Red — Missing. Upload required immediately.", labelHi: "लाल — अनुपस्थित। तुरंत अपलोड आवश्यक।" },
 ];
 
-function DocumentPreviewModal({ doc, isOpen, onClose, lang }) {
+function DocumentPreviewModal({ doc, isOpen, onClose, lang, t }) {
   const overlayStyle = {
     position: "fixed",
     inset: 0,
@@ -193,7 +193,7 @@ function DocumentPreviewModal({ doc, isOpen, onClose, lang }) {
               </h2>
               {doc.uploadDate && (
                 <p className="text-xs text-gray-500 mt-0.5 font-medium">
-                  {lang === "hi" ? "अपलोड:" : "Uploaded:"} {doc.uploadDate}
+                  {t("docs.uploadedPrefix", { fallback: "Uploaded:" })} {doc.uploadDate}
                   {doc.fileType && ` · ${doc.fileType}`}
                   {doc.fileSizeKb && ` · ${doc.fileSizeKb} KB`}
                 </p>
@@ -215,11 +215,11 @@ function DocumentPreviewModal({ doc, isOpen, onClose, lang }) {
           >
             <StatusIcon size={16} style={{ color: status.color }} aria-hidden="true" />
             <span className="text-sm font-bold" style={{ color: status.color }}>
-              {lang === "hi" ? status.labelHi : status.labelEn}
+              {t(`docs.status_${doc.status}`, { fallback: status.labelEn })}
             </span>
             {doc.verifiedBy && doc.status === "verified" && (
               <span className="text-xs text-gray-500 ml-auto font-medium">
-                {lang === "hi" ? "द्वारा:" : "by"} {doc.verifiedBy}
+                {t("docs.verifiedBy", { fallback: "by" })} {doc.verifiedBy}
               </span>
             )}
           </div>
@@ -236,14 +236,14 @@ function DocumentPreviewModal({ doc, isOpen, onClose, lang }) {
                   style={{ backgroundColor: "#caf0f8", color: "#03045e" }}
                 >
                   <Download size={16} />
-                  {lang === "hi" ? "डाउनलोड" : "Download"}
+                  {t("docs.download", { fallback: "Download" })}
                 </button>
                 <button
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold text-white transition-colors"
                   style={{ backgroundColor: "#0077b6" }}
                 >
                   <Upload size={16} />
-                  {lang === "hi" ? "बदलें" : "Replace"}
+                  {t("docs.replace", { fallback: "Replace" })}
                 </button>
               </>
             ) : (
@@ -252,7 +252,7 @@ function DocumentPreviewModal({ doc, isOpen, onClose, lang }) {
                 style={{ backgroundColor: "#03045e" }}
               >
                 <Upload size={16} />
-                {lang === "hi" ? "दस्तावेज़ अपलोड करें" : "Upload Document"}
+                {t("docs.uploadDoc", { fallback: "Upload Document" })}
               </button>
             )}
           </div>
@@ -262,7 +262,7 @@ function DocumentPreviewModal({ doc, isOpen, onClose, lang }) {
   );
 }
 
-function DocumentCard({ doc, index, onPreview, lang }) {
+function DocumentCard({ doc, index, onPreview, lang, t }) {
   const IconComponent = ICON_MAP[doc.icon] || FileText;
   const status = STATUS_CONFIG[doc.status];
   const StatusIcon = status.icon;
@@ -296,7 +296,7 @@ function DocumentCard({ doc, index, onPreview, lang }) {
               </p>
             ) : (
               <p className="text-xs font-semibold text-gray-400 mt-0.5">
-                {lang === "hi" ? "अपलोड करना बाकी है" : "Not yet uploaded"}
+                {t("docs.notUploaded", { fallback: "Not yet uploaded" })}
               </p>
             )}
           </div>
@@ -310,7 +310,7 @@ function DocumentCard({ doc, index, onPreview, lang }) {
             >
               <StatusIcon size={14} style={{ color: status.color }} />
               <span className="text-[11px] font-extrabold uppercase tracking-wide" style={{ color: status.color }}>
-                {lang === "hi" ? status.labelHi : status.labelEn}
+                {t(`docs.status_${doc.status}`, { fallback: status.labelEn })}
               </span>
             </div>
           </div>
@@ -322,7 +322,7 @@ function DocumentCard({ doc, index, onPreview, lang }) {
                   <Clock size={12} style={{ color: "#0077b6" }} />
                 </div>
                 <span className="text-xs font-semibold text-gray-600">
-                  {lang === "hi" ? "अपलोड:" : "Uploaded:"} {doc.uploadDate}
+                  {t("docs.uploadedPrefix", { fallback: "Uploaded:" })} {doc.uploadDate}
                 </span>
               </div>
             )}
@@ -336,13 +336,13 @@ function DocumentCard({ doc, index, onPreview, lang }) {
             style={{ backgroundColor: "#caf0f8", color: "#03045e" }}
           >
             <Eye size={16} />
-            {lang === "hi" ? "देखें" : "Preview"}
+            {t("docs.preview", { fallback: "Preview" })}
           </button>
           <button
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-extrabold transition-all hover:opacity-90 shadow-sm ${doc.status === "missing" ? "bg-[#dc2626]" : "bg-[#03045e]"} text-white`}
           >
             {doc.status === "missing" ? <Upload size={16} /> : <Download size={16} />}
-            {doc.status === "missing" ? (lang === "hi" ? "अपलोड" : "Upload") : (lang === "hi" ? "डाउनलोड" : "Download")}
+            {doc.status === "missing" ? t("docs.upload", { fallback: "Upload" }) : t("docs.download", { fallback: "Download" })}
           </button>
         </div>
       </div>
@@ -412,12 +412,12 @@ export default function DocumentsPage() {
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-black truncate" style={{ color: "#03045e" }}>
-                {lang === "hi" ? t("docs.title") : "Student Documents"}
+                {t("docs.title", { fallback: "Student Documents" })}
               </h1>
               <p className="text-sm text-gray-500 truncate">
                 {isParentMode
-                  ? (lang === "hi" ? t("docs.desc.parent") : "View and manage your child's official school documents.")
-                  : (lang === "hi" ? t("docs.desc.student") : "Access, preview, and manage your official school documents securely.")}
+                  ? t("docs.descParent", { fallback: "View and manage your child's official school documents." })
+                  : t("docs.descStudent", { fallback: "Access, preview, and manage your official school documents securely." })}
               </p>
             </div>
           </div>
@@ -429,10 +429,10 @@ export default function DocumentsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {[
-            { count: counts.verified, labelEn: "Verified", labelHi: "सत्यापित", color: "#059669", bg: "#d1fae5", icon: CheckCircle },
-            { count: counts.pending, labelEn: "Pending", labelHi: "लंबित", color: "#d97706", bg: "#fef3c7", icon: Clock },
-            { count: counts.missing, labelEn: "Missing", labelHi: "अनुपस्थित", color: "#dc2626", bg: "#fee2e2", icon: AlertTriangle },
-          ].map(({ count, labelEn, labelHi, color, bg, icon: Icon }) => (
+            { id: "verified", count: counts.verified, labelEn: "Verified", color: "#059669", bg: "#d1fae5", icon: CheckCircle },
+            { id: "pending", count: counts.pending, labelEn: "Pending", color: "#d97706", bg: "#fef3c7", icon: Clock },
+            { id: "missing", count: counts.missing, labelEn: "Missing", color: "#dc2626", bg: "#fee2e2", icon: AlertTriangle },
+          ].map(({ id, count, labelEn, color, bg, icon: Icon }) => (
             <div
               key={labelEn}
               className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm"
@@ -444,7 +444,7 @@ export default function DocumentsPage() {
               <div>
                 <span className="text-xl font-black block leading-none" style={{ color }}>{count}</span>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wide mt-1 block">
-                  {lang === "hi" ? labelHi : labelEn}
+                  {t(`docs.count_${id}`, { fallback: labelEn })}
                 </span>
               </div>
             </div>
@@ -459,7 +459,7 @@ export default function DocumentsPage() {
             />
             <input
               type="text"
-              placeholder={lang === "hi" ? "दस्तावेज़ खोजें..." : "Search documents..."}
+              placeholder={t("docs.searchPlaceholder", { fallback: "Search documents..." })}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm font-medium bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00b4d8]"
@@ -481,7 +481,7 @@ export default function DocumentsPage() {
                       : { backgroundColor: "white", color: "#6b7280", border: "1px solid #e5e7eb" }
                   }
                 >
-                  {lang === "hi" ? cat.labelHi : cat.labelEn}
+                  {t(`docs.cat_${cat.id}`, { fallback: cat.labelEn })}
                 </button>
               );
             })}
@@ -492,7 +492,7 @@ export default function DocumentsPage() {
           <div className="flex flex-col items-center gap-3 py-16 bg-white rounded-2xl" style={{ border: "1px solid #caf0f8" }}>
             <FileQuestion size={48} className="text-gray-300" />
             <p className="text-sm font-bold text-gray-400">
-              {lang === "hi" ? "कोई दस्तावेज़ नहीं मिला।" : "No documents found."}
+              {t("docs.noDocumentsFound", { fallback: "No documents found." })}
             </p>
           </div>
         ) : (
@@ -504,6 +504,7 @@ export default function DocumentsPage() {
                 index={i}
                 onPreview={handlePreview}
                 lang={lang}
+                t={t}
               />
             ))}
           </div>
@@ -522,10 +523,10 @@ export default function DocumentsPage() {
             </div>
             <div>
               <p className="text-sm font-extrabold" style={{ color: "#03045e" }}>
-                {lang === "hi" ? "नया दस्तावेज़ अपलोड करें" : "Upload a New Document"}
+                {t("docs.uploadNewDoc", { fallback: "Upload a New Document" })}
               </p>
               <p className="text-xs text-gray-500 font-medium mt-0.5">
-                {lang === "hi" ? "PDF, JPG, PNG — बैकएंड तैयार होने पर सक्रिय होगा" : "PDF, JPG, PNG accepted · Active once backend is connected"}
+                {t("docs.uploadNewDocDesc", { fallback: "PDF, JPG, PNG accepted · Active once backend is connected" })}
               </p>
             </div>
           </div>
@@ -534,7 +535,7 @@ export default function DocumentsPage() {
             style={{ backgroundColor: "#0077b6" }}
             disabled
           >
-            {lang === "hi" ? "अपलोड (जल्द आएगा)" : "Upload (Coming Soon)"}
+            {t("docs.uploadComingSoon", { fallback: "Upload (Coming Soon)" })}
           </button>
         </div>
       </motion.div>
@@ -553,6 +554,7 @@ export default function DocumentsPage() {
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
         lang={lang}
+        t={t}
       />
     </>
   );

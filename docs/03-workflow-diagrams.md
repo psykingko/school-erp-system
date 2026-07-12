@@ -44,14 +44,27 @@ flowchart LR
 
     A --> B[Published Exam Cycles]
 
-    B --> C[Student Class Filtering]
+    B --> C[Student Examination Page]
 
-    C --> D[Student Examination Page]
+    C --> D[Exam Cycle Selection]
 
-    D --> E[Exam Cycle Selection]
+    D --> E[Date Sheet]
+    D --> F[General Instructions]
+    D --> G[Exam Results]
+    D --> H[Progress Report]
+```
 
-    E --> F[Date Sheet]
-    E --> G[General Instructions]
+# Academic Results Consumption Workflow
+
+```mermaid
+flowchart LR
+    A[Report Card Engine]
+
+    A --> B[Published Session Results]
+
+    B --> C[Academic Results Page]
+
+    C --> D[Final Academic Report]
 ```
 
 # Parent Module
@@ -450,15 +463,49 @@ flowchart TD
 
     subgraph "Phase 4: Academic Report Cards"
         N[Admin] -->|Selects Class & Session| O[Generation Wizard]
-        O -->|Applies Governance Rules| P[Calculation Pipeline]
+        O -->|Selects Mode: Progress or Final| O2[Mode Selection]
+        O2 -->|Progress Report| P[Calculation Pipeline]
+        O2 -->|Final Report| PV[Governance Validation]
+        PV -->|Incomplete| PVD[Development Override Warning]
+        PVD -->|Continue| P
+        PV -->|Complete| P
         H -->|Aggregates Published Exams| P
         L --> P
         M --> P
-        P --> Q[Generated Report Cards]
+        P --> Q[Generated Report Cards with reportType metadata]
         Q -->|Admin Freezes| R[Frozen Status]
         R -.->|Immutable| S[Final Records]
         Q -->|Admin Publishes| T[Published Academic Report Cards]
         T -.->|Student/Parent Visibility| U[Final Session Result]
         T -.->|Admin| V[Print Operations]
     end
+```
+
+# Teacher Academic Results Workflow
+
+```mermaid
+flowchart TD
+    A[Teacher Academic Results Module] --> B{teacherScope.isClassTeacher?}
+    
+    B -->|No| C[Permission Restricted: Subject Teacher]
+    C --> D[Display Shield Alert Empty State]
+    
+    B -->|Yes| E[Class Teacher Unified Workspace]
+    E --> F[Segmented View Selector]
+    
+    F -->|Default: Exam Results| G[Exam-wise Result Ledger]
+    G --> H[Exam Cycle Selector]
+    H -->|Selects Published Exam| I[Consumes RESULTS dataset]
+    I --> J[Displays Read-Only Student Ledger]
+    
+    F -->|Progress Reports| O[Progress Report Workspace]
+    O --> P[Exam Cycle Selector]
+    P --> Q[Consumes REPORT_CARDS dataset filtered by progress]
+    Q --> M[Report Card Preview]
+    Q --> N[Print / Bulk Print]
+
+    F -->|Final Academic Reports| K[Final Report Card Workspace]
+    K --> L[Consumes REPORT_CARDS dataset filtered by final]
+    L --> M
+    L --> N
 ```

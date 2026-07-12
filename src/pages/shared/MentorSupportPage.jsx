@@ -125,11 +125,11 @@ function RequestForm({ prefillCategory, onSessionCreated }) {
     setError("");
 
     if (!scheduledAt) {
-      setError("Please select a preferred date and time.");
+      setError(t("mentor.errorDate", { fallback: "Please select a preferred date and time." }));
       return;
     }
     if (!message.trim()) {
-      setError("Please describe what you would like to discuss.");
+      setError(t("mentor.errorDesc", { fallback: "Please describe what you would like to discuss." }));
       return;
     }
 
@@ -144,7 +144,7 @@ function RequestForm({ prefillCategory, onSessionCreated }) {
       setSubmitted(true);
       if (onSessionCreated) onSessionCreated();
     } catch (err) {
-      setError(err.message || "Failed to submit request.");
+      setError(err.message || t("mentor.errorSubmit", { fallback: "Failed to submit request." }));
     } finally {
       setLoading(false);
     }
@@ -160,15 +160,15 @@ function RequestForm({ prefillCategory, onSessionCreated }) {
         </div>
         <div>
           <p className="text-lg font-extrabold" style={{ color: "#03045e" }}>
-            Session Request Submitted
+            {t("mentor.reqSubmitted", { fallback: "Session Request Submitted" })}
           </p>
           <p className="text-sm text-gray-500 font-medium mt-1">
-            Your assigned mentor has been notified. Check the status in your session history.
+            {t("mentor.reqNotified", { fallback: "Your assigned mentor has been notified. Check the status in your session history." })}
           </p>
         </div>
         <button onClick={() => { setSubmitted(false); setMessage(""); setScheduledAt(""); }}
           className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-[#03045e]" >
-          Submit Another Request
+          {t("mentor.submitAnother", { fallback: "Submit Another Request" })}
         </button>
       </motion.div>
     );
@@ -195,7 +195,7 @@ function RequestForm({ prefillCategory, onSessionCreated }) {
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm space-y-4 border border-[#caf0f8]" noValidate>
       <h3 className="text-sm font-black text-[#03045e] uppercase tracking-wider mb-2">
-        Request Support Session
+        {t("mentor.reqSupportSession", { fallback: "Request Support Session" })}
       </h3>
 
       {error && (
@@ -208,7 +208,7 @@ function RequestForm({ prefillCategory, onSessionCreated }) {
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
         {/* Topic Selection */}
         <div className="flex flex-col gap-1.5">
-          {label("Choose Session Topic")}
+          {label(t("mentor.chooseTopic", { fallback: "Choose Session Topic" }))}
           <select value={topic} onChange={e => setTopic(e.target.value)} style={inputStyle(false)}>
             {SUPPORT_CATEGORIES.map((c, i) => (
               <option key={i} value={lang === 'hi' ? c.titleHi : c.titleEn}>
@@ -220,7 +220,7 @@ function RequestForm({ prefillCategory, onSessionCreated }) {
 
         {/* Preferred Date-Time */}
         <div className="flex flex-col gap-1.5">
-          {label("Preferred Time & Date")}
+          {label(t("mentor.preferredTime", { fallback: "Preferred Time & Date" }))}
           <input 
             type="datetime-local" 
             value={scheduledAt} 
@@ -232,10 +232,10 @@ function RequestForm({ prefillCategory, onSessionCreated }) {
 
       {/* Discussion Message */}
       <div className="flex flex-col gap-1.5">
-        {label("Session Message / Support Needed")}
+        {label(t("mentor.sessionMessage", { fallback: "Session Message / Support Needed" }))}
         <textarea rows={4} value={message}
           onChange={e => setMessage(e.target.value)}
-          placeholder="Describe briefly what you would like to discuss (e.g., preparation stress, study plans, etc.)."
+          placeholder={t("mentor.descPlaceholder", { fallback: "Describe briefly what you would like to discuss (e.g., preparation stress, study plans, etc.)." })}
           style={{ ...inputStyle(!message && error), resize: "none" }} 
         />
       </div>
@@ -244,17 +244,17 @@ function RequestForm({ prefillCategory, onSessionCreated }) {
         className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-extrabold text-white bg-[#03045e] transition-opacity hover:opacity-90 disabled:opacity-40"
       >
         <Send size={16} />
-        {loading ? "Scheduling Request..." : "Request Mentorship Appointment"}
+        {loading ? t("mentor.schedulingReq", { fallback: "Scheduling Request..." }) : t("mentor.reqAppointment", { fallback: "Request Mentorship Appointment" })}
       </button>
     </form>
   );
 }
 
-function UpcomingSessionsList({ sessions }) {
+function UpcomingSessionsList({ sessions, t }) {
   if (!sessions || sessions.length === 0) {
     return (
       <div className="bg-white rounded-2xl p-6 text-center text-xs font-bold text-gray-400 italic border border-[#caf0f8]">
-        No active or pending mentor support sessions scheduled.
+        {t("mentor.noActiveSessions", { fallback: "No active or pending mentor support sessions scheduled." })}
       </div>
     );
   }
@@ -285,12 +285,12 @@ function UpcomingSessionsList({ sessions }) {
                 {s.topic}
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <p className="text-xs font-semibold text-gray-400">Mentor: {s.mentorTeacherName}</p>
+                <p className="text-xs font-semibold text-gray-400">{t("mentor.mentorPrefix", { fallback: "Mentor:" })} {s.mentorTeacherName}</p>
                 <span className="text-gray-300">•</span>
                 <p className="text-xs font-semibold text-gray-400">{dateStr}</p>
               </div>
               <p className="text-xs text-gray-600 font-bold mt-2 leading-relaxed">
-                <span className="text-gray-400 block text-[9px] font-black uppercase tracking-widest mb-0.5">Your Message:</span>
+                <span className="text-gray-400 block text-[9px] font-black uppercase tracking-widest mb-0.5">{t("mentor.yourMessage", { fallback: "Your Message:" })}</span>
                 "{s.message}"
               </p>
             </div>
@@ -304,11 +304,11 @@ function UpcomingSessionsList({ sessions }) {
   );
 }
 
-function SessionHistory({ sessions }) {
+function SessionHistory({ sessions, t }) {
   if (!sessions || sessions.length === 0) {
     return (
       <div className="bg-white rounded-2xl p-6 text-center text-xs font-bold text-gray-400 italic border border-[#caf0f8]">
-        No completed mentor sessions logged in your timeline.
+        {t("mentor.noCompletedSessions", { fallback: "No completed mentor sessions logged in your timeline." })}
       </div>
     );
   }
@@ -334,17 +334,17 @@ function SessionHistory({ sessions }) {
                 {s.topic}
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <p className="text-xs font-semibold text-gray-400">Mentor: {s.mentorTeacherName}</p>
+                <p className="text-xs font-semibold text-gray-400">{t("mentor.mentorPrefix", { fallback: "Mentor:" })} {s.mentorTeacherName}</p>
                 <span className="text-gray-300">•</span>
                 <p className="text-xs font-semibold text-gray-400">{dateStr}</p>
               </div>
               <p className="text-xs text-gray-600 font-bold mt-2 leading-relaxed">
-                <span className="text-gray-400 block text-[9px] font-black uppercase tracking-widest mb-0.5">Session Notes:</span>
-                {s.mentorNotes || "Session completed successfully. Discussed exam planning & support strategies."}
+                <span className="text-gray-400 block text-[9px] font-black uppercase tracking-widest mb-0.5">{t("mentor.sessionNotes", { fallback: "Session Notes:" })}</span>
+                {s.mentorNotes || t("mentor.notesDefault", { fallback: "Session completed successfully. Discussed exam planning & support strategies." })}
               </p>
             </div>
             <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full flex-shrink-0 uppercase tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-100">
-              Completed
+              {t("mentor.completed", { fallback: "Completed" })}
             </span>
           </motion.div>
         );
@@ -410,7 +410,7 @@ export default function MentorSupportPage() {
               {t("mentor.title") || "Mentor Support"}
             </h1>
             <p className="text-sm text-gray-500 truncate">
-              {isParentMode ? "Schedule guidance session appointments or review past counselor notes." : "Request mentorship session appointments & review counselor feedback notes."}
+              {isParentMode ? t("mentor.descParent", { fallback: "Schedule guidance session appointments or review past counselor notes." }) : t("mentor.descStudent", { fallback: "Request mentorship session appointments & review counselor feedback notes." })}
             </p>
           </div>
           <div className="flex-shrink-0">
@@ -421,7 +421,7 @@ export default function MentorSupportPage() {
         <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#f0fdf4] border border-[#bbf7d0]">
           <Shield size={20} className="text-[#059669] flex-shrink-0" />
           <p className="text-xs font-bold leading-relaxed text-[#065f46]">
-            Confidentiality Guaranteed. Mentor consultation scheduling is private and academic-focused.
+            {t("mentor.confidentiality", { fallback: "Confidentiality Guaranteed. Mentor consultation scheduling is private and academic-focused." })}
           </p>
         </div>
 
@@ -441,7 +441,7 @@ export default function MentorSupportPage() {
 
         <div>
           <p className="text-xs font-extrabold uppercase tracking-widest mb-3 px-1 text-[#0077b6]">
-            Quick Scheduling Links & Guides
+            {t("mentor.quickLinks", { fallback: "Quick Scheduling Links & Guides" })}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {(resources || []).map((r, i) => {
@@ -470,7 +470,7 @@ export default function MentorSupportPage() {
 
         {/* REQUEST APPOINTMENT SECTION */}
         <div id="mentor-request-section">
-          <SectionToggle id="request" label="Request Mentor Appointment" icon={Send} />
+          <SectionToggle id="request" label={t("mentor.reqAppointmentLabel", { fallback: "Request Mentor Appointment" })} icon={Send} />
           {activeSection === "request" && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mt-3">
               <RequestForm prefillCategory={prefillCategory} onSessionCreated={refreshSessions} />
@@ -480,20 +480,20 @@ export default function MentorSupportPage() {
 
         {/* UPCOMING SESSIONS SECTION */}
         <div>
-          <SectionToggle id="upcoming" label={`Upcoming Support Sessions (${upcomingSessions.length})`} icon={Clock} />
+          <SectionToggle id="upcoming" label={`${t("mentor.upcomingLabel", { fallback: "Upcoming Support Sessions" })} (${upcomingSessions.length})`} icon={Clock} />
           {activeSection === "upcoming" && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mt-3">
-              <UpcomingSessionsList sessions={upcomingSessions} />
+              <UpcomingSessionsList sessions={upcomingSessions} t={t} />
             </motion.div>
           )}
         </div>
 
         {/* PAST SESSIONS & NOTES TIMELINE */}
         <div>
-          <SectionToggle id="history" label="Completed Sessions & Notes" icon={Users} />
+          <SectionToggle id="history" label={t("mentor.completedLabel", { fallback: "Completed Sessions & Notes" })} icon={Users} />
           {activeSection === "history" && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mt-3">
-              <SessionHistory sessions={completedSessions} />
+              <SessionHistory sessions={completedSessions} t={t} />
             </motion.div>
           )}
         </div>
@@ -504,10 +504,10 @@ export default function MentorSupportPage() {
           </div>
           <div>
             <p className="text-lg font-black text-white">
-              Academic Advisory & Support
+              {t("mentor.advisoryTitle", { fallback: "Academic Advisory & Support" })}
             </p>
             <p className="text-sm text-white/70 font-semibold mt-0.5">
-              Discuss curriculum revisions, exam preparation strategies, or balanced progress schedules with your mentor.
+              {t("mentor.advisoryDesc", { fallback: "Discuss curriculum revisions, exam preparation strategies, or balanced progress schedules with your mentor." })}
             </p>
           </div>
         </div>

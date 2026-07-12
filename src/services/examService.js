@@ -1,5 +1,7 @@
 import { getDataProvider } from "../data";
 import { getSubjectsForStudent } from "./academicsService";
+import { getAssessmentGovernance } from "./assessmentGovernanceService";
+import { getReportCardsForStudent } from "./reportCardService";
 
 // Helpers for date formatting
 const formatDateString = (dateStr) => {
@@ -326,6 +328,32 @@ export const getExamData = async (studentId) => {
     ? allPapers.filter((p) => p.classId === classId)
     : [];
 
+  const studentResults = await getStudentResults(studentId);
+  const studentReportCards = await getReportCardsForStudent(studentId);
+
+  const resultsByExamId = {};
+  for (const res of studentResults) {
+    if (!resultsByExamId[res.examId]) {
+      resultsByExamId[res.examId] = [];
+    }
+    resultsByExamId[res.examId].push(res);
+  }
+
+  const reportsByExamId = {};
+  for (const report of studentReportCards) {
+    // Only include Published or Frozen reports as per business rules
+    if (report.status === "Published" || report.status === "Frozen") {
+      if (Array.isArray(report.selectedExamIds)) {
+        for (const examId of report.selectedExamIds) {
+          if (!reportsByExamId[examId]) {
+            reportsByExamId[examId] = [];
+          }
+          reportsByExamId[examId].push(report);
+        }
+      }
+    }
+  }
+
   const cycles = visibleExams.map((exam) => {
     const examPapers = studentClassPapers
       .filter((p) => p.examSessionId === exam.id)
@@ -348,12 +376,23 @@ export const getExamData = async (studentId) => {
       };
     });
 
+    const linkedResults = resultsByExamId[exam.id] || [];
+    const linkedReportCards = reportsByExamId[exam.id] || [];
+
     return {
       id: exam.id,
       name: exam.name,
       status: exam.status,
       dateSheet,
       generalInstructions: exam.instructions || [],
+      linkedResults,
+      linkedReportCards,
+      resultState: {
+        hasResults: linkedResults.length > 0,
+        hasReportCards: linkedReportCards.length > 0,
+        resultCount: linkedResults.length,
+        reportCardCount: linkedReportCards.length,
+      }
     };
   });
 
@@ -1044,6 +1083,8 @@ export const submitMarks = async (teacherId, teacherName, classId, subjectId, ex
   const paperPracticalMarks = paper?.practicalMarks ?? 0;
   const maxM = paperTheoryMarks + paperPracticalMarks;
 
+  const governance = await getAssessmentGovernance();
+
   const isAdminOverride = teacherId === "Admin" || teacherName === "Admin";
 
   for (const mark of marksData) {
@@ -1077,11 +1118,12 @@ export const submitMarks = async (teacherId, teacherName, classId, subjectId, ex
     const effectiveMarks = newAdminOverride !== undefined ? newAdminOverride : newTeacherMarks;
 
     const percent = maxM > 0 ? (effectiveMarks / maxM) * 100 : 0;
-    let grade = "C";
-    if (percent >= 90) grade = "A+";
-    else if (percent >= 80) grade = "A";
-    else if (percent >= 70) grade = "B+";
-    else if (percent >= 60) grade = "B";
+    
+    // Sort boundaries descending by min to find the correct grade
+    const boundaries = governance.gradeBoundaries || [];
+    const sortedBoundaries = [...boundaries].sort((a, b) => b.min - a.min);
+    const matchedGrade = sortedBoundaries.find(b => percent >= b.min);
+    const grade = matchedGrade ? matchedGrade.name : "F";
 
     const isSubmitted = isSubmitAction || !!existingResult?.isSubmitted;
 
