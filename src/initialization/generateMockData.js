@@ -85,6 +85,7 @@ export const generateMissingMockData = () => {
   const existingInvoices = getItem(STORAGE_KEYS.INVOICES);
   if (!existingInvoices ) {
     const invoices = [];
+    const receipts = [];
     const globalFeeHeads = getItem(STORAGE_KEYS.FEE_HEADS) || [];
     const feeConfig = getItem(STORAGE_KEYS.FEE_CONFIGURATION) || { vacationMonths: [] };
     let feeAdjustments = getItem(STORAGE_KEYS.FEE_ADJUSTMENTS);
