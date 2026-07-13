@@ -39,10 +39,10 @@ export function LanguageProvider({ children }) {
 
       // Missing key handling policy
       if (text === undefined) {
-        if (process.env.NODE_ENV === "development" && role !== "STUDENT") {
+        if (process.env.NODE_ENV === "development" && role !== "STUDENT" && params?.fallback === undefined) {
           console.warn(`Missing translation for key: "${key}" in lang: "${lang}"`);
         }
-        text = params?.fallback || key; // Fallback to params.fallback or key
+        text = params?.fallback !== undefined ? params.fallback : key; // Fallback to params.fallback or key
       }
 
       // Ensure text is a string before calling replace

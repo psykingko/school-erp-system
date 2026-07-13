@@ -132,7 +132,6 @@ export const getCriticalTeacherDashboardData = async (
     }
   }
 
-  console.time(`[PERF AUDIT] getCriticalTeacherDashboardData for ${tId}`);
   const provider = getDataProvider();
 
   const teachers = await provider.getTeachers();
@@ -228,8 +227,6 @@ export const getCriticalTeacherDashboardData = async (
     },
   };
 
-  console.timeEnd(`[PERF AUDIT] getCriticalTeacherDashboardData for ${tId}`);
-
   cache.set(cacheKey, {
     payload,
     timestamp: Date.now(),
@@ -256,8 +253,6 @@ export const getDeferredTeacherDashboardData = async (
       return entry.payload;
     }
   }
-
-  console.time(`[PERF AUDIT] getDeferredTeacherDashboardData for ${tId}`);
 
   const provider = getDataProvider();
 
@@ -300,8 +295,6 @@ export const getDeferredTeacherDashboardData = async (
       classUpdates: classUpdates,
     },
   };
-
-  console.timeEnd(`[PERF AUDIT] getDeferredTeacherDashboardData for ${tId}`);
 
   cache.set(cacheKey, {
     payload,

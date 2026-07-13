@@ -171,7 +171,13 @@ export const previewReportCards = async (classId, sessionId, selectedExamIds, re
     const passThreshold = governance.passingRules?.overallPassingPercentage || 33;
     const passFail = overallPercentage >= passThreshold ? "PASS" : "FAIL";
 
-    const existing = existingCards.find(c => c.studentId === student.id);
+    const examKey = [...selectedExamIds].sort().join('-');
+    const existing = existingCards.find(c => 
+      c.studentId === student.id && 
+      c.reportType === reportType &&
+      (reportType === 'final' || [...(c.selectedExamIds || [])].sort().join('-') === examKey)
+    );
+
     if (existing && existing.status === "Frozen") {
       // Do not regenerate if frozen, just return the existing one as-is
       generatedCards.push(existing);

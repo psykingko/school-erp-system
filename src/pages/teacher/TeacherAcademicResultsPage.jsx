@@ -266,11 +266,12 @@ const TeacherAcademicResultsPage = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <AdminPageHeader
-        title={t("teacherExams.results.classTitle")}
-        description={t("teacherExams.results.classDesc").replace('{classId}', teacherScope?.activeClass || '')}
-        breadcrumbs={[t("nav.home", { fallback: "Dashboard" }), t("teacherExams.results.academicResults")]}
-      />
+      <div className="print:hidden space-y-6">
+        <AdminPageHeader
+          title={t("teacherExams.results.classTitle")}
+          description={t("teacherExams.results.classDesc").replace('{classId}', teacherScope?.activeClass || '')}
+          breadcrumbs={[t("nav.home", { fallback: "Dashboard" }), t("teacherExams.results.academicResults")]}
+        />
 
       {teacherScope?.isClassTeacher && teacherScope?.activeClass && teacherScope?.activeSession && (
         <div className="flex justify-center mb-6 print:hidden">
@@ -451,18 +452,28 @@ const TeacherAcademicResultsPage = () => {
           </div>
         </MainCard>
       )}
-
-      {/* Print Area - Only visible when printing */}
-      <div className="hidden print:block print-isolate bg-white min-h-screen">
-        {reportCards
-          .filter(c => c.reportType === (activeView === 'final_reports' ? 'final' : 'progress') && (activeView !== 'progress_reports' || c.selectedExamIds?.includes(selectedExamId)))
-          .filter(c => selectedCardIds.length === 0 || selectedCardIds.includes(c.id))
-          .map((card, index) => (
-            <div key={`print-${card.id}`} className={index > 0 ? "break-before-page" : ""}>
-              <PrintableReportCard card={card} institutionDetails={institutionDetails} />
-            </div>
-          ))}
       </div>
+
+      {/* Print Area - Only visible when printing ALL */}
+      {!previewCard && (
+        <div className="hidden print:block print-isolate bg-white min-h-screen">
+          {reportCards
+            .filter(c => c.reportType === (activeView === 'final_reports' ? 'final' : 'progress') && (activeView !== 'progress_reports' || c.selectedExamIds?.includes(selectedExamId)))
+            .filter(c => selectedCardIds.length === 0 || selectedCardIds.includes(c.id))
+            .map((card, index) => (
+              <div key={`print-${card.id}`} className={index > 0 ? "break-before-page" : ""}>
+                <PrintableReportCard card={card} institutionDetails={institutionDetails} />
+              </div>
+            ))}
+        </div>
+      )}
+
+      {/* Print Area - Only visible when printing SINGLE */}
+      {previewCard && (
+        <div className="hidden print:block print-isolate bg-white min-h-screen">
+          <PrintableReportCard card={previewCard} institutionDetails={institutionDetails} />
+        </div>
+      )}
 
       <Drawer
         isOpen={!!previewCard}

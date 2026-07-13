@@ -196,7 +196,7 @@ const MarksExamsPage = ({ isEmbedded = false }) => {
     let hasValidationError = false;
     const marksList = students.map((s) => {
       const current = marks[s.id];
-      if (!current || (current.marks === "" && !current.isAbsent && current.practicalMarks === "")) {
+      if (!current || (current.marks === "" && !current.isAbsent)) {
         hasValidationError = true;
       }
 
@@ -283,22 +283,6 @@ const MarksExamsPage = ({ isEmbedded = false }) => {
           disabled={!isEvaluationActive || marks[row.id]?.isAbsent || isClassSubmitted}
           value={marks[row.id]?.isAbsent ? "" : marks[row.id]?.marks || ""}
           onChange={(e) => handleMarkChange(row.id, "marks", e.target.value)}
-          placeholder={marks[row.id]?.isAbsent ? "ABS" : "0.00"}
-          className="w-24 px-3 py-2 bg-[#f8fdff] border border-[#caf0f8] rounded-lg text-[#03045e] font-bold focus:outline-none focus:ring-2 focus:ring-[#00b4d8]/20 transition-all disabled:bg-gray-100 disabled:text-gray-400"
-        />
-      ),
-      className: "w-32",
-    },
-    {
-      header: t("marksExams.practicalMarks", { fallback: "Practical Marks (30)" }),
-      render: (row) => (
-        <input
-          type="number"
-          min="0"
-          max="30"
-          disabled={!isEvaluationActive || marks[row.id]?.isAbsent || isClassSubmitted}
-          value={marks[row.id]?.isAbsent ? "" : marks[row.id]?.practicalMarks || ""}
-          onChange={(e) => handleMarkChange(row.id, "practicalMarks", e.target.value)}
           placeholder={marks[row.id]?.isAbsent ? "ABS" : "0.00"}
           className="w-24 px-3 py-2 bg-[#f8fdff] border border-[#caf0f8] rounded-lg text-[#03045e] font-bold focus:outline-none focus:ring-2 focus:ring-[#00b4d8]/20 transition-all disabled:bg-gray-100 disabled:text-gray-400"
         />

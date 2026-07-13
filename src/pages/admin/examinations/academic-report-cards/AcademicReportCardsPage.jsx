@@ -23,6 +23,7 @@ const AcademicReportCardsPage = () => {
   const [activeStep, setActiveStep] = useState('wizard'); // 'wizard' | 'preview' | 'published'
   const [generatedCards, setGeneratedCards] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [selectedCardIds, setSelectedCardIds] = useState([]);
   const [institutionDetails, setInstitutionDetails] = useState({});
 
   useEffect(() => {
@@ -61,6 +62,20 @@ const AcademicReportCardsPage = () => {
     }
   };
 
+  const handleViewExisting = async (classId, sessionId) => {
+    try {
+      const persisted = await getReportCardsForClass(classId, sessionId);
+      if (persisted.length === 0) {
+        alert("No saved report cards found for this class and session.");
+        return;
+      }
+      setGeneratedCards(persisted);
+      setActiveStep('published');
+    } catch(e) {
+      alert(e.message);
+    }
+  };
+
   const handleCommit = async () => {
     if (!window.confirm("Are you sure you want to save these generated report cards? This will not publish them yet.")) return;
     try {
@@ -77,9 +92,10 @@ const AcademicReportCardsPage = () => {
   };
 
   const handlePublishAll = async () => {
-    if (!window.confirm("Publishing these report cards will make them visible to students, parents, and class teachers. Proceed?")) return;
+    const actionText = selectedCardIds.length > 0 ? 'selected' : 'all';
+    if (!window.confirm(`Publishing these ${actionText} report cards will make them visible to students, parents, and class teachers. Proceed?`)) return;
     try {
-      const ids = generatedCards.map(c => c.id);
+      const ids = selectedCardIds.length > 0 ? selectedCardIds : generatedCards.map(c => c.id);
       await publishReportCards(ids, 'admin-001');
       const { classId, sessionId } = generatedCards[0];
       const persisted = await getReportCardsForClass(classId, sessionId);
@@ -91,12 +107,14 @@ const AcademicReportCardsPage = () => {
   };
 
   const handleFreezeAll = async () => {
-    if (!window.confirm("Freezing report cards prevents them from being regenerated accidentally. Proceed?")) return;
+    const actionText = selectedCardIds.length > 0 ? 'selected' : 'all';
+    if (!window.confirm(`Freezing ${actionText} report cards prevents them from being regenerated accidentally. Proceed?`)) return;
     try {
       // Only allow freezing of published cards
-      const idsToFreeze = generatedCards.filter(c => c.status === 'Published').map(c => c.id);
+      const targetCards = selectedCardIds.length > 0 ? generatedCards.filter(c => selectedCardIds.includes(c.id)) : generatedCards;
+      const idsToFreeze = targetCards.filter(c => c.status === 'Published').map(c => c.id);
       if (idsToFreeze.length === 0) {
-        alert("Only published report cards can be frozen.");
+        alert(`Only published report cards can be frozen. No valid cards found among ${actionText}.`);
         return;
       }
       await freezeReportCards(idsToFreeze, 'admin-001');
@@ -127,7 +145,7 @@ const AcademicReportCardsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <GenerationWizard onGenerate={handleGenerate} />
+            <GenerationWizard onGenerate={handleGenerate} onViewExisting={handleViewExisting} />
           </motion.div>
         )}
 
@@ -164,19 +182,19 @@ const AcademicReportCardsPage = () => {
                       onClick={() => window.print()}
                       className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors print:hidden"
                     >
-                      <Printer size={16} /> Print All
+                      <Printer size={16} /> {selectedCardIds.length > 0 ? 'Print Selected' : 'Print All'}
                     </button>
                     <button 
                       onClick={handlePublishAll}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors print:hidden"
                     >
-                      <CheckCircle size={16} /> Publish All
+                      <CheckCircle size={16} /> {selectedCardIds.length > 0 ? 'Publish Selected' : 'Publish All'}
                     </button>
                     <button 
                       onClick={handleFreezeAll}
                       className="bg-[#03045e] hover:bg-[#0077b6] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors print:hidden"
                     >
-                      <ShieldAlert size={16} /> Freeze All
+                      <ShieldAlert size={16} /> {selectedCardIds.length > 0 ? 'Freeze Selected' : 'Freeze All'}
                     </button>
                   </>
                 )}
@@ -194,17 +212,33 @@ const AcademicReportCardsPage = () => {
                   </p>
                 </div>
               </div>
-              <StudentSummaryTable cards={generatedCards} onSelectCard={setSelectedCard} />
+              <StudentSummaryTable 
+                cards={generatedCards} 
+                selectedCardIds={selectedCardIds}
+                onSelectAll={(checked) => {
+                  if (checked) setSelectedCardIds(generatedCards.map(c => c.id));
+                  else setSelectedCardIds([]);
+                }}
+                onSelectRow={(id, checked) => {
+                  if (checked) setSelectedCardIds([...selectedCardIds, id]);
+                  else setSelectedCardIds(selectedCardIds.filter(cardId => cardId !== id));
+                }}
+                onViewCard={setSelectedCard} 
+              />
             </MainCard>
             
-            {/* Print Area - Only visible when printing ALL */}
-            <div className={`hidden ${!selectedCard ? 'print:block' : ''} space-y-12 print-isolate bg-white min-h-screen`}>
-              {generatedCards.map((card, index) => (
-                <div key={card.id} className={index > 0 ? "break-before-page" : ""}>
-                  <PrintableReportCard card={card} institutionDetails={institutionDetails} />
-                </div>
-              ))}
-            </div>
+            {/* Print Area - Only visible when printing ALL/SELECTED */}
+            {!selectedCard && (
+              <div className="hidden print:block space-y-12 print-isolate bg-white min-h-screen">
+                {generatedCards
+                  .filter(c => selectedCardIds.length === 0 || selectedCardIds.includes(c.id))
+                  .map((card, index) => (
+                  <div key={card.id} className={index > 0 ? "break-before-page" : ""}>
+                    <PrintableReportCard card={card} institutionDetails={institutionDetails} />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Print Area - Only visible when printing SINGLE */}
             {selectedCard && (

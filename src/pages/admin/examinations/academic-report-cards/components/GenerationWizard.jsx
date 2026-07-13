@@ -15,7 +15,7 @@ const generateAcademicYears = () => {
   return years;
 };
 
-const GenerationWizard = ({ onGenerate }) => {
+const GenerationWizard = ({ onGenerate, onViewExisting }) => {
   const [academicYear, setAcademicYear] = useState(generateAcademicYears().find(y => y.startsWith(String(new Date().getFullYear()))) || "2024-25");
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState('');
@@ -203,7 +203,19 @@ const GenerationWizard = ({ onGenerate }) => {
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end pt-6 border-t border-gray-100">
+          <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
+            <button
+              onClick={() => {
+                if (selectedClassId && onViewExisting) {
+                  onViewExisting(selectedClassId, academicYear);
+                } else if (!selectedClassId) {
+                  alert("Please select a target class first.");
+                }
+              }}
+              className="bg-gray-100 hover:bg-gray-200 text-[#03045e] px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all"
+            >
+              View Saved Reports
+            </button>
             <button
               onClick={handleGenerate}
               disabled={selectedExamIds.length === 0 || isGenerating}
