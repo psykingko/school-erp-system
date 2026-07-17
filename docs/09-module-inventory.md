@@ -9,6 +9,7 @@ This document tracks the completion status of all modules across the ERP portals
 
 ## Admin Portal
 ├── 👨‍🎓 Students (✔ Complete)
+├── 📝 Student Onboarding (✅ Complete / Frozen)
 ├── 👨‍🏫 Teachers (✔ Complete)
 ├── 👥 Employee Directory (✔ Complete)
 ├── 🏢 Manage Departments (⚠ Partial/UI Stub)

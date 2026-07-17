@@ -26,6 +26,13 @@ const localProvider = {
     return students.find((s) => s.id === studentId) || null;
   },
 
+  addStudent: async (studentData) => {
+    const students = getItem(STORAGE_KEYS.STUDENTS) || [];
+    students.push(studentData);
+    setItem(STORAGE_KEYS.STUDENTS, students);
+    return studentData;
+  },
+
   updateStudent: async (studentId, updates) => {
     const students = getItem(STORAGE_KEYS.STUDENTS) || [];
     const idx = students.findIndex((s) => s.id === studentId);
@@ -559,6 +566,13 @@ const localProvider = {
     return invoices.filter((inv) => inv.studentId === studentId);
   },
 
+  addFee: async (feeData) => {
+    const invoices = getItem(STORAGE_KEYS.INVOICES) || [];
+    invoices.push(feeData);
+    setItem(STORAGE_KEYS.INVOICES, invoices);
+    return feeData;
+  },
+
   getReceipts: async () => {
     return getItem(STORAGE_KEYS.RECEIPTS) || [];
   },
@@ -769,6 +783,13 @@ const localProvider = {
   getParentById: async (parentId) => {
     const parents = getItem(STORAGE_KEYS.PARENTS) || [];
     return parents.find((p) => p.id === parentId) || null;
+  },
+
+  createParent: async (parentData) => {
+    const parents = getItem(STORAGE_KEYS.PARENTS) || [];
+    parents.push(parentData);
+    setItem(STORAGE_KEYS.PARENTS, parents);
+    return parentData;
   },
 
   updateParent: async (parentId, updates) => {

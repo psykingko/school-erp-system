@@ -161,8 +161,8 @@ export const addFee = async (feeData) => {
   const newFee = {
     ...feeData,
     id: `fee-${Date.now()}`,
-    paidAmount: 0,
-    status: "Unpaid",
+    paidAmount: feeData.paidAmount || 0,
+    status: feeData.status || "Pending",
     createdAt: new Date().toISOString(),
   };
   return await provider.addFee(newFee);

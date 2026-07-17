@@ -20,6 +20,7 @@ export const DataProviderInterface = {
   // === STUDENT DATA ===
   getStudents: async () => [],
   getStudentById: async (_studentId) => null,
+  addStudent: async (_studentData) => null,
   updateStudent: async (_studentId, _updates) => null,
   getStudentsByClass: async (_classId) => [],
 
@@ -96,16 +97,30 @@ export const DataProviderInterface = {
   createLeaveRequest: async (_leaveData) => null,
   updateLeaveRequest: async (_leaveId, _updates) => null,
 
+  // === AUTH USERS ===
+  getAuthUsers: async () => [],
+  getAuthUserById: async (_authUserId) => null,
+  getAuthUserByUsername: async (_username, _role) => null,
+  getAuthUserByEmployeeId: async (_employeeId) => null,
+  createAuthUser: async (_authUserData) => null,
+  updateAuthUser: async (_authUserId, _updates) => null,
+  deleteAuthUser: async (_authUserId) => false,
+
+  // === PARENT DATA ===
+  getParents: async () => [],
+  getParentById: async (_parentId) => null,
+  createParent: async (_parentData) => null,
+  updateParent: async (_parentId, _updates) => null,
+
   // === FINANCE DATA ===
   getFees: async () => [],
   getFeesByStudent: async (_studentId) => [],
   updateFee: async (_feeId, _updates) => null,
+  addFee: async (_feeData) => null,
   getInvoices: async () => [],
-  getInvoicesByStudent: async (_studentId) => [],
   getReceipts: async () => [],
+  getInvoicesByStudent: async (_studentId) => [],
   getReceiptsByStudent: async (_studentId) => [],
-
-  // === FEE STRUCTURE ===
   getFeeStructures: async () => [],
   getFeeStructureById: async (_id) => null,
   updateFeeStructure: async (_id, _updates) => null,
@@ -123,7 +138,9 @@ export const DataProviderInterface = {
   // === PARENT DATA ===
   getParents: async () => [],
   getParentById: async (_parentId) => null,
+  createParent: async (_parentData) => null,
   updateParent: async (_parentId, _updates) => null,
+
 
   // === AUTH DATA ===
   getAuthUsers: async () => [],

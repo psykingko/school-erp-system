@@ -100,3 +100,18 @@ The Translation Subsystem is considered stable and **frozen**. Future feature de
 2. **Dictionary Ownership**: Namespaces must not be duplicated. Keys must be added to the dictionary that logically owns the respective namespace.
 3. **English/Hindi Parity**: All dictionary entries must maintain 100% structural parity between the `en` and `hi` block definitions.
 4. **Service Boundaries**: Translations are strictly a UI layer concern and must not be requested from or enforced by backend service boundaries.
+
+## Student Onboarding Architecture
+The Student Onboarding module acts as a robust, fully integrated administrative workflow that provisions new entities into the existing ecosystem.
+- **Workflow Orchestration**: `StudentOnboardingEngine` acts as a pure UI orchestrator containing zero business logic. It handles form state, validation, and multi-step navigation.
+- **Data Generation & Persistence**: `studentOnboardingService` governs the transaction. It validates the payload and invokes `studentService`, `parentService`, `authService`, and `financeService` sequentially to instantiate the Student, Parent, Authentication records, and Initial Invoice.
+- **Dependency Inversion**: No generic "Compatibility Layer" or "Migration Engine" is used. The Onboarding service conforms perfectly to the existing academic schema (`classId`, `streamId`, `admissionNo`) so that all read-heavy downstream services (Attendance, Timetable, Clubs, Finance) automatically resolve runtime-created users without friction.
+- **Demo & Authentication Flow**: Runtime-created students and parents naturally flow into the `AUTH_USERS` collection. The Login Page and Demo Account selectors automatically discover runtime users, maintaining 100% parity with seeded data behavior.
+
+### Student Onboarding Architecture Freeze
+The Student Onboarding subsystem is considered stable and **frozen**. Future feature development must respect the following architectural decisions:
+1. **No Backend Simulation Patterns**: The system must NOT implement domain events, background jobs, CQRS, or synchronization adapters on the frontend. The `Service -> Provider -> LocalStorage` flow is final.
+2. **Strict Component Isolation**: The Onboarding Wizard (`StudentOnboardingEngine`) remains strictly for presentation. All data transformations are owned by `studentOnboardingService`.
+3. **Downward Compatibility**: Runtime objects must exactly mirror Seeded objects structurally to preserve zero-overhead compatibility with downstream modules.
+4. **No Custom Routing**: Runtime-created users leverage standard authentication pipelines and identical role-based dashboard resolution.
+

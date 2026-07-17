@@ -17,17 +17,16 @@ When migrating to the backend, the future `apiProvider` MUST satisfy the **Imple
 ## 1. Authentication & Users
 | Method | Classification | Status |
 |---|---|---|
-| `login` | 🟢 Implemented + Contracted | Active |
+| `login`, `logout` | 🟢 Implemented + Contracted | Active |
 | `getCurrentUser` | 🟢 Implemented + Contracted | Active |
-| `logout` | 🟢 Implemented + Contracted | Active |
+| `getAuthUsers`, `getAuthUserById`, `createAuthUser`, etc. | 🟢 Implemented + Contracted | Used by Onboarding and Seed Generators |
 
 ## 2. Students, Teachers & Parents
 | Method | Classification | Status |
 |---|---|---|
-| `getStudents`, `getStudentById` | 🟢 Implemented + Contracted | Active |
-| `updateStudent` | 🟢 Implemented + Contracted | Active |
-| `getTeachers`, `getTeacherById` | 🟢 Implemented + Contracted | Active |
-| `getParents`, `getParentById` | 🟢 Implemented + Contracted | Active |
+| `getStudents`, `getStudentById`, `addStudent`, `updateStudent` | 🟢 Implemented + Contracted | Active |
+| `getTeachers`, `getTeacherById`, `updateTeacher` | 🟢 Implemented + Contracted | Active |
+| `getParents`, `getParentById`, `createParent`, `updateParent` | 🟢 Implemented + Contracted | Active |
 | `getEmployees` | 🔴 Implemented + Not Contracted | Used by `EmployeeDirectoryPage.jsx` directly |
 
 ## 3. Academics (Classes, Subjects, Timetable)
@@ -55,7 +54,7 @@ When migrating to the backend, the future `apiProvider` MUST satisfy the **Imple
 ## 6. Finance
 | Method | Classification | Status |
 |---|---|---|
-| `getFees`, `getFeesByStudent`, `updateFee` | 🟢 Implemented + Contracted | Active |
+| `getFees`, `getFeesByStudent`, `updateFee`, `addFee` | 🟢 Implemented + Contracted | Active |
 | `getInvoices`, `getReceipts`, `getInvoicesByStudent`, `getReceiptsByStudent` | 🟢 Implemented + Contracted | Active |
 | `getFeeStructures`, `getFeeStructureById`, `updateFeeStructure` | 🟢 Implemented + Contracted | Active |
 | `getFeeHeads`, `getFeeHeadById`, `createFeeHead`, `updateFeeHead`, `deleteFeeHead` | 🔴 Implemented + Not Contracted | Used heavily by `financeService.js` and `FeeManagementPage.jsx` |

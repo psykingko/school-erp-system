@@ -35,3 +35,14 @@ export const updateParentProfile = async (id, updates) => {
   const provider = getDataProvider();
   return await provider.updateParent(id, updates);
 };
+
+export const createParent = async (parentData) => {
+  const provider = getDataProvider();
+  const newParent = {
+    ...parentData,
+    id: `par-${Date.now()}`,
+    parentId: parentData.parentId || `PAR${Date.now()}`,
+    createdAt: new Date().toISOString(),
+  };
+  return await provider.createParent(newParent);
+};

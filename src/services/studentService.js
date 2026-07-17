@@ -102,21 +102,21 @@ export const getStudentProfile = async (studentId) => {
     },
     family: {
       father: {
-        name: parent?.name || "N/A",
+        name: student.fatherName || parent?.name || "N/A",
         occupation: student.fatherOccupation || "Professional",
         phoneNumber:
-          student.fatherPhone || parent?.phoneNumber || "+91 90000 00001",
+          student.fatherMobile || student.fatherPhone || parent?.phoneNumber || "+91 90000 00001",
       },
       mother: {
         name: student.motherName || "N/A",
         occupation: student.motherOccupation || "Home Maker",
-        phoneNumber: student.motherPhone || "+91 90000 00002",
+        phoneNumber: student.motherMobile || student.motherPhone || "+91 90000 00002",
       },
       guardian: {
         name: parent?.name || "N/A",
         relation: "Father",
         phoneNumber:
-          parent?.phoneNumber || student.fatherPhone || "+91 90000 00001",
+          parent?.phoneNumber || student.fatherMobile || student.fatherPhone || "+91 90000 00001",
         address: "123, Park Avenue, New Delhi, India",
       },
     },

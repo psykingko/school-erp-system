@@ -43,6 +43,11 @@ const ClubManagementCenterPage = () => {
   const [decisionRemarks, setDecisionRemarks] = useState("");
   const [isSubmittingDecision, setIsSubmittingDecision] = useState(false);
 
+  const [reviewRequestOpen, setReviewRequestOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [requestRemarks, setRequestRemarks] = useState("");
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+
   const [successBanner, setSuccessBanner] = useState("");
   const [errorBanner, setErrorBanner] = useState("");
 
@@ -222,6 +227,40 @@ const ClubManagementCenterPage = () => {
       setTimeout(() => setErrorBanner(""), 4000);
     } finally {
       setIsSubmittingDecision(false);
+    }
+  };
+
+  const handleApproveRequest = async () => {
+    setIsSubmittingRequest(true);
+    try {
+      await clubsService.approveClubMembershipRequest(selectedRequest.requestId || selectedRequest.id, requestRemarks);
+      setSuccessBanner("Membership request has been approved.");
+      setTimeout(() => setSuccessBanner(""), 3000);
+      setReviewRequestOpen(false);
+      setRequestRemarks("");
+      fetchData();
+    } catch (e) {
+      setErrorBanner(e.message || "Failed to approve request.");
+      setTimeout(() => setErrorBanner(""), 3000);
+    } finally {
+      setIsSubmittingRequest(false);
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    setIsSubmittingRequest(true);
+    try {
+      await clubsService.rejectClubMembershipRequest(selectedRequest.requestId || selectedRequest.id, requestRemarks);
+      setSuccessBanner("Membership request has been rejected.");
+      setTimeout(() => setSuccessBanner(""), 3000);
+      setReviewRequestOpen(false);
+      setRequestRemarks("");
+      fetchData();
+    } catch (e) {
+      setErrorBanner(e.message || "Failed to reject request.");
+      setTimeout(() => setErrorBanner(""), 3000);
+    } finally {
+      setIsSubmittingRequest(false);
     }
   };
 
@@ -452,7 +491,7 @@ const ClubManagementCenterPage = () => {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-5 border-b border-gray-100 bg-gray-50/50">
         <h2 className="text-lg font-black text-[#03045e]">Membership Requests Overview</h2>
-        <p className="text-sm text-gray-500 mt-1">Read-only view of student membership requests.</p>
+        <p className="text-sm text-gray-500 mt-1">Review and manage student membership requests.</p>
       </div>
       
       <div className="overflow-x-auto">
@@ -463,6 +502,7 @@ const ClubManagementCenterPage = () => {
               <th className="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Student</th>
               <th className="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Club</th>
               <th className="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="p-4 text-xs font-black text-gray-500 uppercase tracking-wider text-right">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -483,12 +523,26 @@ const ClubManagementCenterPage = () => {
                       {req.status}
                     </span>
                   </td>
+                  <td className="p-4 text-right">
+                    {req.status === "Pending" ? (
+                      <PermissionGate moduleId="admin_clubs" permission="edit" mode="hidden">
+                        <button
+                          onClick={() => { setSelectedRequest(req); setReviewRequestOpen(true); }}
+                          className="text-[10px] font-black text-[#00b4d8] hover:text-[#0077b6] bg-[#caf0f8]/30 hover:bg-[#caf0f8] px-3 py-1.5 rounded-lg transition-colors uppercase tracking-wider"
+                        >
+                          Review
+                        </button>
+                      </PermissionGate>
+                    ) : (
+                      <span className="text-xs text-gray-400 font-medium">-</span>
+                    )}
+                  </td>
                 </tr>
               )
             })}
             {membershipRequests.length === 0 && (
               <tr>
-                <td colSpan="4" className="p-8 text-center text-gray-500 font-semibold">
+                <td colSpan="5" className="p-8 text-center text-gray-500 font-semibold">
                   No membership requests found.
                 </td>
               </tr>
@@ -496,6 +550,82 @@ const ClubManagementCenterPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Review Request Modal */}
+      {reviewRequestOpen && selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+          <div className="max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-xl w-full w-[95vw] md:w-[90vw] lg:max-w-lg overflow-hidden border border-gray-100">
+            <div className="p-5 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#00b4d8]" />
+                <h3 className="font-black text-sm text-[#03045e] uppercase tracking-wider">
+                  Review Membership Request
+                </h3>
+              </div>
+              <button 
+                onClick={() => setReviewRequestOpen(false)}
+                className="w-7 h-7 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-100 hover:bg-rose-50 transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Student</span>
+                  <p className="text-sm font-black text-[#03045e] mt-0.5">{selectedRequest.studentName}</p>
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Requested On</span>
+                  <p className="text-xs font-bold text-gray-600 mt-1">
+                    {new Date(selectedRequest.requestDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 mb-4">
+                <div>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Club</span>
+                  <p className="text-sm font-black text-[#03045e] mt-0.5">{clubs.find(c => c.id === selectedRequest.clubId)?.name || selectedRequest.clubName}</p>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wider">
+                  Remarks (Optional)
+                </label>
+                <textarea
+                  className="w-full border border-gray-200 rounded-xl p-3 text-sm text-[#03045e] focus:border-[#00b4d8] focus:ring-4 focus:ring-[#00b4d8]/10 outline-none transition-all resize-none h-24"
+                  placeholder="Enter any remarks..."
+                  value={requestRemarks}
+                  onChange={(e) => setRequestRemarks(e.target.value)}
+                  disabled={isSubmittingRequest}
+                />
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-50 flex justify-end gap-2 bg-gray-50/50 mt-auto">
+              <button
+                type="button"
+                onClick={handleRejectRequest}
+                disabled={isSubmittingRequest}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors disabled:opacity-50"
+              >
+                Reject Request
+              </button>
+              <button
+                type="button"
+                onClick={handleApproveRequest}
+                disabled={isSubmittingRequest}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-[#03045e] hover:bg-[#020344] shadow-md shadow-[#03045e]/20 transition-all disabled:opacity-50"
+              >
+                {isSubmittingRequest ? "Processing..." : "Approve Request"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

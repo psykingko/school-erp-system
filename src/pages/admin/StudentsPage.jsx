@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   UserPlus,
   Phone,
@@ -21,6 +21,8 @@ import ConfirmationModal from "../../shared/components/ConfirmationModal";
 import ToastNotification from "../../shared/components/ToastNotification";
 import LoadingSkeleton from "../../shared/components/LoadingSkeleton";
 import StudentStatusBadge from "../../components/common/StudentStatusBadge";
+import StudentOnboardingEngine from "../../components/admin/students/StudentOnboardingEngine";
+import studentOnboardingService from "../../services/studentOnboardingService";
 
 import {
   getAllStudents,
@@ -119,6 +121,27 @@ const StudentsPage = () => {
       setToast({
         show: true,
         message: "Failed to admit student",
+        type: "error",
+      });
+    }
+  };
+
+  const handleWizardComplete = async (payload) => {
+    try {
+      await studentOnboardingService.processOnboarding(payload);
+      setAddStudentOpen(false);
+      setToast({
+        show: true,
+        message: "Student onboarded successfully!",
+        type: "success",
+      });
+      const data = await getAllStudents();
+      setStudents(data || []);
+    } catch (error) {
+      console.error(error);
+      setToast({
+        show: true,
+        message: "Failed to onboard student.",
         type: "error",
       });
     }
@@ -514,7 +537,8 @@ const StudentsPage = () => {
             ]}
             items={filteredStudents}
             isEmpty={filteredStudents.length === 0}
-            emptyTitle="No students found matching current query"
+            emptyTitle={students.length === 0 ? "No students admitted yet" : "No students found matching current query"}
+            emptyDescription={students.length === 0 ? "Click 'Admit Student' above to onboard your first student." : undefined}
             renderRow={(stu) => {
               const displayClassSec = formatClassName(
                 stu.classLevel,
@@ -619,31 +643,14 @@ const StudentsPage = () => {
       />
 
       {/* Add Student Modal */}
-      <AdminEditForm
-        isOpen={addStudentOpen}
-        onClose={() => setAddStudentOpen(false)}
-        title="Admit New Student"
-        data={studentFormDefaults}
-        fields={studentFields}
-        onChange={(name, value, currentState) => {
-          const updated = { ...currentState };
-          if (name === "classLevel") {
-            if (value !== "11" && value !== "12") {
-              updated.stream = "";
-            } else if (updated.section) {
-              updated.stream = sectionToStream[updated.section] || "";
-            }
-          }
-          if (
-            name === "section" &&
-            (updated.classLevel === "11" || updated.classLevel === "12")
-          ) {
-            updated.stream = sectionToStream[value] || "";
-          }
-          return updated;
-        }}
-        onSubmit={handleAddStudent}
-      />
+      <AnimatePresence>
+        {addStudentOpen && (
+          <StudentOnboardingEngine
+            onClose={() => setAddStudentOpen(false)}
+            onComplete={handleWizardComplete}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       <ConfirmationModal

@@ -55,7 +55,7 @@ export default function ClubsCommitteesPage() {
   const [proposing, setProposing] = useState(false);
   const [clubToLeave, setClubToLeave] = useState(null);
   
-  const { activeStudentId } = useStudent();
+  const { activeStudentId, activeStudent } = useStudent();
   const studentId = activeStudentId || 'stud-001';
 
   const loadStudentData = async () => {
@@ -86,10 +86,10 @@ export default function ClubsCommitteesPage() {
       const proposals = await clubsService.getStudentClubProposals(studentId);
       setMyProposals(proposals);
     } catch (err) {
-      console.error("Failed to load student club dataset:", err);
-    } finally {
-      setLoading(false);
+      console.error(err);
+      setErrorMsg("Failed to load clubs.");
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -102,9 +102,9 @@ export default function ClubsCommitteesPage() {
       const club = studentClubs.find(c => c.id === clubId);
       await clubsService.createClubMembershipRequest({
         studentId,
-        studentName: "Current Student",
-        className: "10-A",
-        section: "A",
+        studentName: activeStudent?.name || "Current Student",
+        className: activeStudent?.className || "10-A",
+        section: activeStudent?.section || "A",
         clubId,
         clubName: club.name,
         coordinatorTeacherId: club.clubHeadTeacherId || "teach-001",
