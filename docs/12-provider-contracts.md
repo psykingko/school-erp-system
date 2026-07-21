@@ -42,6 +42,10 @@ When migrating to the backend, the future `apiProvider` MUST satisfy the **Imple
 | `getDailyAttendance` | 🟢 Implemented + Contracted | Active |
 | `markAttendance` | 🟢 Implemented + Contracted | Active |
 | `getAttendanceSessions` | 🟢 Implemented + Contracted | Active |
+| `getStaffDailyAttendance` | 🔴 Implemented + Not Contracted | Used by `staffAttendanceService.js` |
+| `markStaffAttendance` | 🔴 Implemented + Not Contracted | Used by `staffAttendanceService.js` |
+| `getInstitutionSettings` | 🔴 Implemented + Not Contracted | Used by Governance Services |
+| `updateInstitutionSettings` | 🔴 Implemented + Not Contracted | Used by Governance Services |
 
 ## 5. Assignments & Exams
 | Method | Classification | Status |

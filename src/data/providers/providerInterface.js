@@ -53,6 +53,15 @@ export const DataProviderInterface = {
   getAttendanceSessions: async () => [],
   getAttendanceSession: async (_classId, _date) => null,
 
+  // === STAFF ATTENDANCE DATA ===
+  getStaffDailyAttendance: async () => [],
+  getStaffAttendanceByEmployee: async (_employeeId) => [],
+  getStaffAttendanceByDate: async (_employeeId, _date) => null,
+  getStaffAttendanceByDepartment: async (_departmentId, _date) => [],
+  markStaffAttendance: async (_record) => null,
+  updateStaffAttendanceBulk: async (_records) => [],
+
+
   // === ASSIGNMENT DATA ===
   getAssignments: async () => [],
   getAssignmentsByClass: async (_classId) => [],
@@ -135,17 +144,7 @@ export const DataProviderInterface = {
   getTransportDrivers: async () => [],
   getTransportAlerts: async () => [],
 
-  // === PARENT DATA ===
-  getParents: async () => [],
-  getParentById: async (_parentId) => null,
-  createParent: async (_parentData) => null,
-  updateParent: async (_parentId, _updates) => null,
 
-
-  // === AUTH DATA ===
-  getAuthUsers: async () => [],
-  getAuthUserById: async (_authUserId) => null,
-  getAuthUserByUsername: async (_username, _role) => null,
 
   // === TIMETABLE DATA ===
   getTimetables: async () => [],

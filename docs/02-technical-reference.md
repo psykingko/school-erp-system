@@ -172,8 +172,10 @@ All values are stored as JSON arrays (or objects). Below is the complete key reg
 | Key | Constant | Type | Description |
 |---|---|---|---|
 | `erp_teacherSubjectAssignments` | `TEACHER_SUBJECT_ASSIGNMENTS` | Array | Which teacher teaches what subject to which class |
-| `erp_dailyAttendance` | `DAILY_ATTENDANCE` | Array | Per-student per-day attendance |
-| `erp_attendanceSessions` | `ATTENDANCE_SESSIONS` | Array | Per-class per-day session records |
+| `erp_dailyAttendance` | `DAILY_ATTENDANCE` | Array | **Student Attendance**. Owned by `localProvider`. Read/Write via `attendanceService.js`. |
+| `erp_attendanceSessions` | `ATTENDANCE_SESSIONS` | Array | **Attendance Sessions**. Owned by `localProvider`. Read/Write via `attendanceService.js`. |
+| `erp_staffAttendance` | `STAFF_ATTENDANCE` | Array | **Staff Attendance**. Owned by `localProvider`. Read/Write via `staffAttendanceService.js`. |
+| `erp_institutionSettings` | `INSTITUTION_SETTINGS` | Object | **Institution Settings**. Owned by `localProvider`. Read/Write via Governance Services. |
 | `erp_exams` | `EXAMS` | Array | Exam cycles / exam events |
 | `erp_exam_papers` | `EXAM_PAPERS` | Array | Per-subject paper metadata |
 | `erp_results` | `RESULTS` | Array | Student exam results |
@@ -1096,6 +1098,8 @@ Currently emitted but notice **may not** auto-generate (needs `autoGenerate !== 
 | `/admin/exams` | `ExaminationsPage` | Full exam lifecycle |
 | `/admin/academic-performance` | `AcademicPerformancePage` | Analytics |
 | `/admin/attendance` | `AttendanceOverviewPage` | Attendance summary |
+| `/admin/staff-attendance` | `StaffAttendanceMgmtPage` | Staff Attendance Management |
+| `/admin/my-attendance` | `EmployeeAttendancePage` | Employee Self Attendance |
 | `/admin/leaves` | `LeaveApprovalsPage` | Leave approvals |
 | `/admin/transport` | `TransportManagementPage` | Transport management |
 | `/admin/fees` | `FeeManagementPage` | Fee management |

@@ -19,7 +19,8 @@ graph TD
     end
 
     subgraph "Module Data"
-        M_Attendance["📝 Attendance Logs Database"]
+        M_Attendance["📝 Student Attendance Logs Database"]
+        M_StaffAttendance["📝 Staff Attendance Logs Database"]
     end
 
     Teacher -->|✍️ Takes & Edits Daily Logs| M_Attendance
@@ -27,7 +28,11 @@ graph TD
     Student -->|👁️ Views Personal Presence Rate| M_Attendance
     Parent -->|👁️ Monitors Child Absence Records| M_Attendance
 
+    Admin -->|✍️ Manages Staff Attendance| M_StaffAttendance
+    Teacher -->|👁️ Views Personal Staff Attendance| M_StaffAttendance
+
     style M_Attendance fill:#fef08a,stroke:#eab308,stroke-width:2px
+    style M_StaffAttendance fill:#fef08a,stroke:#eab308,stroke-width:2px
 ```
 
 ---
@@ -345,7 +350,8 @@ This grid maps features to roles using permissions. You can easily add rows for 
 | **User Accounts Directory** | `✍️ Manage` | `👁️ View (Basic)` | `👁️ View (Self)` | `👁️ View (Child)` |
 | **Employee & Department Management** | `✍️ Manage` | `❌ None` | `❌ None` | `❌ None` |
 | **Academics, Classes & Timetables** | `✍️ Manage` | `👁️ View (Own)` | `👁️ View (Own)` | `👁️ View (Child)` |
-| **Attendance Logs** | `👁️ View (Global)` | `✍️ Manage` | `👁️ View (Self)` | `👁️ View (Child)` |
+| **Student Attendance Logs** | `👁️ View (Global)` | `✍️ Manage` | `👁️ View (Self)` | `👁️ View (Child)` |
+| **Staff Attendance Logs** | `✍️ Manage (Global)` | `👁️ View (Self)` | `❌ None` | `❌ None` |
 | **Assignments & Homework** | `❌ None` | `✍️ Manage` | `💬 Interact` | `👁️ View` |
 | **Exams & Grading** | `✍️ Manage (Lifecycle)` | `✍️ Manage (Marks)` | `👁️ View` | `👁️ View` |
 | **Question Papers** | `✍️ Manage (Approve)` | `✍️ Manage (Draft)` | `❌ None` | `❌ None` |

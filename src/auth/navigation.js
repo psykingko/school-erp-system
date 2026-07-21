@@ -49,6 +49,7 @@ export const ROLE_NAVIGATION = {
   [ROLES.TEACHER]: [
     { id: "teacher_home", icon: "LayoutDashboard" },
     { id: "teacher_leaves", icon: "Palmtree" },
+    { id: "teacher_my_attendance", icon: "UserCheck" },
     { id: "attendance_mgmt", icon: "CheckSquare" },
     { id: "assignments_mgmt", icon: "ClipboardEdit" },
     { id: "teacher_examinations", icon: "BookCheck" },
@@ -82,6 +83,8 @@ export const ROLE_NAVIGATION = {
     { id: "admin_question_papers", icon: "FileQuestion" },
     { id: "admin_academic_performance", icon: "LineChart" },
     { id: "admin_attendance", icon: "CheckSquare" },
+    { id: "admin_staff_attendance", icon: "Users" },
+    { id: "admin_my_attendance", icon: "UserCheck" },
     { id: "admin_leave_management", icon: "CalendarRange" },
     { id: "admin_transport", icon: "Bus" },
     { id: "admin_fees", icon: "WalletCards" },
@@ -90,6 +93,7 @@ export const ROLE_NAVIGATION = {
     { id: "admin_clubs", icon: "Tent" },
     { id: "admin_achievements", icon: "Trophy" },
     { id: "admin_calendar", icon: "CalendarDays" },
+    { id: "calendar", icon: "CalendarDays" },
     { id: "admin_notices", icon: "Megaphone" },
     { id: "admin_institutional_planning", icon: "Target" },
     { id: "admin_manage_departments", icon: "Layers" },
@@ -139,6 +143,7 @@ export const ADMIN_SECTIONS = [
     title: "Operations",
     items: [
       { id: "admin_attendance", icon: "CheckSquare", label: "Attendance Overview" },
+      { id: "admin_staff_attendance", icon: "Users", label: "Staff Attendance" },
       { id: "admin_leave_management", icon: "CalendarRange", label: "Leave Management" },
       { id: "admin_transport", icon: "Bus", label: "Transport" },
       { id: "admin_fees", icon: "WalletCards", label: "Fee Management" },
@@ -150,7 +155,7 @@ export const ADMIN_SECTIONS = [
     title: "Institutional Activities",
     items: [
       { id: "admin_achievements", icon: "Trophy", label: "Achievements" },
-      { id: "admin_calendar", icon: "CalendarDays", label: "Academic Calendar" },
+      { id: "admin_calendar", icon: "CalendarDays", label: "Calendar Management" },
       { id: "admin_notices", icon: "Megaphone", label: "Notice Management" },
     ],
   },
@@ -166,16 +171,23 @@ export const ADMIN_SECTIONS = [
       { id: "admin_manage_departments", icon: "Layers", label: "Manage Departments" },
       { id: "admin_communication_center", icon: "Send", label: "Communication Center" },
       { id: "admin_support_management", icon: "Headset", label: "Support Management" },
-      { id: "support_center", icon: "LifeBuoy", label: "Support Center" },
     ],
   },
   {
     title: "Settings",
     items: [
-      { id: "admin_profile", icon: "UserCircle", label: "Profile" },
-      { id: "admin_employee_leaves", icon: "Palmtree", label: "My Leaves" },
       { id: "admin_access_control", icon: "ShieldCheck", label: "Administrative Controls" },
       { id: "admin_school_settings", icon: "Settings", label: "School Settings" },
+    ],
+  },
+  {
+    title: "Personal Workspace",
+    items: [
+      { id: "admin_profile", icon: "UserCircle", label: "Profile" },
+      { id: "admin_my_attendance", icon: "UserCheck", label: "My Attendance" },
+      { id: "admin_employee_leaves", icon: "Palmtree", label: "My Leaves" },
+      { id: "calendar", icon: "CalendarDays", label: "Academic Calendar" },
+      { id: "support_center", icon: "LifeBuoy", label: "Support Center" },
       { id: "logout", icon: "LogOut", label: "Logout" },
     ],
   },

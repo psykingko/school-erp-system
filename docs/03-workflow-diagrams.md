@@ -411,16 +411,27 @@ flowchart LR
 ```mermaid
 flowchart LR
     A[Admin] -->|Monitors| B[Attendance Overview Dashboard]
-    B -->|Identifies At-Risk Students| C{Attendance Thresholds}
-    C -->|< 75%| D[Low Attendance Target]
-    C -->|< 50%| E[Critical Attendance Target]
+    B -->|Separates Data| Z{Data Streams}
+
+    Z -->|Student Data| C{Student Thresholds}
+    C -->|< 85%| D[Notification Target]
+    C -->|< 60%| E[Escalation Target]
     C -->|< 30%| F[Severe Action Target]
     C -->|> 95%| G[Appreciation Target]
     
     D & E & F & G -->|Selects Students| H[Redirect to Communication Center]
-    H -->|Pre-fills Data| I[Campaign Subject & Delivery Channel]
-    I -->|Auto-generates Body| J[Contextual Message Template based on Threshold]
-    J -->|Admin Reviews & Dispatches| K[Notification Sent via Email/SMS/App]
+    H -->|Auto-generates Body| J[Contextual Message Template for Parents]
+
+    Z -->|Staff Data| C2{Staff Thresholds}
+    C2 -->|< 90%| D2[HR Notification Target]
+    C2 -->|< 80%| E2[HR Escalation Target]
+    C2 -->|< 70%| F2[Severe HR Action Target]
+    C2 -->|> 98%| G2[Employee Appreciation]
+
+    D2 & E2 & F2 & G2 -->|Selects Staff| H2[Redirect to Communication Center]
+    H2 -->|Auto-generates Body| J2[Contextual Message Template for Employees / Admins]
+
+    J & J2 -->|Admin Reviews & Dispatches| K[Notification Sent via Email/SMS/App]
 ```
 
 # Identity Card Workflow
@@ -508,4 +519,36 @@ flowchart TD
     K --> L[Consumes REPORT_CARDS dataset filtered by final]
     L --> M
     L --> N
+```
+
+## 7. Attendance Runtime Flow
+```mermaid
+graph TD
+    subgraph "Student Attendance"
+        S_UI[Teacher UI] --> S_Svc[attendanceService]
+        S_Svc --> S_Prov[Provider]
+        S_Prov --> S_LS[(LocalStorage)]
+    end
+
+    subgraph "Staff Attendance"
+        St_UI[Admin UI] --> St_Svc[staffAttendanceService]
+        St_Svc --> St_Prov[Provider]
+        St_Prov --> St_LS[(LocalStorage)]
+    end
+
+    subgraph "Employee Self Attendance"
+        E_UI[Employee UI] --> E_Svc[staffAttendanceService]
+        E_Svc --> E_Prov[Provider]
+        E_Prov --> E_LS[(LocalStorage)]
+    end
+
+    subgraph "Attendance Governance"
+        G_UI[Attendance Overview] --> G_Svc[Governance Service]
+        G_Svc --> G_Prov[Provider]
+        G_Prov --> G_LS[(LocalStorage)]
+    end
+
+    S_UI -.->|Presentation Only| S_UI
+    S_Svc -.->|Business Logic| S_Svc
+    S_Prov -.->|Persistence Boundary| S_Prov
 ```

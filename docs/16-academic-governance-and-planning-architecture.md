@@ -67,16 +67,20 @@ Centralized repository for institutional policies, circulars, and teacher lesson
 - **Storage**: Currently mocked as metadata records in `localStorage`.
 - **Future Integration**: Will require integration with an S3-compatible blob storage service. The backend must enforce signed URLs and time-limited access tokens for sensitive documents (e.g., medical records, disciplinary actions).
 
-## 7. Attendance Management
+## 7. Attendance Governance
 **Target Portals:** Admin, Teacher
-
-### Components
-- **Admin**: `AttendanceOverviewPage.jsx`
-- **Teacher**: `AttendanceMgmtPage.jsx`
+- **Components**: `AttendanceOverviewPage.jsx` (Admin), `AttendanceMgmtPage.jsx` (Teacher), `StaffAttendanceMgmtPage.jsx` (Admin), `EmployeeAttendancePage.jsx` (Shared).
 
 ### Implementation Strategy
-- **Teacher View**: Optimized for rapid data entry (e.g., "Mark All Present" toggle) with fallback to individual absentee marking.
-- **Admin View**: Aggregates daily, weekly, and monthly attendance rates. Generates automated notices for chronic absenteeism via the Notification Engine.
+The Attendance subsystem is strictly bifurcated into Student Attendance and Staff Attendance. Both operate on independent data streams and independent governance thresholds.
+
+- **Student Governance**:
+  - Focuses on academic presence. Governed by `attendanceGovernanceService.js`.
+  - Generates automated notices for chronic absenteeism (e.g. notifications to parents).
+- **Staff Governance**:
+  - Focuses on employee compliance and operational readiness. Governed independently by `staffAttendanceGovernanceService.js`.
+  - Evaluates separate thresholds (e.g., HR warnings vs. appreciation) and routes communications to employees and administrators rather than parents.
+- **Centralized Admin View**: `AttendanceOverviewPage.jsx` aggregates both student and staff compliance data visually into separate tabs, maintaining complete data isolation while presenting a unified operational monitoring dashboard.
 
 ## Conclusion
 These modules represent the upper-tier value additions to the ERP, transforming it from a simple CRUD system into an intelligent administrative tool. Future backend development should prioritize exposing optimized, pre-aggregated endpoints to support these heavy analytics views.

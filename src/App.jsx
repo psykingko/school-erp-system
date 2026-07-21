@@ -114,6 +114,12 @@ const QuestionPapersAdminPage = lazy(() => import("./pages/admin/QuestionPapersA
 const AttendanceOverviewPage = lazy(
   () => import("./pages/admin/AttendanceOverviewPage"),
 );
+const StaffAttendanceMgmtPage = lazy(
+  () => import("./pages/admin/StaffAttendanceMgmtPage"),
+);
+const EmployeeAttendancePage = lazy(
+  () => import("./pages/shared/EmployeeAttendancePage"),
+);
 
 const FeeManagementPage = lazy(() => import("./pages/admin/FeeManagementPage"));
 const TransportManagementPage = lazy(
@@ -905,6 +911,10 @@ function AppContent() {
           element={<LazyRoute Component={AttendanceMgmtPage} />}
         />
         <Route
+          path="my-attendance"
+          element={<LazyRoute Component={EmployeeAttendancePage} />}
+        />
+        <Route
           path="assignments"
           element={<LazyRoute Component={AssignmentsManagementPage} />}
         />
@@ -1002,6 +1012,7 @@ function AppContent() {
         <Route path="employees" element={<AdminRouteGuard requiredModule="admin_employees"><LazyRoute Component={EmployeeDirectoryPage} /></AdminRouteGuard>} />
         <Route path="staff/:id/*" element={<AdminRouteGuard requiredModule="admin_employees"><LazyRoute Component={StaffWorkspaceLayout} /></AdminRouteGuard>} />
         <Route path="employee-leaves" element={<AdminRouteGuard requiredModule="admin_employee_leaves"><LazyRoute Component={EmployeeLeavePage} /></AdminRouteGuard>} />
+        <Route path="my-attendance" element={<AdminRouteGuard requiredModule="admin_home"><LazyRoute Component={EmployeeAttendancePage} /></AdminRouteGuard>} />
         <Route path="classes" element={<AdminRouteGuard requiredModule="admin_classes"><LazyRoute Component={ClassesPage} /></AdminRouteGuard>} />
         <Route
           path="subjects"
@@ -1052,6 +1063,10 @@ function AppContent() {
           element={<AdminRouteGuard requiredModule="admin_attendance"><LazyRoute Component={AttendanceOverviewPage} /></AdminRouteGuard>}
         />
         <Route
+          path="staff-attendance"
+          element={<AdminRouteGuard requiredModule="admin_attendance"><LazyRoute Component={StaffAttendanceMgmtPage} /></AdminRouteGuard>}
+        />
+        <Route
           path="leave-management"
           element={<AdminRouteGuard requiredModule="admin_leave_management"><LazyRoute Component={LeaveManagementPage} /></AdminRouteGuard>}
         />
@@ -1084,8 +1099,12 @@ function AppContent() {
           element={<AdminRouteGuard requiredModule="admin_achievements"><LazyRoute Component={AdminAchievementsPage} /></AdminRouteGuard>}
         />
         <Route
-          path="calendar"
+          path="calendar-management"
           element={<AdminRouteGuard requiredModule="admin_calendar"><LazyRoute Component={AdminSchoolCalendarPage} /></AdminRouteGuard>}
+        />
+        <Route
+          path="calendar"
+          element={<AdminRouteGuard requiredModule="admin_calendar"><LazyRoute Component={SchoolCalendarPage} /></AdminRouteGuard>}
         />
         <Route
           path="announcements"

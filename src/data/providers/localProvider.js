@@ -242,6 +242,57 @@ const localProvider = {
     return sessions.length > 0 ? sessions[0] : null;
   },
 
+  // === STAFF ATTENDANCE DATA ===
+  getStaffDailyAttendance: async () => {
+    return getItem(STORAGE_KEYS.STAFF_DAILY_ATTENDANCE) || [];
+  },
+
+  getStaffAttendanceByEmployee: async (employeeId) => {
+    const list = getItem(STORAGE_KEYS.STAFF_DAILY_ATTENDANCE) || [];
+    return list.filter((a) => a.employeeId === employeeId);
+  },
+
+  getStaffAttendanceByDate: async (employeeId, date) => {
+    const list = getItem(STORAGE_KEYS.STAFF_DAILY_ATTENDANCE) || [];
+    return list.find((a) => a.employeeId === employeeId && a.attendanceDate === date) || null;
+  },
+
+  getStaffAttendanceByDepartment: async (departmentId, date) => {
+    const list = getItem(STORAGE_KEYS.STAFF_DAILY_ATTENDANCE) || [];
+    return list.filter((a) => a.department === departmentId && a.attendanceDate === date);
+  },
+
+  markStaffAttendance: async (record) => {
+    const list = getItem(STORAGE_KEYS.STAFF_DAILY_ATTENDANCE) || [];
+    const index = list.findIndex(
+      (a) => a.employeeId === record.employeeId && a.attendanceDate === record.attendanceDate
+    );
+    if (index >= 0) {
+      list[index] = { ...list[index], ...record, updatedAt: new Date().toISOString() };
+    } else {
+      list.push({ ...record, id: `staff-att-${Date.now()}`, createdAt: new Date().toISOString() });
+    }
+    setItem(STORAGE_KEYS.STAFF_DAILY_ATTENDANCE, list);
+    return record;
+  },
+
+  updateStaffAttendanceBulk: async (records) => {
+    const list = getItem(STORAGE_KEYS.STAFF_DAILY_ATTENDANCE) || [];
+    records.forEach((record) => {
+      const index = list.findIndex(
+        (a) => a.employeeId === record.employeeId && a.attendanceDate === record.attendanceDate
+      );
+      if (index >= 0) {
+        list[index] = { ...list[index], ...record, updatedAt: new Date().toISOString() };
+      } else {
+        list.push({ ...record, id: `staff-att-${Date.now()}-${Math.floor(Math.random()*1000)}`, createdAt: new Date().toISOString() });
+      }
+    });
+    setItem(STORAGE_KEYS.STAFF_DAILY_ATTENDANCE, list);
+    return records;
+  },
+
+
   // === ASSIGNMENT DATA ===
   getAssignments: async () => {
     return getItem(STORAGE_KEYS.ASSIGNMENTS) || [];

@@ -32,7 +32,9 @@ This document tracks the completion status of all modules across the ERP portals
 ├── 🏆 Achievements (✔ Complete)
 ├── 📊 Academic Analytics (✔ Complete)
 ├── 📈 Academic Performance (✔ Complete)
-├── 📅 Attendance Management (✔ Complete)
+├── 📋 Student Attendance Management (✔ Complete)
+├── 📋 Staff Attendance Management (✔ Complete)
+├── 📋 Staff My Attendance (✔ Complete)
 ├── 📄 Document Management (✔ Complete)
 ├── 🏢 Institutional Planning (✔ Complete)
 ├── 📅 Academic Calendar (✅ Complete / Frozen)
@@ -47,7 +49,8 @@ This document tracks the completion status of all modules across the ERP portals
 
 ## Teacher Portal
 ├── 📅 My Schedule (✔ Complete)
-├── 📝 Mark Attendance (✔ Complete)
+├── 📋 Mark Student Attendance (✔ Complete)
+├── 📋 My Staff Attendance (✔ Complete)
 ├── 📚 Assignments (✔ Complete)
 ├── 🎯 Marks Submission (Teacher ↔ Admin Sync) (✔ Complete)
 ├── 📢 Class Updates (✔ Complete)
@@ -58,7 +61,7 @@ This document tracks the completion status of all modules across the ERP portals
 ├── 📊 Reports & Analytics (✔ Complete)
 ├── 🎯 Academic Results (✅ Complete / Frozen)
 ├── 📈 Student Performance (✔ Complete)
-├── 📅 Attendance Management (✔ Complete)
+├── 📋 Student Attendance Management (✔ Complete)
 ├── 🎭 Clubs & Activities (✔ Complete)
 └── 🛡️ Student Duty Management (✔ Complete)
 

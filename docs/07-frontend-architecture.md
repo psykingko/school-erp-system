@@ -115,3 +115,20 @@ The Student Onboarding subsystem is considered stable and **frozen**. Future fea
 3. **Downward Compatibility**: Runtime objects must exactly mirror Seeded objects structurally to preserve zero-overhead compatibility with downstream modules.
 4. **No Custom Routing**: Runtime-created users leverage standard authentication pipelines and identical role-based dashboard resolution.
 
+## Attendance & Governance Architecture
+The Attendance subsystem is distinctly bifurcated into **Student Attendance** and **Staff Attendance**. Both run parallel within the ERP, completely isolated to ensure safe, independent evolution without overlapping logic.
+
+- **Student Architecture**: 
+  - `AttendanceMgmtPage.jsx` → `attendanceService.js` → `localProvider.js` → LocalStorage.
+  - Student Governance aggregates via `attendanceGovernanceService.js`.
+- **Staff Architecture**: 
+  - `StaffAttendanceMgmtPage.jsx` & `EmployeeAttendancePage.jsx` → `staffAttendanceService.js` → `localProvider.js` → LocalStorage.
+  - Staff Governance aggregates via `staffAttendanceGovernanceService.js`.
+- **Governance Convergence**: `AttendanceOverviewPage.jsx` serves as the centralized institutional monitoring dashboard. It maintains internal separation of concerns by dynamically rendering different datasets (`data` vs `staffData`) without merging the underlying payloads.
+
+### Attendance Architecture Freeze
+The Attendance ecosystem is considered stable and **frozen**. Future feature development must respect the following constraints:
+1. **No Orchestration Layers**: Keep `Service -> Provider` pure. No workflow engines, no event buses, no CQRS.
+2. **Strict Boundary Adherence**: Do not merge Staff and Student logics into a unified generic "Attendance Engine". They operate under different institutional rules.
+3. **No Component LocalStorage**: Components must consume from Services; Services consume from Providers. LocalStorage access is exclusively owned by the Provider.
+

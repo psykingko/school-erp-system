@@ -146,6 +146,7 @@ export const getDashboardData = async () => {
   const notificationQueue = [];
   const recognitionList = { students: [], classes: [] };
   const watchlist = [];
+  const allRecords = [];
 
   students.forEach(s => {
     const stats = studentStats[s.id];
@@ -199,6 +200,14 @@ export const getDashboardData = async () => {
     if (stats.percentage >= settings.appreciationThreshold) {
       recognitionList.students.push(enrichedStudent);
     }
+
+    // Determine parent explicitly for allRecords
+    const parent = parents.find(p => p.childIds?.includes(s.id));
+    allRecords.push({
+      ...enrichedStudent,
+      parentName: parent?.name || "Unknown Parent",
+      parentPhone: parent?.phoneNumber || "N/A"
+    });
   });
 
   // Class Recognition
@@ -230,6 +239,7 @@ export const getDashboardData = async () => {
     notificationQueue,
     recognitionList,
     watchlist,
+    allRecords,
     trendAlerts,
     settings
   };
