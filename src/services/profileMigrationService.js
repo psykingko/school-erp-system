@@ -8,11 +8,11 @@ import { DEFAULT_GENDER } from "../constants/genderConstants";
  */
 export const runGenderMigration = () => {
   try {
-    const CURRENT_GENDER_SCHEMA = 2;
+    const CURRENT_GENDER_SCHEMA = 3;
     const storedGenderSchema = parseInt(getItem("erp_gender_schema_version") || "1", 10);
     
     if (storedGenderSchema < CURRENT_GENDER_SCHEMA) {
-      console.log("[MigrationService] Upgrading profile schema v1 → v2 (adding gender)");
+      console.log(`[MigrationService] Upgrading profile schema v${storedGenderSchema} → v${CURRENT_GENDER_SCHEMA} (adding gender)`);
       
       const migrateCollection = (key) => {
         const items = getItem(key) || [];
@@ -21,7 +21,9 @@ export const runGenderMigration = () => {
         const migratedItems = items.map(item => {
           if (!item.gender) {
             updated = true;
-            return { ...item, gender: DEFAULT_GENDER };
+            const name = item.employeeName || item.name || item.teacherName || "";
+            const isFemale = /Neha|Sunita|Priya|Lakshmi|Geeta|Meena|Pooja|Shanti|Aarohi|Ananya|Diya|Ishita|Kavya|Myra|Navya|Prisha/i.test(name);
+            return { ...item, gender: isFemale ? "Female" : DEFAULT_GENDER };
           }
           return item;
         });

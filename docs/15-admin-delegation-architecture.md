@@ -1,42 +1,40 @@
-# 15. Admin Delegation & Access Control Architecture
+# 15. Admin Delegation & Dashboard Architecture
 
 ## Executive Summary
-EduDash features a robust Module-Based Access Control system for Administrators. The system tightly integrates administrative UI configurations, employee directories, and module ownership directly with the Role-Based Access Control (RBAC) authentication and routing layers.
-
-## Authentication Data Structure
-The `authUsers` record for an admin features a standardized schema that supports modular access delegation.
-```json
-{
-  "id": "auth-admin-002",
-  "username": "hr_admin",
-  "role": "ADMIN",
-  "employeeId": "EMP-004",
-  "assignedModules": [
-    "admin_employee_leaves",
-    "admin_employees",
-    "admin_manage_departments"
-  ]
-}
-```
-If `assignedModules` is `["*"]` or if an `isSuperAdmin` flag is true, the administrator gets full, unrestricted access to the entire portal.
+EduDash features a robust Module-Based Access Control system and a dynamic, personalized Admin Dashboard. The system tightly integrates administrative UI configurations, employee directories, department module ownership, and manual overrides directly with the Role-Based Access Control (RBAC) authentication and routing layers.
 
 ## Authentication & Authorization Flow
 - **Flow**: Handled by `src/context/AuthContext.jsx` and `src/services/authService.js`.
-- **State**: The `AuthContext` provides authentication flow by maintaining `user`, `role`, and `isAuthenticated` states, synchronized with `localStorage` under `STORAGE_KEYS.AUTH_STATE` (`edudash_auth_state`).
-- **Route Protection**: `ProtectedRoute.jsx` wraps routes and validates authentication. It verifies that the user's role is in the `allowedRoles` array. For admins, the system dynamically checks if the requested URL or module is present in their `assignedModules`. If unauthorized, it displays a stylized "Unauthorized Access" block.
+- **Runtime Flow**: `Login` → `AuthContext` → `effectiveAccessService` → `adminDashboardService` → `AdminDashboard` → `Navigation`.
+- **State**: The `AuthContext` provides authentication flow by maintaining `user`, `role`, and `isAuthenticated` states, synchronized with `localStorage` under `STORAGE_KEYS.AUTH_STATE`.
 
-## Dynamic Navigation (Admin Sidebar)
-The `src/components/admin/AdminSidebar.jsx` maps over the `ADMIN_SECTIONS` imported from `src/auth/navigation.js`.
-- During render, it dynamically filters `ADMIN_SECTIONS.items` by checking if `item.id` exists in the current user's `assignedModules` array.
-- Empty sections are automatically hidden from the navigation pane, ensuring administrators only see what they are authorized to manage.
+## Permission Architecture (`effectiveModules`)
+`effectiveModules` is the absolute single source of truth for all permissions and dashboard generation.
+- **Computation**: The `effectiveAccessService` computes the final list of accessible modules. It evaluates department-owned modules and merges them with any manual overrides applied to the specific administrator profile.
+- **Consumption**: The dashboard and navigation exclusively consume `effectiveModules`. The UI never calculates permissions natively, ensuring zero duplicate permission logic.
+- **Super Administrators**: If `isSuperAdmin` is true, the administrator bypasses module filtering and receives full, unrestricted access to the entire portal.
 
-## Administrative Controls UI (System Administration)
-The `src/pages/admin/SystemAdministrationPage.jsx` acts as the primary UI for managing administrative access.
-- **Employee Access Profiles**: Edits made to access levels are saved to `localStorage`. Instead of just metadata tags, the UI allows super administrators to delegate specific modules to individual employees.
-- **System Access Flags**: Toggling "Grant Admin Portal Access" in the Employee Directory establishes a link between an employee record and an authentication account.
-- **Module Ownership & Approvals**: Edits persist to `localStorage` under `erp_approvalSettings`. Designating an employee as an "Approving Authority" (e.g., for Leave Management) designates them as the recipient for notifications and approvals within that module workflow.
+## Admin Dashboard Architecture
+The Admin Dashboard (`AdminDashboard.jsx`) is the centralized, personalized command center for administrators. 
+- **Presentation-Only Component**: The dashboard contains absolutely zero business, calculation, or synchronization logic. It dynamically renders sections based entirely on the payload provided by the service layer.
+- **Service Responsibility**: `adminDashboardService.js` owns all business logic and payload mapping. Components remain purely presentational, and providers own persistence. Components never access LocalStorage directly.
 
-## Future Recommendations & Technical Debt
-- **Activity Logs**: Ensure Activity Logs in `SystemAdministrationPage.jsx` are wired to actual backend audit trails rather than static mock data.
-- **Module Ownership Synchronization**: Ensure that setting an employee as the "Approving Authority" for a module automatically grants them the requisite module access ID in their `assignedModules` array to prevent access control gaps.
-- **Mock Overlap**: Consolidate `MOCK_ROLES` in `EmployeeDirectoryPage.jsx` with the actual system roles to prevent terminology overlap.
+### Dashboard Sections (Dynamically Generated)
+- **Welcome & Profile Section**: Displays dynamic greetings, employee name, dynamic department resolution, designation, and Super Admin status.
+- **Active Modules**: A dynamic grid of accessible modules generated strictly from `effectiveModules`. 
+- **Personal Workspace & Quick Access**: Intelligent entry points to common tools (e.g., Profile, Attendance, Leaves, Calendar, Support). 
+
+### Navigation Consistency
+All sections on the Admin Dashboard (Active Modules, Personal Workspace, Quick Access) are generated by cross-referencing `effectiveModules` against the global navigation registry (`ADMIN_SECTIONS`). No duplicate navigation configuration or hardcoded routing exists.
+
+## Department & Module Assignment Synchronization
+- **Dynamic Propagation**: Departments continue to own modules. Department information and updates automatically propagate to the homepage through the existing authentication flow.
+- **No Synchronization Overhead**: No synchronization service, no polling, no realtime listeners, and no observer patterns exist. Changes to manual overrides, department assignment, or role instantly reflect on the next authentication cycle natively.
+- **User Management Onboarding**: When a new Administrator is onboarded, assigning their Department and Modules automatically and fully provisions their Admin Homepage. The homepage automatically reflects their configuration instantly upon login without any manual dashboard layout configuration.
+
+### Architecture Freeze
+The Admin Dashboard is considered stable and **frozen**. Future feature development must respect the following architectural decisions:
+1. **Service-Driven UI**: Components remain presentation-only. Business logic belongs exclusively inside `adminDashboardService`.
+2. **Single Permission Source**: `effectiveModules` must remain the singular source for all UI permission logic.
+3. **No Duplicate Navigation**: The dashboard must strictly use the unified navigation registry (`ADMIN_SECTIONS`).
+4. **No New Synchronization Mechanisms**: Do not introduce custom context providers, polling, or observer patterns to force dashboard updates. The existing authentication pipeline handles this natively.

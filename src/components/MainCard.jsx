@@ -42,7 +42,7 @@ const MainCard = React.memo(({
       initial={initial}
       animate={animate}
       // whileHover={whileHover}
-      className={`bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col relative group transition-shadow duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] ${className}`}
+      className={`bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col relative transition-shadow duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] ${className}`}
       style={{
         borderTop: `6px solid ${borderColor}`,
         ...props.style

@@ -30,7 +30,7 @@ import LeavePortfolioDashboard from "../../components/leave/LeavePortfolioDashbo
 const EmployeeLeavePage = () => {
   const { user } = useAuth();
   // Prototype Identity Mapping: Map admin to EMP-001 if they lack an employee ID
-  const employeeId = user?.linkedEntityId || "EMP-001";
+  const employeeId = user?.employeeId || user?.linkedEntityId || "EMP-001";
 
   const [leaves, setLeaves] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);

@@ -132,3 +132,10 @@ The Attendance ecosystem is considered stable and **frozen**. Future feature dev
 2. **Strict Boundary Adherence**: Do not merge Staff and Student logics into a unified generic "Attendance Engine". They operate under different institutional rules.
 3. **No Component LocalStorage**: Components must consume from Services; Services consume from Providers. LocalStorage access is exclusively owned by the Provider.
 
+## Admin Dashboard Architecture
+The Admin Dashboard has been completely revamped into a fully dynamic, personalized command center driven entirely by the existing access control systems.
+- **Service-Driven**: Uses `adminDashboardService.js` to construct the payload (Active Modules, Quick Access, Workspace).
+- **Presentation-Only**: `AdminDashboard.jsx` contains no business logic.
+- **Permission Single Source of Truth**: Evaluates permissions directly against `effectiveModules` via the `effectiveAccessService`, combining manual overrides and department assignments.
+- For complete details on the Admin Dashboard runtime flow, UI behavior, and delegation logic, see: `15-admin-delegation-architecture.md`.
+

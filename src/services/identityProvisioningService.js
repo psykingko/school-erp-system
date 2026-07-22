@@ -60,6 +60,7 @@ const identityProvisioningService = {
       const authUserPayload = {
         username: username,
         password: tempPassword,
+        role: "ADMIN",
         portalType: "ADMIN", // Only Admin portal types are provisioned in 12.4
         status: "PENDING_PASSWORD_RESET",
         employeeId: employee.employeeId,

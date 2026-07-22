@@ -1,34 +1,17 @@
-import { useMediaQuery } from "../../hooks/useMediaQuery";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import {
-  Users,
-  Briefcase,
-  CheckSquare,
-  Wallet,
-  Activity,
-  CalendarDays,
-  UserPlus,
-  BookOpen,
-  Settings,
-  Megaphone,
-  FolderOpen,
-  RefreshCw,
-  AlertTriangle,
-} from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { ShieldCheck, Building2, BadgeAlert, Activity } from "lucide-react";
+
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
 import AdminQuickActionCard from "../../components/admin/AdminQuickActionCard";
-import KPIWidget from "../../components/admin/analytics/KPIWidget";
-import AttendanceTrendCard from "../../components/admin/analytics/AttendanceTrendCard";
-import AcademicSummaryCard from "../../components/admin/analytics/AcademicSummaryCard";
-import WorkloadCard from "../../components/admin/analytics/WorkloadCard";
-
-import ConfirmationModal from "../../shared/components/ConfirmationModal";
-import ToastNotification from "../../shared/components/ToastNotification";
-import { dashboardAggregationService } from "../../services/dashboardAggregationService";
+import DashboardCardSkeleton from "../../shared/components/skeletons/DashboardCardSkeleton";
+import adminDashboardService from "../../services/adminDashboardService";
+import MainCard from "../../components/MainCard";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 15 },
@@ -42,85 +25,159 @@ const containerVariants = {
   },
 };
 
+const IconRenderer = ({ iconName, ...props }) => {
+  const Icon = LucideIcons[iconName] || LucideIcons.HelpCircle;
+  return <Icon {...props} />;
+};
+
+IconRenderer.propTypes = {
+  iconName: PropTypes.string.isRequired,
+};
+
+const EmptyState = ({ message }) => (
+  <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#caf0f8] rounded-2xl bg-gray-50/50">
+    <BadgeAlert size={32} className="text-[#00b4d8] mb-3" />
+    <p className="text-sm font-black text-[#03045e]">{message}</p>
+  </div>
+);
+
+EmptyState.propTypes = {
+  message: PropTypes.string.isRequired,
+};
+
+const WorkspaceCommandCard = ({ title, description, cta, iconName, onClick }) => {
+  return (
+    <button 
+      onClick={onClick}
+      className="w-full p-5 text-left rounded-2xl bg-white border border-[#caf0f8] hover:bg-[#caf0f8]/30 hover:border-[#00b4d8] transition-all duration-150 group flex flex-col justify-between h-full shadow-sm hover:shadow-md"
+    >
+      <div className="flex items-start gap-4 mb-4">
+        <div className="p-3 rounded-xl bg-[#caf0f8]/50 text-[#03045e] group-hover:bg-[#0077b6] group-hover:text-white transition-colors flex-shrink-0">
+          <IconRenderer iconName={iconName} size={20} strokeWidth={2} />
+        </div>
+        <div>
+          <h3 className="text-sm font-black text-[#03045e] group-hover:text-[#0077b6] transition-colors">{title}</h3>
+          <p className="text-xs font-semibold text-gray-500 mt-1 leading-relaxed line-clamp-2">
+            {description}
+          </p>
+        </div>
+      </div>
+      <div className="mt-auto flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-[#00b4d8] group-hover:text-[#03045e] transition-colors">
+        <span>{cta || "Open Module"}</span>
+        <LucideIcons.ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+      </div>
+    </button>
+  );
+};
+
+WorkspaceCommandCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  cta: PropTypes.string,
+  iconName: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+};
+
+const AdminIdentityCard = ({ welcome, profile }) => {
+  if (!welcome || !profile) return null;
+  return (
+    <MainCard className="p-6 border border-[#caf0f8] bg-gradient-to-br from-[#03045e] via-[#023e8a] to-[#0077b6] text-white relative overflow-hidden">
+      <div className="absolute right-0 top-0 w-80 h-80 bg-[#48cae4]/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+      <div className="absolute left-1/3 bottom-0 w-60 h-60 bg-[#90e0ef]/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="flex flex-col md:flex-row justify-between gap-6 relative z-10">
+        <div className="flex items-start gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#00b4d8] to-[#90e0ef] p-0.5 flex-shrink-0 shadow-lg">
+            <div className="w-full h-full bg-[#03045e] rounded-[14px] flex items-center justify-center font-black text-xl text-[#caf0f8]">
+              {welcome.avatarInitials}
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xl font-black tracking-tight">{welcome.greeting}</h2>
+            <p className="text-xs text-[#caf0f8] font-bold mt-0.5">
+              {welcome.designation} • {welcome.department}
+            </p>
+            {profile.isSuperAdmin && (
+              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <ShieldCheck size={14} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Super Administrator</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm self-start">
+          <div>
+            <span className="text-[9px] font-black uppercase tracking-wider text-[#caf0f8]/70">Employee ID</span>
+            <p className="text-sm font-black text-white mt-0.5">{profile.employeeId}</p>
+          </div>
+          <div>
+            <span className="text-[9px] font-black uppercase tracking-wider text-[#caf0f8]/70">Department</span>
+            <p className="text-sm font-black text-white mt-0.5 flex items-center gap-1.5">
+              <Building2 size={14} className="text-[#90e0ef]" />
+              {profile.department}
+            </p>
+          </div>
+        </div>
+      </div>
+    </MainCard>
+  );
+};
+
+AdminIdentityCard.propTypes = {
+  welcome: PropTypes.shape({
+    avatarInitials: PropTypes.string,
+    greeting: PropTypes.string,
+    designation: PropTypes.string,
+    department: PropTypes.string,
+  }).isRequired,
+  profile: PropTypes.shape({
+    isSuperAdmin: PropTypes.bool,
+    employeeId: PropTypes.string,
+    department: PropTypes.string,
+  }).isRequired,
+};
+
 const AdminDashboard = () => {
-  const isMobile = useMediaQuery("(max-width: 767px)");
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  const [studentCount, setStudentCount] = useState(0);
-  const [teacherCount, setTeacherCount] = useState(0);
-  const [pendingLeaves, setPendingLeaves] = useState(0);
-  const [feesDefaulters, setFeesDefaulters] = useState(0);
-  const [routesCount, setRoutesCount] = useState(0);
-  const [teachers, setTeachers] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [demoClassScores, setDemoClassScores] = useState([
-    { name: "Class 11-A", averageGrade: "—" },
-    { name: "Class 11-B", averageGrade: "—" },
-    { name: "Class 12-A", averageGrade: "—" },
-  ]);
+  
   const [loading, setLoading] = useState(true);
-
-  // Seed reset state
-  const [resetConfirm, setResetConfirm] = useState({
-    isOpen: false,
-  });
-  const [toast, setToast] = useState({
-    show: false,
-    message: "",
-    type: "success",
-  });
-
-  const handleResetSeed = () => {
-    setResetConfirm({ isOpen: true });
-  };
-
-  const handleResetConfirm = async () => {
-    try {
-      await dashboardAggregationService.resetSeedData();
-      setResetConfirm({ isOpen: false });
-      setToast({
-        show: true,
-        message: "Seed data reset successfully. Refresh to reinitialize.",
-        type: "success",
-      });
-      // Reload page after short delay
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } catch (e) {
-      console.error(e);
-      setToast({
-        show: true,
-        message: "Failed to reset seed data",
-        type: "error",
-      });
-    }
-  };
+  const [payload, setPayload] = useState(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const data = await adminDashboardService.getAdminDashboardPayload(user);
+        setPayload(data);
+      } catch (err) {
+        console.error("Failed to load admin dashboard payload", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchData = async () => {
-    try {
-      const data = await dashboardAggregationService.getAdminDashboardData();
-      
-      setStudentCount(data.studentCount);
-      setTeacherCount(data.teacherCount);
-      setPendingLeaves(data.pendingLeaves);
-      setFeesDefaulters(data.feesDefaulters);
-      setRoutesCount(data.routesCount);
-      setTeachers(data.teachers || []);
-      setClasses(data.classes || []);
-      setDemoClassScores(data.demoClassScores);
+    fetchDashboardData();
+  }, [user]);
 
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <DashboardCardSkeleton />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <DashboardCardSkeleton />
+          <DashboardCardSkeleton />
+          <DashboardCardSkeleton />
+          <DashboardCardSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (!payload) {
+    return <EmptyState message="Unable to load dashboard configuration." />;
+  }
 
   return (
     <motion.div
@@ -129,10 +186,9 @@ const AdminDashboard = () => {
       animate="visible"
       className="space-y-6 pb-12"
     >
-      {/* Page Header */}
       <AdminPageHeader
         title="Institution Command Center"
-        description="Daily administrative operations, academic management, and operational analytics dashboard."
+        description="Daily administrative operations and personalized workspace."
         breadcrumbs={["Admin Portal", "Dashboard"]}
         actionButton={
           <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-[#caf0f8]">
@@ -144,180 +200,73 @@ const AdminDashboard = () => {
         }
       />
 
-      {/* Permission Debug Info (Temporary) */}
-      <div className="bg-[#caf0f8]/30 border border-[#0077b6]/20 p-3 rounded-xl flex items-center justify-between shadow-sm">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Permission Debug Info</span>
-          <span className="text-sm font-bold text-[#03045e]">
-            Current User: <span className="font-black text-[#0077b6]">{user?.name}</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="px-3 py-1 rounded-lg bg-white border border-[#caf0f8] text-xs font-bold text-[#03045e] shadow-sm">
-            Effective Modules: <span className="font-black text-[#0077b6] text-sm">{user?.isSuperAdmin ? "ALL (Super Admin)" : (user?.effectiveModules?.length || 0)}</span>
-          </span>
-        </div>
-      </div>
+      {/* Profile & Welcome Section */}
+      <AdminIdentityCard welcome={payload.welcome} profile={payload.profile} />
 
-      {/* Permission Notice for Users with No Assigned Modules */}
-      {!user?.isSuperAdmin && (!user?.effectiveModules || user.effectiveModules.length === 0) && (
-        <div className="bg-red-50 border border-red-200 p-5 rounded-2xl flex items-start gap-4 shadow-sm">
-          <div className="p-3 bg-white rounded-xl shadow-sm text-red-500 shrink-0">
-            <AlertTriangle size={24} />
+      {/* Active Modules Grid */}
+      <AdminSectionCard title="Active Modules" subtitle="Assigned operational domains">
+        {payload.activeModules && payload.activeModules.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {payload.activeModules.map(module => (
+              <button
+                key={module.id}
+                onClick={() => navigate(module.path)}
+                className="p-5 rounded-2xl border border-[#caf0f8] bg-white hover:border-[#00b4d8] hover:shadow-md transition-all flex flex-col items-center justify-center gap-3 group text-center"
+              >
+                <div className="p-3.5 rounded-xl bg-[#caf0f8]/30 text-[#03045e] group-hover:bg-[#0077b6] group-hover:text-white transition-colors">
+                  <IconRenderer iconName={module.icon} size={26} strokeWidth={1.5} />
+                </div>
+                <span className="text-xs font-black text-[#03045e] group-hover:text-[#0077b6] leading-tight">{module.label}</span>
+              </button>
+            ))}
           </div>
-          <div>
-            <h3 className="text-base font-black text-red-700">No Modules Assigned</h3>
-            <p className="text-sm text-red-600/80 font-bold mt-1 max-w-2xl">
-              Your account has not been granted access to any administrative modules. You can only view the Dashboard and your Profile. Please contact your Super Administrator to request permissions.
-            </p>
-          </div>
-        </div>
-      )}
+        ) : (
+          <EmptyState message="No modules assigned to your profile. Contact Super Administrator." />
+        )}
+      </AdminSectionCard>
 
-      {/* Polish Pass: High fidelity KPI widgets grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPIWidget
-          title="Total Registered Students"
-          value={studentCount ? studentCount.toString() : "10"}
-          description="Active cohort enrolled"
-          icon={Users}
-          trend="+4%"
-        />
-        <KPIWidget
-          title="Academic Faculty"
-          value={teacherCount ? teacherCount.toString() : "5"}
-          description="Teachers & support staff"
-          icon={Briefcase}
-          trend="100%"
-          trendDirection="up"
-          color="#0096c7"
-          bg="#ade8f4"
-        />
-        <KPIWidget
-          title="Pending Absences Leaves"
-          value={pendingLeaves ? pendingLeaves.toString() : "2"}
-          description="Awaiting reviews in queue"
-          icon={CheckSquare}
-          trend="Action Needed"
-          trendDirection="down"
-          color="#03045e"
-          bg="#e0f2fe"
-        />
-        <KPIWidget
-          title="Outstanding Fee Ledgers"
-          value={feesDefaulters ? feesDefaulters.toString() : "3"}
-          description="Pending ledger items"
-          icon={Wallet}
-          trend="82% Paid"
-          color="#00b4d8"
-          bg="#caf0f8"
-        />
-      </div>
-
-      {/* Grid Layout: Visual charts & analytics cards */}
-      <div className={isMobile ? "flex flex-col gap-6" : "grid grid-cols-1 lg:grid-cols-3 gap-6"} style={isMobile ? { display: "flex", flexDirection: "column" } : {}}>
-        {/* Attendance Spark Chart Card */}
-        <div className="lg:col-span-2" style={{ order: isMobile ? 3 : 1 }}>
-          <AttendanceTrendCard
-            points={[88, 92, 90, 94, 95, 93, 94]}
-            labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-            avgRate="92.8% Compliance"
-          />
-        </div>
-
-        {/* Academic averages card */}
-        <div style={{ order: isMobile ? 2 : 2 }}><AcademicSummaryCard
-          title="Academic Performance Status"
-          passRate="98%"
-          examCount={3}
-          toppersCount={demoClassScores.length}
-          classScores={demoClassScores}
-        /></div>
-      </div>
-
-      {/* Main Workspace Split Section */}
+      {/* Bottom Layout: Common Workspace & Quick Access */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left: Teaching work portfolios load */}
-        <div className="lg:col-span-2 space-y-6">
-          <AdminSectionCard title="Faculty Workload Allocations Insights">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {teachers.slice(0, 2).map((teacher) => (
-                <WorkloadCard
-                  key={teacher.id}
-                  teacherName={teacher.name}
-                  classesCount={2}
-                  subjectsList={
-                    teacher.subjectsAssigned || [teacher.department]
-                  }
-                  weeklyHours={teacher.id === "teach-001" ? 22 : 18}
-                />
-              ))}
-            </div>
+        <div className="lg:col-span-2">
+          <AdminSectionCard title="Personal Workspace" subtitle="Your personal tools and records">
+            {payload.commonWorkspace && payload.commonWorkspace.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {payload.commonWorkspace.map(item => (
+                  <WorkspaceCommandCard
+                    key={item.id}
+                    title={item.label}
+                    description={item.description || `Access your ${item.label.toLowerCase()} details`}
+                    cta={item.cta}
+                    iconName={item.icon}
+                    onClick={() => navigate(item.path)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState message="Personal workspace tools are currently unavailable." />
+            )}
           </AdminSectionCard>
-
-
         </div>
 
-        {/* Right Panel: Operations Quick Actions (Fully routed!) */}
-        <div className="space-y-6">
-          <AdminSectionCard title="Quick Command Controls">
+        <div>
+          <AdminSectionCard title="Quick Access" subtitle="Frequently used modules">
             <div className="space-y-3">
-              <AdminQuickActionCard
-                title="Enroll New Student"
-                description="Enroll students & map parent details"
-                icon={UserPlus}
-                onClick={() => navigate("/admin/students")}
-              />
-              <AdminQuickActionCard
-                title="Allocate Subject Teacher"
-                description="Map academic roles, class sections & subjects"
-                icon={BookOpen}
-                onClick={() => navigate("/admin/subject-alloc")}
-              />
-              <AdminQuickActionCard
-                title="Reset Seed Data"
-                description="Clear all data and reinitialize seed"
-                icon={RefreshCw}
-                onClick={handleResetSeed}
-                color="#f59e0b"
-                bg="#fef3c7"
-              />
-              <AdminQuickActionCard
-                title="Configure Class Timetable"
-                description="Create schedules, set periods & room mappings"
-                icon={Settings}
-                onClick={() => navigate("/admin/timetable")}
-              />
-              <AdminQuickActionCard
-                title="Records File Repository"
-                description="View certs, TC transcripts & Aadhar ID logs"
-                icon={FolderOpen}
-                onClick={() => navigate("/admin/documents")}
-              />
+              {payload.quickAccess && payload.quickAccess.length > 0 ? (
+                payload.quickAccess.map(item => (
+                  <AdminQuickActionCard
+                    key={item.id}
+                    title={item.label}
+                    icon={LucideIcons[item.icon] || LucideIcons.Settings}
+                    onClick={() => navigate(item.path)}
+                  />
+                ))
+              ) : (
+                <EmptyState message="No quick actions available." />
+              )}
             </div>
           </AdminSectionCard>
         </div>
       </div>
-
-      {/* Seed Reset Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={resetConfirm.isOpen}
-        title="Reset Seed Data"
-        message="Are you sure you want to reset all seed data? This will clear all students, teachers, classes, fees, and other data. The application will reload after reset."
-        warningText="This action cannot be undone"
-        onConfirm={handleResetConfirm}
-        onCancel={() => setResetConfirm({ isOpen: false })}
-        confirmButtonText="Reset Data"
-        cancelButtonText="Cancel"
-      />
-
-      {/* Toast Notification */}
-      <ToastNotification
-        show={toast.show}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast({ ...toast, show: false })}
-      />
     </motion.div>
   );
 };
